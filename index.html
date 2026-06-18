@@ -131,13 +131,91 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <body>
 <div class="shell">
 
-<div class="topbar">
-  <div class="topbar-icon">
+<div class="topbar" id="topbar">
+  <div class="topbar-icon" id="topbar-icon">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
   </div>
-  <div>
-    <div class="topbar-title">Perfil Comportamental</div>
-    <div class="topbar-sub">Colégio Mundo do Saber</div>
+  <div style="flex:1">
+    <div class="topbar-title" id="topbar-title">Perfil Comportamental</div>
+    <div class="topbar-sub" id="topbar-sub">Colégio Mundo do Saber</div>
+  </div>
+  <button onclick="abrirConfig()" title="Personalizar" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</div>
+
+<!-- PAINEL DE CONFIGURAÇÃO -->
+<div id="config-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:24px 16px">
+  <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <!-- Header do painel -->
+    <div style="background:var(--primary);padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="color:#fff;font-size:15px;font-weight:600">Personalizar formulário</div>
+        <div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:2px">Altere cores, textos e logo do topo</div>
+      </div>
+      <button onclick="fecharConfig()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <!-- Corpo do painel -->
+    <div style="padding:20px">
+
+      <!-- Preview ao vivo -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:600;color:#718096;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Preview em tempo real</div>
+        <div id="cfg-preview" style="border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div id="cfg-prev-icon" style="width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div>
+            <div id="cfg-prev-title" style="color:#fff;font-size:15px;font-weight:600">Perfil Comportamental</div>
+            <div id="cfg-prev-sub" style="color:rgba(255,255,255,.75);font-size:12px;margin-top:2px">Colégio Mundo do Saber</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cor principal -->
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:8px">Cor principal</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="color-presets">
+          <button onclick="aplicarCor('#185FA5')" style="width:32px;height:32px;border-radius:50%;background:#185FA5;border:2px solid transparent;cursor:pointer" title="Azul"></button>
+          <button onclick="aplicarCor('#1A7A4A')" style="width:32px;height:32px;border-radius:50%;background:#1A7A4A;border:2px solid transparent;cursor:pointer" title="Verde"></button>
+          <button onclick="aplicarCor('#7B3FA0')" style="width:32px;height:32px;border-radius:50%;background:#7B3FA0;border:2px solid transparent;cursor:pointer" title="Roxo"></button>
+          <button onclick="aplicarCor('#C0392B')" style="width:32px;height:32px;border-radius:50%;background:#C0392B;border:2px solid transparent;cursor:pointer" title="Vermelho"></button>
+          <button onclick="aplicarCor('#D35400')" style="width:32px;height:32px;border-radius:50%;background:#D35400;border:2px solid transparent;cursor:pointer" title="Laranja"></button>
+          <button onclick="aplicarCor('#17A589')" style="width:32px;height:32px;border-radius:50%;background:#17A589;border:2px solid transparent;cursor:pointer" title="Teal"></button>
+          <button onclick="aplicarCor('#1A252F')" style="width:32px;height:32px;border-radius:50%;background:#1A252F;border:2px solid transparent;cursor:pointer" title="Escuro"></button>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="color" id="cfg-color-custom" value="#185FA5" oninput="aplicarCor(this.value)" style="width:32px;height:32px;border:1px solid #E2E8F0;border-radius:50%;padding:2px;cursor:pointer;background:none">
+            <span style="font-size:11px;color:#718096">Personalizada</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Título -->
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Título principal</label>
+        <input type="text" id="cfg-titulo" value="Perfil Comportamental" oninput="atualizarPreview()" placeholder="Ex: Teste de Perfil da Equipe" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+      </div>
+
+      <!-- Subtítulo -->
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Nome do colégio</label>
+        <input type="text" id="cfg-subtitulo" value="Colégio Mundo do Saber" oninput="atualizarPreview()" placeholder="Ex: Colégio São Paulo" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+      </div>
+
+      <!-- Logo URL -->
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">URL do logo <span style="font-weight:400;color:#718096">(opcional)</span></label>
+        <input type="url" id="cfg-logo" oninput="atualizarPreview()" placeholder="https://seusite.com/logo.png" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+        <div style="font-size:11px;color:#718096;margin-top:5px">Cole o link direto de uma imagem. Funciona com links do Google Drive (compartilhado como público), Imgur ou qualquer URL de imagem.</div>
+      </div>
+
+      <!-- Botões -->
+      <div style="display:flex;gap:10px">
+        <button onclick="fecharConfig()" style="flex:1;padding:11px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;font-size:14px;cursor:pointer;font-family:inherit;color:#4A5568">Cancelar</button>
+        <button onclick="salvarConfig()" style="flex:2;padding:11px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Aplicar personalização</button>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -735,7 +813,118 @@ function renderIA(ia){
     </div>`;
 }
 
+// ─── CONFIGURAÇÃO / PERSONALIZAÇÃO ───────────────────────────────────────────
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return{r,g,b};
+}
+function lighten(hex,pct){
+  const{r,g,b}=hexToRgb(hex);
+  const f=pct/100;
+  return `rgb(${Math.round(r+(255-r)*f)},${Math.round(g+(255-g)*f)},${Math.round(b+(255-b)*f)})`;
+}
+function darken(hex,pct){
+  const{r,g,b}=hexToRgb(hex);
+  const f=1-pct/100;
+  return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;
+}
+
+let cfgCor = '#185FA5';
+
+function aplicarCor(hex){
+  cfgCor = hex;
+  document.getElementById('cfg-color-custom').value = hex;
+  // destacar preset selecionado
+  document.querySelectorAll('#color-presets button').forEach(b=>{
+    b.style.outline = b.title && b.style.background===hexToCSS(hex) ? '3px solid #1A202C' : 'none';
+  });
+  atualizarPreview();
+}
+
+function hexToCSS(hex){ return hex; }
+
+function atualizarPreview(){
+  const titulo = document.getElementById('cfg-titulo').value || 'Perfil Comportamental';
+  const sub    = document.getElementById('cfg-subtitulo').value || 'Colégio';
+  const logo   = document.getElementById('cfg-logo').value.trim();
+
+  document.getElementById('cfg-preview').style.background = cfgCor;
+  document.getElementById('cfg-prev-title').textContent = titulo;
+  document.getElementById('cfg-prev-sub').textContent = sub;
+
+  const iconEl = document.getElementById('cfg-prev-icon');
+  if(logo){
+    iconEl.innerHTML = `<img src="${logo}" style="width:34px;height:34px;object-fit:contain;border-radius:4px" onerror="this.style.display='none'">`;
+  } else {
+    iconEl.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  }
+}
+
+function salvarConfig(){
+  const titulo = document.getElementById('cfg-titulo').value || 'Perfil Comportamental';
+  const sub    = document.getElementById('cfg-subtitulo').value || 'Colégio Mundo do Saber';
+  const logo   = document.getElementById('cfg-logo').value.trim();
+
+  // Aplicar cor em todo o site via CSS variables
+  const root = document.documentElement.style;
+  root.setProperty('--primary', cfgCor);
+  root.setProperty('--primary-light', lighten(cfgCor, 90));
+  root.setProperty('--primary-dark',  darken(cfgCor, 20));
+
+  // Atualizar topbar
+  document.getElementById('topbar').style.background = cfgCor;
+  document.getElementById('topbar-title').textContent = titulo;
+  document.getElementById('topbar-sub').textContent = sub;
+
+  const iconEl = document.getElementById('topbar-icon');
+  if(logo){
+    iconEl.style.background = 'rgba(255,255,255,.15)';
+    iconEl.innerHTML = `<img src="${logo}" style="width:34px;height:34px;object-fit:contain;border-radius:4px" onerror="this.innerHTML='<svg viewBox=\\'0 0 24 24\\' width=\\'20\\' height=\\'20\\' fill=\\'none\\' stroke=\\'#fff\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'8\\' r=\\'4\\'/><path d=\\'M4 20c0-4 3.6-7 8-7s8 3 8 7\\'/></svg>'">`;
+  } else {
+    iconEl.style.background = 'rgba(255,255,255,.15)';
+    iconEl.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  }
+
+  // Salvar no localStorage para persistir
+  localStorage.setItem('cfg', JSON.stringify({cor:cfgCor, titulo, sub, logo}));
+
+  fecharConfig();
+}
+
+function abrirConfig(){
+  // Carregar valores atuais nos campos
+  document.getElementById('cfg-titulo').value    = document.getElementById('topbar-title').textContent;
+  document.getElementById('cfg-subtitulo').value = document.getElementById('topbar-sub').textContent;
+  document.getElementById('cfg-color-custom').value = cfgCor;
+  atualizarPreview();
+  document.getElementById('config-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharConfig(){
+  document.getElementById('config-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function carregarConfigSalva(){
+  try{
+    const cfg = JSON.parse(localStorage.getItem('cfg')||'{}');
+    if(cfg.cor){
+      cfgCor = cfg.cor;
+      document.getElementById('cfg-color-custom').value = cfg.cor;
+      // pré-preencher campos
+      if(cfg.titulo)   document.getElementById('cfg-titulo').value    = cfg.titulo;
+      if(cfg.sub)      document.getElementById('cfg-subtitulo').value = cfg.sub;
+      if(cfg.logo)     document.getElementById('cfg-logo').value      = cfg.logo;
+      salvarConfig();
+    }
+  }catch(e){}
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 init();
+carregarConfigSalva();
 </script>
 </body>
 </html>
