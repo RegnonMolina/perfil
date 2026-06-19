@@ -1,905 +1,1113 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Perfil Comportamental</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#185FA5;--primary-light:#E6F1FB;--primary-dark:#0C447C;
-  --accent:#F4A623;--success:#3B6D11;--success-light:#EAF3DE;
-  --warn:#854F0B;--warn-light:#FAEEDA;--danger:#A32D2D;
-  --bg:#F4F6F9;--surface:#fff;--border:#E2E8F0;
-  --text:#1A202C;--text2:#4A5568;--text3:#718096;
-  --r:10px;--rlg:14px;--sh:0 1px 3px rgba(0,0,0,.08)
-}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.shell{max-width:680px;margin:0 auto;padding:24px 16px 80px}
-.screen{display:none}.screen.active{display:block}
-.topbar{background:var(--primary);padding:16px 20px;border-radius:var(--rlg);margin-bottom:24px;display:flex;align-items:center;gap:14px}
-.topbar-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.topbar-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2}
-.topbar-title{color:#fff;font-size:16px;font-weight:600}
-.topbar-sub{color:rgba(255,255,255,.75);font-size:12px;margin-top:2px}
-.prog-wrap{margin-bottom:20px}
-.prog-top{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px}
-.prog-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-.prog-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .4s ease}
-.sec-head{margin-bottom:20px}
-.sec-head h2{font-size:19px;font-weight:600;color:var(--text)}
-.sec-head p{font-size:13px;color:var(--text2);margin-top:4px;line-height:1.5}
-.sec-badge{display:inline-block;background:var(--primary-light);color:var(--primary-dark);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;margin-bottom:14px;box-shadow:var(--sh)}
-.card-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px}
-.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
-.field label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:5px}
-.field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s}
-.field input:focus,.field select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
-.question{margin-bottom:20px}
-.q-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--primary-light);color:var(--primary-dark);border-radius:50%;font-size:11px;font-weight:600;margin-right:6px;flex-shrink:0;vertical-align:middle}
-.opts{display:flex;flex-direction:column;gap:7px;margin-top:10px}
-.opt{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;background:var(--surface)}
-.opt:hover{border-color:var(--primary);background:var(--primary-light)}
-.opt.sel{border:2px solid var(--primary);background:var(--primary-light)}
-.opt-circle{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.opt.sel .opt-circle{border-color:var(--primary);background:var(--primary)}
-.opt.sel .opt-circle::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff}
-.opt-text{font-size:13px;color:var(--text);line-height:1.45}
-.opt.sel .opt-text{color:var(--primary-dark)}
-.scale-item{margin-bottom:18px}.scale-item:last-child{margin-bottom:0}
-.scale-q{font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;line-height:1.4}
-.scale-row{display:flex;gap:6px}
-.scale-btn{flex:1;height:42px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;font-weight:500;color:var(--text3);transition:all .15s;font-family:inherit}
-.scale-btn:hover{border-color:var(--primary);color:var(--primary)}
-.scale-btn.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
-.scale-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px}
-.enea-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
-.enea-title{font-size:12px;font-weight:700;color:var(--primary-dark);background:var(--primary-light);padding:5px 12px;border-radius:6px;margin-bottom:10px;display:inline-block;text-transform:uppercase;letter-spacing:.04em}
-.enea-instr{font-size:12px;color:var(--text3);margin-bottom:12px;font-style:italic}
-.enea-opts{display:flex;flex-direction:column;gap:6px}
-.enea-opt{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;background:var(--surface)}
-.enea-opt:hover{border-color:var(--primary);background:var(--primary-light)}
-.enea-opt.sel{border:2px solid var(--primary);background:var(--primary-light)}
-.enea-check{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.enea-opt.sel .enea-check{background:var(--primary);border-color:var(--primary)}
-.enea-opt.sel .enea-check::after{content:'✓';font-size:10px;color:#fff;font-weight:700}
-.enea-opt-text{font-size:12.5px;color:var(--text);line-height:1.4}
-.enea-opt.sel .enea-opt-text{color:var(--primary-dark)}
-.enea-counter{font-size:11px;margin-top:8px;font-weight:600}
-.enea-counter.ok{color:var(--success)}.enea-counter.warn{color:var(--danger)}
-.btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
-.btn{padding:11px 26px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;border:1px solid transparent}
-.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
-.btn-primary:hover{background:var(--primary-dark)}
-.btn-ghost{background:var(--surface);color:var(--text2);border-color:var(--border)}
-.btn-ghost:hover{background:var(--bg)}
-.result-hero{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:var(--rlg);padding:28px 24px;color:#fff;margin-bottom:20px;text-align:center}
-.result-hero h2{font-size:22px;font-weight:600;margin-bottom:6px}
-.result-hero p{font-size:13px;opacity:.85}
-.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
-.result-metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;box-shadow:var(--sh)}
-.rm-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.rm-value{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
-.rm-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:4px}
-.result-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
-.rs-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
-.rs-text{font-size:13px;color:var(--text);line-height:1.6}
-.point{display:flex;gap:8px;margin-bottom:7px;font-size:13px;line-height:1.4}
-.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.tip-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.tip{padding:10px 12px;border-radius:var(--r);font-size:12px;line-height:1.5}
-.tip strong{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-.loading-wrap{text-align:center;padding:60px 20px}
-.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-title{font-size:16px;font-weight:500;margin-bottom:6px}
-.loading-sub{font-size:13px;color:var(--text3)}
-.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
-@media(max-width:500px){
-  .result-grid{grid-template-columns:1fr 1fr}
-  .tip-grid{grid-template-columns:1fr}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil Comportamental - Mundo do Saber</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1f4788 0%, #0d47a1 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .config-bar {
+            background: #f5f5f5;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .config-btn {
+            padding: 8px 15px;
+            border: none;
+            background: #1f4788;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .config-btn:hover {
+            background: #0d47a1;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tela {
+            display: none;
+        }
+
+        .tela.ativa {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tela h2 {
+            color: #1f4788;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .opcoes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .opcao {
+            display: flex;
+            gap: 10px;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .opcao:hover {
+            background: #f9f9f9;
+            border-color: #667eea;
+        }
+
+        .opcao.selecionada {
+            background: #e3f2fd;
+            border-color: #667eea;
+        }
+
+        .opcao input[type="radio"] {
+            margin-top: 3px;
+        }
+
+        .opcao-texto {
+            flex: 1;
+        }
+
+        .escala-container {
+            display: flex;
+            gap: 5px;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .escala-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .escala-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .escala-btn.selecionado {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .blocos-eneagrama {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .blocos-eneagrama h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .bloco-opcoes {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .bloco-opcao {
+            flex: 1;
+            min-width: 45%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bloco-opcao:hover {
+            border-color: #667eea;
+            background: #f9f9f9;
+        }
+
+        .bloco-opcao.selecionada {
+            background: #e3f2fd;
+            border-color: #667eea;
+        }
+
+        .bloco-opcao input[type="radio"] {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .botoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-primario {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primario:hover {
+            background: #5568d3;
+        }
+
+        .btn-secundario {
+            background: #ddd;
+            color: #333;
+        }
+
+        .btn-secundario:hover {
+            background: #ccc;
+        }
+
+        .progresso {
+            background: #f5f5f5;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progresso-barra {
+            background: #667eea;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .resultado {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .resultado-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .resultado-card h3 {
+            color: #1f4788;
+            margin-bottom: 10px;
+        }
+
+        .resultado-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h3 {
+            color: #1f4788;
+            margin-bottom: 20px;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .fechar-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 28px;
+            color: #999;
+        }
+
+        .mensagem {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .mensagem.sucesso {
+            background: #c8e6c9;
+            color: #2e7d32;
+            display: block;
+        }
+
+        .mensagem.erro {
+            background: #ffcdd2;
+            color: #c62828;
+            display: block;
+        }
+    </style>
 </head>
 <body>
-<div class="shell">
-
-<!-- TOPBAR -->
-<div class="topbar" id="topbar">
-  <div class="topbar-icon" id="topbar-icon">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-  </div>
-  <div style="flex:1">
-    <div class="topbar-title" id="topbar-title">Perfil Comportamental</div>
-    <div class="topbar-sub" id="topbar-sub">Colégio Mundo do Saber</div>
-  </div>
-  <button onclick="abrirConfig()" title="Personalizar" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-  </button>
-  <button onclick="abrirIAModal()" title="Configurar IA e E-mail" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M9 11a2 2 0 0 0-2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 0-2-2m6 0a2 2 0 0 0-2 2 2 2 0 0 0 2 2 2 2 0 0 0 2-2 2 2 0 0 0-2-2z"/></svg>
-  </button>
-</div>
-
-<!-- PAINEL CONFIG -->
-<div id="config-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:24px 16px">
-  <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="background:var(--primary);padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
-      <div><div style="color:#fff;font-size:15px;font-weight:600">Personalizar formulário</div><div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:2px">Cores, textos e logo</div></div>
-      <button onclick="fecharConfig()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
-    </div>
-    <div style="padding:20px">
-      <div style="margin-bottom:16px">
-        <div style="font-size:11px;font-weight:600;color:#718096;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Preview</div>
-        <div id="cfg-preview" style="border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px">
-          <div id="cfg-prev-icon" style="width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          </div>
-          <div>
-            <div id="cfg-prev-title" style="color:#fff;font-size:15px;font-weight:600">Perfil Comportamental</div>
-            <div id="cfg-prev-sub" style="color:rgba(255,255,255,.75);font-size:12px;margin-top:2px">Colégio Mundo do Saber</div>
-          </div>
+    <div class="container">
+        <div class="header">
+            <h1>Perfil Comportamental</h1>
+            <p>Colégio Mundo do Saber</p>
         </div>
-      </div>
-      <div style="margin-bottom:14px">
-        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:8px">Cor principal</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap" id="color-presets">
-          <button onclick="aplicarCor('#185FA5')" style="width:32px;height:32px;border-radius:50%;background:#185FA5;border:2px solid transparent;cursor:pointer" title="Azul"></button>
-          <button onclick="aplicarCor('#1A7A4A')" style="width:32px;height:32px;border-radius:50%;background:#1A7A4A;border:2px solid transparent;cursor:pointer" title="Verde"></button>
-          <button onclick="aplicarCor('#7B3FA0')" style="width:32px;height:32px;border-radius:50%;background:#7B3FA0;border:2px solid transparent;cursor:pointer" title="Roxo"></button>
-          <button onclick="aplicarCor('#C0392B')" style="width:32px;height:32px;border-radius:50%;background:#C0392B;border:2px solid transparent;cursor:pointer" title="Vermelho"></button>
-          <button onclick="aplicarCor('#D35400')" style="width:32px;height:32px;border-radius:50%;background:#D35400;border:2px solid transparent;cursor:pointer" title="Laranja"></button>
-          <button onclick="aplicarCor('#17A589')" style="width:32px;height:32px;border-radius:50%;background:#17A589;border:2px solid transparent;cursor:pointer" title="Teal"></button>
-          <button onclick="aplicarCor('#1A252F')" style="width:32px;height:32px;border-radius:50%;background:#1A252F;border:2px solid transparent;cursor:pointer" title="Escuro"></button>
-          <div style="display:flex;align-items:center;gap:6px">
-            <input type="color" id="cfg-color-custom" value="#185FA5" oninput="aplicarCor(this.value)" style="width:32px;height:32px;border:1px solid #E2E8F0;border-radius:50%;padding:2px;cursor:pointer;background:none">
-            <span style="font-size:11px;color:#718096">Personalizada</span>
-          </div>
+
+        <div class="config-bar">
+            <button class="config-btn" onclick="abrirConfigIA()">🤖 IA & E-mail</button>
+            <button class="config-btn" onclick="abrirPersonalizacao()">⚙️ Personalizar</button>
         </div>
-      </div>
-      <div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Título</label><input type="text" id="cfg-titulo" value="Perfil Comportamental" oninput="atualizarPreview()" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none"></div>
-      <div style="margin-bottom:12px"><label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Nome do colégio</label><input type="text" id="cfg-subtitulo" value="Colégio Mundo do Saber" oninput="atualizarPreview()" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none"></div>
-      <div style="margin-bottom:20px"><label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">URL do logo <span style="font-weight:400;color:#718096">(opcional)</span></label><input type="url" id="cfg-logo" oninput="atualizarPreview()" placeholder="https://..." style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none"><div style="font-size:11px;color:#718096;margin-top:4px">Link direto de imagem (Google Drive público, Imgur etc.)</div></div>
-      <div style="display:flex;gap:10px">
-        <button onclick="fecharConfig()" style="flex:1;padding:11px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;font-size:14px;cursor:pointer;font-family:inherit;color:#4A5568">Cancelar</button>
-        <button onclick="salvarConfig()" style="flex:2;padding:11px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Aplicar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- S0: IDENTIFICAÇÃO -->
-<div class="screen active" id="s0">
-  <div class="sec-head">
-    <div class="sec-badge">Início</div>
-    <h2>Identificação</h2>
-    <p>Preencha seus dados para começar. Respostas confidenciais, usadas apenas para análise comportamental.</p>
-  </div>
-  <div class="card">
-    <div class="field"><label>Nome completo *</label><input type="text" id="i-nome" placeholder="Seu nome completo"></div>
-    <div class="field"><label>E-mail *</label><input type="email" id="i-email" placeholder="seu@email.com"></div>
-    <div class="field">
-      <label>Setor *</label>
-      <select id="i-setor">
-        <option value="">Selecione seu setor...</option>
-        <option>Administrativo</option><option>Auxiliar de sala</option>
-        <option>Comercial</option><option>Coordenação</option>
-        <option>Cozinha</option><option>Limpeza</option>
-        <option>Professor(a)</option><option>Segurança</option>
-        <option>Externo (Consultor, Amigo, Parente)</option>
-      </select>
-    </div>
-  </div>
-  <div class="btn-row"><button class="btn btn-primary" onclick="goTo(1)">Iniciar teste →</button></div>
-</div>
+        <div class="content">
+            <div class="mensagem" id="mensagem"></div>
+            <div class="progresso">
+                <div class="progresso-barra" id="progressoBarra"></div>
+            </div>
 
-<!-- S1: LINGUAGENS 1-15 -->
-<div class="screen" id="s1">
-  <div class="prog-wrap">
-    <div class="prog-top"><span>Bloco 1 — Linguagens de Valorização</span><span>Perguntas 1–15</span></div>
-    <div class="prog-track"><div class="prog-fill" style="width:15%"></div></div>
-  </div>
-  <div class="sec-head">
-    <div class="sec-badge">Linguagens de Valorização</div>
-    <h2>Como você prefere ser reconhecido?</h2>
-    <p>Em cada pergunta, escolha a opção que mais combina com você. Não se preocupe com as letras entre parênteses — elas são usadas só para calcular o resultado.</p>
-  </div>
-  <div class="card" id="ling1-15"></div>
-  <div class="btn-row">
-    <button class="btn btn-ghost" onclick="goTo(0)">← Voltar</button>
-    <button class="btn btn-primary" onclick="goTo(2)">Continuar →</button>
-  </div>
-</div>
+            <!-- TELA 1: Identificação -->
+            <div class="tela ativa" id="tela1">
+                <h2>1. Identificação</h2>
+                <div class="form-group">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="nome" placeholder="Seu nome" required>
+                </div>
+                <div class="form-group">
+                    <label>E-mail *</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Setor *</label>
+                    <select id="setor" required>
+                        <option value="">Selecione um setor...</option>
+                        <option value="Administrativo">Administrativo</option>
+                        <option value="Comercial">Comercial</option>
+                        <option value="Coordenação">Coordenação</option>
+                        <option value="Auxiliar de sala">Auxiliar de sala</option>
+                        <option value="Professor(a)">Professor(a)</option>
+                        <option value="Cozinha">Cozinha</option>
+                        <option value="Limpeza">Limpeza</option>
+                        <option value="Segurança">Segurança</option>
+                        <option value="Externo (Consultor, Amigo, Parente)">Externo</option>
+                    </select>
+                </div>
+                <div class="botoes">
+                    <button class="btn btn-primario" onclick="irParaTela(2)">Próximo →</button>
+                </div>
+            </div>
 
-<!-- S2: LINGUAGENS 16-30 -->
-<div class="screen" id="s2">
-  <div class="prog-wrap">
-    <div class="prog-top"><span>Bloco 1 — Linguagens de Valorização</span><span>Perguntas 16–30</span></div>
-    <div class="prog-track"><div class="prog-fill" style="width:30%"></div></div>
-  </div>
-  <div class="sec-head">
-    <div class="sec-badge">Linguagens de Valorização</div>
-    <h2>Como você prefere ser reconhecido?</h2>
-    <p>Continue escolhendo a opção que mais combina com você em cada pergunta.</p>
-  </div>
-  <div class="card" id="ling16-30"></div>
-  <div class="btn-row">
-    <button class="btn btn-ghost" onclick="goTo(1)">← Voltar</button>
-    <button class="btn btn-primary" onclick="goTo(3)">Continuar →</button>
-  </div>
-</div>
+            <!-- TELA 2: Linguagem Perguntas 1-15 -->
+            <div class="tela" id="tela2">
+                <h2>2. Linguagens de Valorização (1/2)</h2>
+                <div id="perguntas-ling-1"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(1)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(3)">Próximo →</button>
+                </div>
+            </div>
 
-<!-- S3: TEMPERAMENTO -->
-<div class="screen" id="s3">
-  <div class="prog-wrap">
-    <div class="prog-top"><span>Bloco 2 — Temperamentos</span><span>Escala 1 a 5</span></div>
-    <div class="prog-track"><div class="prog-fill" style="width:55%"></div></div>
-  </div>
-  <div class="sec-head">
-    <div class="sec-badge">Temperamentos</div>
-    <h2>Como você age e reage naturalmente?</h2>
-    <p>Para cada afirmação, escolha de 1 (discordo totalmente) a 5 (concordo totalmente).</p>
-  </div>
-  <div class="card" id="temp-card"></div>
-  <div class="card">
-    <div class="card-title">Em grupo, geralmente assumo um destes papéis — marque o que mais combina</div>
-    <div class="opts" id="papel-opts">
-      <label class="opt" onclick="selOpt('papel',this,'A) Liderar e decidir')"><div class="opt-circle"></div><div class="opt-text">A) Liderar e decidir</div></label>
-      <label class="opt" onclick="selOpt('papel',this,'B) Animar e envolver as pessoas')"><div class="opt-circle"></div><div class="opt-text">B) Animar e envolver as pessoas</div></label>
-      <label class="opt" onclick="selOpt('papel',this,'C) Organizar e garantir qualidade')"><div class="opt-circle"></div><div class="opt-text">C) Organizar e garantir qualidade</div></label>
-      <label class="opt" onclick="selOpt('papel',this,'D) Trazer calma e equilíbrio')"><div class="opt-circle"></div><div class="opt-text">D) Trazer calma e equilíbrio</div></label>
-    </div>
-  </div>
-  <div class="btn-row">
-    <button class="btn btn-ghost" onclick="goTo(2)">← Voltar</button>
-    <button class="btn btn-primary" onclick="goTo(4)">Continuar →</button>
-  </div>
-</div>
+            <!-- TELA 3: Linguagem Perguntas 16-30 -->
+            <div class="tela" id="tela3">
+                <h2>2. Linguagens de Valorização (2/2)</h2>
+                <div id="perguntas-ling-2"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(2)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(4)">Próximo →</button>
+                </div>
+            </div>
 
-<!-- S4: ENEAGRAMA 1-5 -->
-<div class="screen" id="s4">
-  <div class="prog-wrap">
-    <div class="prog-top"><span>Bloco 3 — Eneagrama</span><span>Grupos 1–5 de 10</span></div>
-    <div class="prog-track"><div class="prog-fill" style="width:72%"></div></div>
-  </div>
-  <div class="sec-head">
-    <div class="sec-badge">Eneagrama</div>
-    <h2>Escolha 2 opções em cada grupo</h2>
-    <p>Para cada grupo abaixo, escolha <strong>exatamente 2</strong> afirmativas que mais têm a ver com o seu modo de pensar e agir.</p>
-  </div>
-  <div id="enea-1-5"></div>
-  <div class="btn-row">
-    <button class="btn btn-ghost" onclick="goTo(3)">← Voltar</button>
-    <button class="btn btn-primary" onclick="goTo(5)">Continuar →</button>
-  </div>
-</div>
+            <!-- TELA 4: Temperamento -->
+            <div class="tela" id="tela4">
+                <h2>3. Temperamento</h2>
+                <div id="perguntas-temp"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(3)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(5)">Próximo →</button>
+                </div>
+            </div>
 
-<!-- S5: ENEAGRAMA 6-10 -->
-<div class="screen" id="s5">
-  <div class="prog-wrap">
-    <div class="prog-top"><span>Bloco 3 — Eneagrama</span><span>Grupos 6–10 de 10</span></div>
-    <div class="prog-track"><div class="prog-fill" style="width:90%"></div></div>
-  </div>
-  <div class="sec-head">
-    <div class="sec-badge">Eneagrama</div>
-    <h2>Últimos 5 grupos — quase lá!</h2>
-    <p>Lembre-se: <strong>exatamente 2 opções</strong> por grupo.</p>
-  </div>
-  <div id="enea-6-10"></div>
-  <div class="btn-row">
-    <button class="btn btn-ghost" onclick="goTo(4)">← Voltar</button>
-    <button class="btn btn-primary" onclick="calcular()">Ver meu resultado →</button>
-  </div>
-</div>
+            <!-- TELA 5: Eneagrama 1-5 -->
+            <div class="tela" id="tela5">
+                <h2>4. Eneagrama (1/2)</h2>
+                <div id="eneagrama-1"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(4)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(6)">Próximo →</button>
+                </div>
+            </div>
 
-<!-- S6: LOADING -->
-<div class="screen" id="s6">
-  <div class="loading-wrap">
-    <div class="spinner"></div>
-    <div class="loading-title">Calculando seu perfil...</div>
-    <div class="loading-sub">Analisando linguagens, temperamento e eneagrama</div>
-  </div>
-</div>
+            <!-- TELA 6: Eneagrama 6-10 -->
+            <div class="tela" id="tela6">
+                <h2>4. Eneagrama (2/2)</h2>
+                <div id="eneagrama-2"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(5)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="enviarFormulario()">Enviar →</button>
+                </div>
+            </div>
 
-<!-- S7: RESULTADO -->
-<div class="screen" id="s7">
-  <div class="result-hero">
-    <h2 id="r-nome">Seu Perfil Comportamental</h2>
-    <p id="r-setor"></p>
-  </div>
-  <div class="result-grid" id="r-grid"></div>
-  <div id="r-explicacoes"></div>
-  <div id="r-email-status" style="display:none;text-align:center;font-size:12px;color:var(--success);margin-top:8px;padding:8px;background:var(--success-light);border-radius:var(--r)"></div>
-  <div class="btn-row" style="justify-content:center;margin-top:8px;flex-wrap:wrap;gap:8px">
-    <button class="btn btn-ghost" onclick="gerarPDF()">⬇ Baixar PDF</button>
-    <button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button>
-    <button class="btn btn-primary" onclick="location.reload()">Refazer teste</button>
-  </div>
-</div>
+            <!-- TELA 7: Carregamento -->
+            <div class="tela" id="tela7">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h3>Processando seu perfil...</h3>
+                    <p>Aguarde enquanto geramos sua análise pessoal.</p>
+                </div>
+            </div>
 
-<!-- MODAL: CONFIGURAR IA -->
-<div id="ia-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;overflow-y:auto;padding:24px 16px">
-  <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="background:var(--primary);padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
-      <div><div style="color:#fff;font-size:15px;font-weight:600">Configurar IA e E-mail</div><div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:2px">Configure uma vez, salva para sempre</div></div>
-      <button onclick="fecharIAModal()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
-    </div>
-    <div style="padding:20px">
-      <div style="margin-bottom:16px">
-        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">IA para análise</label>
-        <div style="display:flex;gap:8px">
-          <button id="btn-ia-claude" onclick="selecionarIA('claude')" style="flex:1;padding:10px;border:2px solid var(--primary);border-radius:var(--r);background:var(--primary-light);color:var(--primary-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Claude (Anthropic)</button>
-          <button id="btn-ia-openai" onclick="selecionarIA('openai')" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit">GPT-4o (OpenAI)</button>
+            <!-- TELA 8: Resultado -->
+            <div class="tela" id="tela8">
+                <h2>Seu Perfil Comportamental</h2>
+                <div id="resultado-conteudo"></div>
+                <div class="botoes">
+                    <button class="btn btn-primario" onclick="baixarPDF()">⬇ Baixar PDF</button>
+                    <button class="btn btn-secundario" onclick="novaConsulta()">Novo Teste</button>
+                </div>
+            </div>
         </div>
-      </div>
-      <div id="campo-openai-key" style="display:none;margin-bottom:16px">
-        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Chave API OpenAI</label>
-        <input type="password" id="openai-key" placeholder="sk-..." style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:var(--r);font-size:14px;font-family:inherit;outline:none">
-        <div style="font-size:11px;color:#718096;margin-top:4px">Obtenha em platform.openai.com · Salva localmente no seu navegador</div>
-      </div>
-      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
-      <div style="margin-bottom:14px">
-        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">E-mail do gestor (para receber cópias)</label>
-        <input type="email" id="gestor-email" placeholder="gestor@colegio.com" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:var(--r);font-size:14px;font-family:inherit;outline:none">
-        <div style="font-size:11px;color:#718096;margin-top:4px">O gestor receberá e-mail com o resultado de cada colaborador</div>
-      </div>
-      <div style="margin-bottom:20px">
-        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Chave API EmailJS <span style="font-weight:400;color:#718096">(grátis)</span></label>
-        <input type="text" id="emailjs-key" placeholder="user_xxxxxxxxxxxx" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:var(--r);font-size:14px;font-family:inherit;outline:none">
-        <div style="font-size:11px;color:#718096;margin-top:4px">Cadastre-se grátis em emailjs.com · 200 e-mails/mês no plano free</div>
-      </div>
-      <div style="display:flex;gap:10px">
-        <button onclick="fecharIAModal()" style="flex:1;padding:11px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;font-size:14px;cursor:pointer;font-family:inherit;color:#4A5568">Cancelar</button>
-        <button onclick="salvarConfigIA()" style="flex:2;padding:11px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Salvar configurações</button>
-      </div>
     </div>
-  </div>
-</div>
 
-</div>
-<script>
-// ── DADOS EXATOS DO FORMS ────────────────────────────────────────────────────
-
-// Bloco 1: pares de perguntas (cada pergunta tem 2 opções, escolher 1)
-const LING_PARES = [
-  {n:1,  opts:[{l:'A',t:'(A) Gosto de receber elogios por um trabalho bem feito.'},{l:'E',t:'(E) Sinto-me bem com um aperto de mão ou um cumprimento cordial.'}]},
-  {n:2,  opts:[{l:'B',t:'(B) Valorizo quando a coordenação dedica tempo para me ouvir.'},{l:'D',t:'(D) Sinto-me valorizado quando um colega me ajuda com uma demanda difícil.'}]},
-  {n:3,  opts:[{l:'C',t:'(C) Gosto de receber mimos ou lembranças em datas especiais.'},{l:'B',t:'(B) Gosto de participar de momentos de confraternização com a equipe.'}]},
-  {n:4,  opts:[{l:'D',t:'(D) Sinto-me motivado quando alguém se oferece para dividir minhas tarefas.'},{l:'E',t:'(E) Sinto-me acolhido com um sorriso e um "bom dia" entusiasmado.'}]},
-  {n:5,  opts:[{l:'E',t:'(E) Um tapinha de encorajamento nas costas (parabenização) me faz bem.'},{l:'C',t:'(C) Valorizo quando recebo um brinde ou presente do Colégio.'}]},
-  {n:6,  opts:[{l:'B',t:'(B) Gosto de ter momentos de troca de ideias com meus líderes.'},{l:'E',t:'(E) Valorizo a proximidade física respeitosa em reuniões de grupo.'}]},
-  {n:7,  opts:[{l:'C',t:'(C) Presentes simbólicos me fazem sentir lembrado.'},{l:'A',t:'(A) Sinto-me motivado quando recebo um feedback positivo por escrito.'}]},
-  {n:8,  opts:[{l:'E',t:'(E) Sinto-me integrado quando o ambiente é receptivo e caloroso.'},{l:'A',t:'(A) Gosto de ser reconhecido publicamente em reuniões.'}]},
-  {n:9,  opts:[{l:'B',t:'(B) Valorizo quando alguém para o que está fazendo para me dar atenção.'},{l:'C',t:'(C) Gosto de ganhar ingressos ou mimos como premiação por metas.'}]},
-  {n:10, opts:[{l:'A',t:'(A) Palavras de incentivo são fundamentais para o meu dia.'},{l:'D',t:'(D) Sei que sou valorizado quando alguém me auxilia em um imprevisto.'}]},
-  {n:11, opts:[{l:'B',t:'(B) Gosto de almoçar ou tomar café com colegas para trocar experiências.'},{l:'A',t:'(A) Gosto quando elogiam minha competência técnica.'}]},
-  {n:12, opts:[{l:'D',t:'(D) Atitudes de apoio prático valem mais para mim do que elogios.'},{l:'E',t:'(E) Sinto-me seguro em um ambiente onde as pessoas são cordiais no trato físico.'}]},
-  {n:13, opts:[{l:'A',t:'(A) Prefiro um elogio sincero a um presente caro.'},{l:'C',t:'(C) Valorizo pequenas lembranças deixadas na minha mesa.'}]},
-  {n:14, opts:[{l:'B',t:'(B) Sinto-me conectado à equipe quando trabalhamos juntos em um projeto.'},{l:'E',t:'(E) Um cumprimento de mão firme me passa confiança.'}]},
-  {n:15, opts:[{l:'A',t:'(A) Gosto que a direção reconheça meu esforço extra.'},{l:'D',t:'(D) Sinto-me bem quando alguém assume uma tarefa minha para eu poder descansar.'}]},
-  {n:16, opts:[{l:'E',t:'(E) Valorizo o contato visual e a postura aberta dos meus colegas.'},{l:'B',t:'(B) Gosto de ser consultado antes de decisões importantes serem tomadas.'}]},
-  {n:17, opts:[{l:'D',t:'(D) Sinto-me apoiado quando alguém me traz um café ou ajuda na organização.'},{l:'C',t:'(C) Adoro ganhar itens personalizados com a marca do Colégio.'}]},
-  {n:18, opts:[{l:'A',t:'(A) Gosto que elogiem minha postura profissional.'},{l:'B',t:'(B) Valorizo quando reservam um tempo para entender meus desafios na sala de aula.'}]},
-  {n:19, opts:[{l:'E',t:'(E) Sinto-me parte do time quando o clima é de amizade e acolhimento.'},{l:'D',t:'(D) Ver que alguém se preocupou em facilitar meu trabalho me deixa feliz.'}]},
-  {n:20, opts:[{l:'D',t:'(D) Valorizo muito o esforço que os colegas fazem para me apoiar.'},{l:'C',t:'(C) Gosto de ganhar kits ou presentes úteis para o meu dia a dia.'}]},
-  {n:21, opts:[{l:'B',t:'(B) Atenção total durante uma conversa é o melhor reconhecimento.'},{l:'D',t:'(D) Ajuda prática na hora do aperto é o que mais importa.'}]},
-  {n:22, opts:[{l:'C',t:'(C) Sinto-me especial quando o Colégio celebra meu aniversário.'},{l:'A',t:'(A) Sinto-me especial quando recebo um cartão de agradecimento.'}]},
-  {n:23, opts:[{l:'C',t:'(C) Presentes mostram que a pessoa se deu ao trabalho de pensar em mim.'},{l:'D',t:'(D) Alguém me ajudar com a papelada/burocracia me faz sentir amado.'}]},
-  {n:24, opts:[{l:'B',t:'(B) Valorizo quando sou ouvido sem ser julgado.'},{l:'C',t:'(C) Valorizo quando lembram do meu tempo de casa com um presente.'}]},
-  {n:25, opts:[{l:'D',t:'(D) Gosto quando percebem que estou sobrecarregado e me oferecem ajuda.'},{l:'B',t:'(B) Gosto de participar de reuniões de planejamento estratégico.'}]},
-  {n:26, opts:[{l:'E',t:'(E) Gosto de cumprimentar as pessoas ao chegar e sair.'},{l:'C',t:'(C) Fico feliz quando ganho um "mimo" inesperado.'}]},
-  {n:27, opts:[{l:'A',t:'(A) Ouvir um "obrigado por tudo o que você faz" me dá energia.'},{l:'B',t:'(B) Gosto quando olham nos meus olhos enquanto explico algo.'}]},
-  {n:28, opts:[{l:'C',t:'(C) Pequenos gestos (como um doce com um bilhete) são marcantes.'},{l:'E',t:'(E) Sinto-me bem em ambientes onde o respeito e a educação física imperam.'}]},
-  {n:29, opts:[{l:'A',t:'(A) O reconhecimento verbal me faz sentir que pertenço ao lugar.'},{l:'D',t:'(D) Sinto-me valorizado quando alguém resolve um problema técnico para mim.'}]},
-  {n:30, opts:[{l:'E',t:'(E) O acolhimento humano é o que me segura na empresa.'},{l:'A',t:'(A) O feedback de palavras positivas é o que me faz crescer.'}]},
-];
-
-const TEMP_AFIRMACOES = [
-  {id:'t1', t:'Quando surge um problema, minha reação mais natural é assumir o controle.', c:'col'},
-  {id:'t2', t:'Eu costumo ser comunicativo e me envolver com facilidade com as pessoas.', c:'san'},
-  {id:'t3', t:'Sou detalhista e percebo coisas que muita gente deixa passar.', c:'mel'},
-  {id:'t4', t:'Normalmente ajo com calma, mesmo quando os outros estão tensos.', c:'fle'},
-  {id:'t5', t:'Gosto de decidir rápido e partir para a ação.', c:'col'},
-  {id:'t6', t:'Tenho facilidade para animar o ambiente e deixar tudo mais leve.', c:'san'},
-  {id:'t7', t:'Costumo pensar bastante antes de confiar que algo está realmente certo.', c:'mel'},
-  {id:'t8', t:'Evito conflitos desnecessários e prefiro manter a harmonia.', c:'fle'},
-  {id:'t9', t:'Fico incomodado quando vejo lentidão, enrolação ou falta de resultado.', c:'col'},
-  {id:'t10',t:'Sou naturalmente expressivo e costumo demonstrar o que sinto.', c:'san'},
-  {id:'t11',t:'Tenho tendência a ser exigente comigo mesmo e com a qualidade das coisas.', c:'mel'},
-  {id:'t12',t:'As pessoas costumam me ver como alguém estável e tranquilo.', c:'fle'},
-];
-
-// Eneagrama: blocos com texto exato do Forms
-const ENEA_BLOCOS = [
-  {titulo:'MUNDO IDEAL', instr:'Escolha 2 afirmativas que mais têm a ver com você:', opts:[
-    {n:1,t:'Mundo ético, moral e de respeito às regras.'},{n:2,t:'Mundo de solidariedade e apoio.'},
-    {n:3,t:'Mundo de desafios e oportunidades.'},{n:4,t:'Mundo espiritualizado e criativo.'},
-    {n:5,t:'Mundo de respeito à privacidade e à individualidade.'},{n:6,t:'Mundo seguro e ordeiro.'},
-    {n:7,t:'Mundo de liberdade e despreocupações.'},{n:8,t:'Mundo de justiça e à prova de mediocridade.'},
-    {n:9,t:'Mundo estável e tranquilo.'}
-  ]},
-  {titulo:'RELACIONAMENTO PROFISSIONAL', instr:'Escolha 2 afirmativas:', opts:[
-    {n:10,t:'Responsável. Dedicado. Autodisciplinado. Exigente.'},{n:11,t:'Solidário. Conselheiro. Prestativo. Estimulador.'},
-    {n:12,t:'Competente. Entusiasmado. Autoconfiante. Realizador.'},{n:13,t:'Espirituoso. Criativo. Empático. Diferenciado.'},
-    {n:14,t:'Analítico. Metódico. Equilibrado. Discreto.'},{n:15,t:'Precavido. Educado. Questionador. Busca segurança.'},
-    {n:16,t:'Persuasivo. Descontraído. Jovial. Interesses variados.'},{n:17,t:'Franco. Entusiasmado. Protetor. Batalhador.'},
-    {n:18,t:'Sereno. Descomplicado. Resignado. Mediador.'}
-  ]},
-  {titulo:'AUTO-IMAGEM', instr:'Escolha 2 afirmativas:', opts:[
-    {n:19,t:'Pessoa correta e exigente consigo mesma.'},{n:20,t:'Pessoa compreensiva e útil aos demais.'},
-    {n:21,t:'Pessoa sempre em busca de desafios e realizações.'},{n:22,t:'Pessoa que pensa e age de forma diferenciada.'},
-    {n:23,t:'Pessoa discreta, capaz de controlar seus sentimentos.'},{n:24,t:'Pessoa cumpridora do dever e controladora da situação.'},
-    {n:25,t:'Pessoa idealista, de bem com o mundo e consigo mesma.'},{n:26,t:'Pessoa disposta a lutar por suas ideias e princípios.'},
-    {n:27,t:'Pessoa mediadora e tranquila.'}
-  ]},
-  {titulo:'PARTICIPAÇÃO E INFLUÊNCIA', instr:'Escolha 2 afirmativas:', opts:[
-    {n:28,t:'Fazer o que é certo e dentro das regras.'},{n:29,t:'Proteger e ajudar a quem precisa.'},
-    {n:30,t:'Motivar as pessoas a "fazer acontecer".'},{n:31,t:'Apresentar propostas e alternativas que fujam da "mesmice".'},
-    {n:32,t:'Evitar discussões e exposição excessiva.'},{n:33,t:'Propor questionamentos que previnem futuros problemas.'},
-    {n:34,t:'Participar de forma agradável e intensa.'},{n:35,t:'Vencer as dificuldades e injustiças.'},
-    {n:36,t:'Conviver em harmonia e paz.'}
-  ]},
-  {titulo:'GRUPOS', instr:'Escolha 2 afirmativas:', opts:[
-    {n:37,t:'Grupos reformistas e éticos, em geral associados às grandes causas.'},{n:38,t:'Grupos de solidariedade e valorização da vida.'},
-    {n:39,t:'Grupos carismáticos. Partidos políticos. Associados de classe.'},{n:40,t:'Grupos artísticos. Movimentos de vanguarda.'},
-    {n:41,t:'Grupos de estudos (Filosofia, Ciências, Autoconhecimento etc.)'},{n:42,t:'Grupos com organização militar. Escoteiros. Defesa Civil.'},
-    {n:43,t:'Grupos sociais e recreativos. Movimentos associativos.'},{n:44,t:'Grupos de defesa dos direitos das pessoas. Trabalho voluntário.'},
-    {n:45,t:'Grupos pacifistas e ligados à natureza.'}
-  ]},
-  {titulo:'SENSIBILIDADE', instr:'Escolha 2 afirmativas:', opts:[
-    {n:46,t:'Anima os outros a fazerem o que é correto.'},{n:47,t:'Ajuda as pessoas a acreditarem no seu próprio valor.'},
-    {n:48,t:'Cria atmosfera de "vamos conseguir".'},{n:49,t:'Incentiva a criatividade e a emoção.'},
-    {n:50,t:'Analisa metodicamente os fatos e as impressões.'},{n:51,t:'Coloca todos os fatores sob controle.'},
-    {n:52,t:'Focaliza o lado bom da vida e da liberdade.'},{n:53,t:'Reage às situações injustas ou escusas.'},
-    {n:54,t:'Aceita as pessoas sem preconceitos.'}
-  ]},
-  {titulo:'CONDUTA', instr:'Escolha 2 afirmativas:', opts:[
-    {n:55,t:'Servir de exemplo.'},{n:56,t:'Ser solidário.'},
-    {n:57,t:'Causar boa impressão.'},{n:58,t:'Valorizar o diferente.'},
-    {n:59,t:'Saber ouvir.'},{n:60,t:'Tornar realidade.'},
-    {n:61,t:'Transmitir otimismo.'},{n:62,t:'Ser autêntico e lutador.'},
-    {n:63,t:'Manter o equilíbrio.'}
-  ]},
-  {titulo:'SUCESSO PESSOAL', instr:'Escolha 2 afirmativas:', opts:[
-    {n:64,t:'Dedicar-se às causas nobres e às reformas.'},{n:65,t:'Obter a aprovação e o apoio de todos.'},
-    {n:66,t:'Alcançar resultados e ser vencedor.'},{n:67,t:'Ser valorizado pela sua criatividade.'},
-    {n:68,t:'Buscar saber sempre mais.'},{n:69,t:'Cumprir o dever.'},
-    {n:70,t:'Ser feliz.'},{n:71,t:'Liderar / controlar situações.'},
-    {n:72,t:'Mediar conflitos.'}
-  ]},
-  {titulo:'BUSCA PESSOAL', instr:'Escolha 2 afirmativas:', opts:[
-    {n:73,t:'Ficar do lado do bem e da razão.'},{n:74,t:'Ajudar as demais pessoas.'},
-    {n:75,t:'Destacar-se dos demais.'},{n:76,t:'Alcançar a diferenciação.'},
-    {n:77,t:'Aprender cada vez mais.'},{n:78,t:'Previr problemas.'},
-    {n:79,t:'Manter o otimismo.'},{n:80,t:'Defender aquilo em que acredita.'},
-    {n:81,t:'Ser reconhecido como mediador.'}
-  ]},
-  {titulo:'IMAGEM PÚBLICA', instr:'Escolha 2 afirmativas:', opts:[
-    {n:82,t:'Organizado. Responsável. Perfeccionista.'},{n:83,t:'Colaborador. Compreensivo. Desprendido.'},
-    {n:84,t:'Eficiente. Determinado. Desprendido.'},{n:85,t:'Original. Emotivo. Alguém especial.'},
-    {n:86,t:'Atencioso. Reservado. Estudioso.'},{n:87,t:'Confiável. Ordeiro. Não-conformista.'},
-    {n:88,t:'Alegre. Otimista. Imaginativo.'},{n:89,t:'Franco. Destemido. Justo.'},
-    {n:90,t:'Pacifista. Generoso. Fácil relacionamento.'}
-  ]},
-];
-
-// Mapeamento eneagrama: posição dentro do bloco (0-8) → tipo (1-9)
-const ENEA_MAP = {};
-ENEA_BLOCOS.forEach(b=> b.opts.forEach((o,i)=>{ ENEA_MAP[o.n] = i+1; }));
-
-// Estado
-const R = {nome:'',email:'',setor:'',ling:{},temp:{},papel:'',enea:{}};
-
-// ── BUILD ────────────────────────────────────────────────────────────────────
-function buildLing(containerId, from, to){
-  const c = document.getElementById(containerId);
-  c.innerHTML = '';
-  LING_PARES.slice(from-1, to).forEach((par,idx)=>{
-    if(idx>0){const hr=document.createElement('div');hr.className='divider';c.appendChild(hr);}
-    const div = document.createElement('div');
-    div.className = 'question';
-    div.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text3);margin-bottom:8px"><span class="q-num">${par.n}</span></div>
-    <div class="opts">
-      ${par.opts.map(o=>`<label class="opt" onclick="selLing(${par.n},'${o.l}',this)"><div class="opt-circle"></div><div class="opt-text">${o.t}</div></label>`).join('')}
-    </div>`;
-    c.appendChild(div);
-  });
-}
-
-function buildTemp(){
-  const c = document.getElementById('temp-card');
-  c.innerHTML = '<div class="card-title" style="margin-bottom:16px">Escala: 1 = Discordo totalmente · 5 = Concordo totalmente</div>';
-  TEMP_AFIRMACOES.forEach((a,i)=>{
-    if(i>0){const hr=document.createElement('div');hr.className='divider';c.appendChild(hr);}
-    const div=document.createElement('div');
-    div.className='scale-item';
-    div.innerHTML=`<div class="scale-q">${a.t}</div>
-    <div class="scale-row" id="sr-${a.id}">
-      ${[1,2,3,4,5].map(v=>`<button class="scale-btn" onclick="selTemp('${a.id}',${v},this)">${v}</button>`).join('')}
+    <!-- Modal Configuração IA -->
+    <div class="modal" id="modalIA">
+        <div class="modal-content">
+            <span class="fechar-modal" onclick="fecharModal('modalIA')">&times;</span>
+            <h3>⚙️ Configurar IA & E-mail</h3>
+            <div class="form-group">
+                <label>Provedor de IA</label>
+                <select id="provedor-ia" onchange="mudarProvedor()">
+                    <option value="claude">Claude (Anthropic)</option>
+                    <option value="openai">GPT-4o (OpenAI)</option>
+                </select>
+            </div>
+            <div class="form-group" id="campo-chave" style="display:none;">
+                <label>Chave API OpenAI (sk-...)</label>
+                <input type="password" id="chave-openai" placeholder="sk-...">
+            </div>
+            <div class="form-group">
+                <label>E-mail do Gestor (para receber cópias)</label>
+                <input type="email" id="email-gestor" placeholder="gestor@colegio.com.br">
+            </div>
+            <div class="form-group">
+                <label>Chave EmailJS (Opcional)</label>
+                <input type="text" id="emailjs-key" placeholder="Seu User ID do EmailJS">
+            </div>
+            <button onclick="salvarConfigIA()">Salvar Configurações</button>
+        </div>
     </div>
-    <div class="scale-labels"><span>Discordo totalmente</span><span>Concordo totalmente</span></div>`;
-    c.appendChild(div);
-  });
-}
 
-function buildEnea(containerId, from, to){
-  const c=document.getElementById(containerId);
-  c.innerHTML='';
-  ENEA_BLOCOS.slice(from-1,to).forEach((b,i)=>{
-    const blockN=from+i;
-    const div=document.createElement('div');
-    div.className='enea-block';
-    div.innerHTML=`<div class="enea-title">${b.titulo}</div>
-    <div class="enea-instr">${b.instr}</div>
-    <div class="enea-opts" id="eopts-${blockN}">
-      ${b.opts.map(o=>`<label class="enea-opt" onclick="selEnea(${blockN},${o.n},this)" id="eo-${o.n}"><div class="enea-check"></div><div class="enea-opt-text">${o.t}</div></label>`).join('')}
+    <!-- Modal Personalização -->
+    <div class="modal" id="modalPersonal">
+        <div class="modal-content">
+            <span class="fechar-modal" onclick="fecharModal('modalPersonal')">&times;</span>
+            <h3>🎨 Personalizar Formulário</h3>
+            <div class="form-group">
+                <label>Cor Principal</label>
+                <input type="color" id="cor-principal" value="#667eea">
+                <div style="margin-top: 10px; display: flex; gap: 5px;">
+                    <button class="config-btn" style="flex:1; background: #667eea" onclick="definirCor('#667eea')">Roxo</button>
+                    <button class="config-btn" style="flex:1; background: #2196F3" onclick="definirCor('#2196F3')">Azul</button>
+                    <button class="config-btn" style="flex:1; background: #4CAF50" onclick="definirCor('#4CAF50')">Verde</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nome da Instituição</label>
+                <input type="text" id="nome-instituicao" value="Colégio Mundo do Saber">
+            </div>
+            <div class="form-group">
+                <label>URL da Logo (opcional)</label>
+                <input type="text" id="url-logo" placeholder="https://...">
+            </div>
+            <button onclick="salvarPersonalizacao()">Salvar Personalização</button>
+        </div>
     </div>
-    <div class="enea-counter warn" id="ecount-${blockN}">0 de 2 selecionados</div>`;
-    c.appendChild(div);
-  });
-}
 
-function init(){
-  buildLing('ling1-15',1,15);
-  buildLing('ling16-30',16,30);
-  buildTemp();
-  buildEnea('enea-1-5',1,5);
-  buildEnea('enea-6-10',6,10);
-}
+    <script>
+        // ===== DADOS E CONFIGURAÇÃO =====
+        const PERGUNTAS_LINGUAGEM = [
+            { id: 1, a: "(A) Gosto de receber elogios por um trabalho bem feito.", b: "(B) Valorizo quando a coordenação dedica tempo para me ouvir." },
+            { id: 2, a: "(D) Sinto-me valorizado quando um colega me ajuda com uma demanda difícil.", b: "(B) Gosto de participar de momentos de confraternização com a equipe." },
+            { id: 3, a: "(C) Gosto de receber Mimos ou lembranças em datas especiais.", b: "(E) Sinto-me acolhido com um sorriso e um 'bom dia' entusiasmado." },
+            { id: 4, a: "(E) Um tapinha de encorajamento nas costas (parabenização) me faz bem.", b: "(B) Gosto de ter momentos de troca de ideias com meus líderes." },
+            { id: 5, a: "(A) Sinto-me motivado quando recebo um feedback positivo por escrito.", b: "(E) Sinto-me integrado quando o ambiente é receptivo e caloroso." },
+            { id: 6, a: "(B) Valorizo quando alguém para o que está fazendo para me dar atenção.", b: "(A) Palavras de incentivo são fundamentais para o meu dia." },
+            { id: 7, a: "(A) Gosto quando elogiam minha competência técnica.", b: "(E) Sinto-me seguro em um ambiente onde as pessoas são cordiais no trato físico." },
+            { id: 8, a: "(A) Prefiro um elogio sincero a um presente caro.", b: "(E) Um cumprimento de mão firme me passa confiança." },
+            { id: 9, a: "(A) Gosto que a direção reconheça meu esforço extra.", b: "(B) Gosto de ser consultado antes de decisões importantes serem tomadas." },
+            { id: 10, a: "(C) Adoro ganhar itens personalizados com a marca do Colégio.", b: "(A) Gosto que elogiem minha postura profissional." },
+            { id: 11, a: "(D) Ver que alguém se preocupou em facilitar meu trabalho me deixa feliz.", b: "(C) Gosto de ganhar kits ou presentes úteis para o meu dia a dia." },
+            { id: 12, a: "(B) Atenção total durante uma conversa é o melhor reconhecimento.", b: "(C) Sinto-me especial quando o Colégio celebra meu aniversário." },
+            { id: 13, a: "(D) Alguém me ajudar com a papelada/burocracia me faz sentir amado.", b: "(B) Valorizo quando sou ouvido sem ser julgado." },
+            { id: 14, a: "(B) Gosto de participar de reuniões de planejamento estratégico.", b: "(C) Fico feliz quando ganho um 'mimo' inesperado." },
+            { id: 15, a: "(A) Ouvir um 'obrigado por tudo o que você faz' me dá energia.", b: "(C) Pequenos gestos (como um doce com um bilhete) são marcantes." },
+            { id: 16, a: "(A) O reconhecimento verbal me faz sentir que pertenço ao lugar.", b: "(A) O feedback de palavras positivas é o que me faz crescer." },
+            { id: 17, a: "(B) Gosto de almoçar ou tomar café com colegas para trocar experiências.", b: "(D) Atitudes de apoio prático valem mais para mim do que elogios." },
+            { id: 18, a: "(C) Valorizo pequenas lembranças deixadas na minha mesa.", b: "(B) Sinto-me conectado à equipe quando trabalhamos juntos em um projeto." },
+            { id: 19, a: "(D) Sinto-me bem quando alguém assume uma tarefa minha para eu poder descansar.", b: "(B) Gosto de ser consultado antes de decisões importantes serem tomadas." },
+            { id: 20, a: "(D) Sinto-me apoiado quando alguém me traz um café ou ajuda na organização.", b: "(B) Valorizo quando reservam um tempo para entender meus desafios na sala de aula." },
+            { id: 21, a: "(D) Ver que alguém se preocupou em facilitar meu trabalho me deixa feliz.", b: "(D) Valorizo muito o esforço que os colegas fazem para me apoiar." },
+            { id: 22, a: "(D) Ajuda prática na hora do aperto é o que mais importa.", b: "(C) Sinto-me especial quando o Colégio celebra meu aniversário." },
+            { id: 23, a: "(D) Alguém me ajudar com a papelada/burocracia me faz sentir amado.", b: "(B) Valorizo quando sou ouvido sem ser julgado." },
+            { id: 24, a: "(B) Gosto de participar de reuniões de planejamento estratégico.", b: "(C) Fico feliz quando ganho um 'mimo' inesperado." },
+            { id: 25, a: "(B) Gosto quando olham nos meus olhos enquanto explico algo.", b: "(C) Pequenos gestos (como um doce com um bilhete) são marcantes." },
+            { id: 26, a: "(D) Sinto-me valorizado quando alguém resolve um problema técnico para mim.", b: "(A) O feedback de palavras positivas é o que me faz crescer." },
+            { id: 27, a: "(B) Valorizo quando sou ouvido sem ser julgado.", b: "(B) Gosto de participar de reuniões de planejamento estratégico." },
+            { id: 28, a: "(C) Fico feliz quando ganho um 'mimo' inesperado.", b: "(B) Gosto quando olham nos meus olhos enquanto explico algo." },
+            { id: 29, a: "(C) Pequenos gestos (como um doce com um bilhete) são marcantes.", b: "(D) Sinto-me valorizado quando alguém resolve um problema técnico para mim." },
+            { id: 30, a: "(A) O reconhecimento verbal me faz sentir que pertenço ao lugar.", b: "(E) O Acolhimento humano é o que me segura na empresa." }
+        ];
 
-// ── SELEÇÃO ──────────────────────────────────────────────────────────────────
-function selOpt(group,el,val){
-  document.querySelectorAll(`#${group}-opts .opt`).forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');R[group]=val;
-}
-function selLing(n,l,el){
-  const par=el.closest('.question');
-  par.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');R.ling[n]=l;
-}
-function selTemp(id,v,btn){
-  R.temp[id]=v;
-  document.querySelectorAll(`#sr-${id} .scale-btn`).forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-}
-function selEnea(blockN,n,el){
-  const block=ENEA_BLOCOS[blockN-1];
-  const nums=block.opts.map(o=>o.n);
-  const sel=nums.filter(x=>R.enea[x]);
-  if(!R.enea[n]&&sel.length>=2)return;
-  R.enea[n]=!R.enea[n];
-  el.classList.toggle('sel',R.enea[n]);
-  const cnt=nums.filter(x=>R.enea[x]).length;
-  const el2=document.getElementById(`ecount-${blockN}`);
-  el2.textContent=`${cnt} de 2 selecionados`;
-  el2.className='enea-counter '+(cnt===2?'ok':'warn');
-}
+        const AFIRMACOES_TEMP = [
+            { id: 1, texto: "Quando surge um problema, minha reação mais natural é assumir o controle.", tipo: "col" },
+            { id: 2, texto: "Eu costumo ser comunicativo e me envolver com facilidade com as pessoas.", tipo: "san" },
+            { id: 3, texto: "Sou detalhista e percebo coisas que muita gente deixa passar.", tipo: "mel" },
+            { id: 4, texto: "Normalmente ajo com calma, mesmo quando os outros estão tensos.", tipo: "fle" },
+            { id: 5, texto: "Gosto de decidir rápido e partir para a ação.", tipo: "col" },
+            { id: 6, texto: "Tenho facilidade para animar o ambiente e deixar tudo mais leve.", tipo: "san" },
+            { id: 7, texto: "Costumo pensar bastante antes de confiar que algo está realmente certo.", tipo: "mel" },
+            { id: 8, texto: "Evito conflitos desnecessários e prefiro manter a harmonia.", tipo: "fle" },
+            { id: 9, texto: "Fico incomodado quando vejo lentidão, enrolação ou falta de resultado.", tipo: "col" },
+            { id: 10, texto: "Sou naturalmente expressivo e costumo demonstrar o que sinto.", tipo: "san" },
+            { id: 11, texto: "Tenho tendência a ser exigente comigo mesmo e com a qualidade das coisas.", tipo: "mel" },
+            { id: 12, texto: "As pessoas costumam me ver como alguém estável e tranquilo.", tipo: "fle" }
+        ];
 
-// ── NAVEGAÇÃO ────────────────────────────────────────────────────────────────
-function goTo(s){
-  if(s===1){
-    const n=document.getElementById('i-nome').value.trim();
-    const e=document.getElementById('i-email').value.trim();
-    const t=document.getElementById('i-setor').value;
-    if(!n||!e||!t){alert('Preencha todos os campos.');return;}
-    R.nome=n;R.email=e;R.setor=t;
-  }
-  if(s===2){
-    const falt=LING_PARES.slice(0,15).filter(p=>!R.ling[p.n]);
-    if(falt.length){{alert(`Responda todas as perguntas. Faltam: ${falt.map(p=>p.n).join(', ')}`);return;}}
-  }
-  if(s===3){
-    const falt=LING_PARES.slice(15,30).filter(p=>!R.ling[p.n]);
-    if(falt.length){alert(`Responda todas as perguntas. Faltam: ${falt.map(p=>p.n).join(', ')}`);return;}
-  }
-  if(s===4){
-    const falt=TEMP_AFIRMACOES.filter(a=>!R.temp[a.id]);
-    if(falt.length){alert('Avalie todas as afirmações.');return;}
-    if(!R.papel){alert('Selecione seu papel em grupo.');return;}
-  }
-  if(s===5){
-    for(let b=1;b<=5;b++){
-      const bl=ENEA_BLOCOS[b-1];
-      if(bl.opts.filter(o=>R.enea[o.n]).length!==2){alert(`No grupo "${bl.titulo}", selecione exatamente 2 opções.`);return;}
-    }
-  }
-  document.querySelectorAll('.screen').forEach(sc=>sc.classList.remove('active'));
-  document.getElementById('s'+s).classList.add('active');
-  window.scrollTo(0,0);
-}
+        const BLOCOS_ENEAGRAMA = [
+            { id: 1, titulo: "MUNDO IDEAL", opcoes: ["Mundo ético, moral e de respeito às regras", "Mundo de desafios e oportunidades"] },
+            { id: 2, titulo: "RELACIONAMENTO PROFISSIONAL", opcoes: ["Relacionamento baseado em solidariedade e apoio", "Relacionamento baseado em desafios e justiça"] },
+            { id: 3, titulo: "AUTO-IMAGEM", opcoes: ["Responsável. Dedicado. Autodisciplinado. Exigente.", "Competente. Entusiasmado. Autoconfiante. Realizador."] },
+            { id: 4, titulo: "PARTICIPAÇÃO E INFLUÊNCIA", opcoes: ["Pessoa correta e exigente consigo mesma.", "Pessoa sempre em busca de desafios e realizações."] },
+            { id: 5, titulo: "GRUPOS", opcoes: ["Grupos de estudos (Filosofia, Ciências, Autoconhecimento etc.)", "Grupos sociais e recreativos. Movimentos associativos."] },
+            { id: 6, titulo: "SENSIBILIDADE", opcoes: ["Anima os outros a fazerem o que é correto.", "Ajuda as pessoas a acreditarem no seu próprio valor."] },
+            { id: 7, titulo: "CONDUTA", opcoes: ["Saber ouvir.", "Tornar realidade."] },
+            { id: 8, titulo: "SUCESSO PESSOAL", opcoes: ["Buscar saber sempre mais.", "Alcançar resultados e ser vencedor."] },
+            { id: 9, titulo: "BUSCA PESSOAL", opcoes: ["Ficar do lado do bem e da razão.", "Ajudar as demais pessoas."] },
+            { id: 10, titulo: "IMAGEM PÚBLICA", opcoes: ["Organizado. Responsável. Perfeccionista.", "Franco. Destemido. Justo."] }
+        ];
 
-// ── CÁLCULO ──────────────────────────────────────────────────────────────────
-function calcular(){
-  for(let b=6;b<=10;b++){
-    const bl=ENEA_BLOCOS[b-1];
-    if(bl.opts.filter(o=>R.enea[o.n]).length!==2){alert(`No grupo "${bl.titulo}", selecione exatamente 2 opções.`);return;}
-  }
-  goTo(6);
-  setTimeout(processar,500);
-}
+        let dadosFormulario = {
+            nome: "",
+            email: "",
+            setor: "",
+            respostas_linguagem: [],
+            respostas_temperamento: [],
+            respostas_eneagrama: [],
+            scores_temperamento: {},
+            papel_grupo: "",
+            analise_ia: {}
+        };
 
-function processar(){
-  // Linguagens: conta escolhas por letra
-  const lc={A:0,B:0,C:0,D:0,E:0};
-  Object.values(R.ling).forEach(l=>lc[l]++);
-  const lmax=Math.max(...Object.values(lc));
-  const lnome={A:'Palavras de afirmação',B:'Tempo de qualidade',C:'Presentes / Mimos',D:'Atos de serviço',E:'Presença / Acolhimento'};
-  const ling=Object.entries(lc).filter(([,v])=>v===lmax).map(([k])=>lnome[k]).join(' / ');
+        let config = {
+            provedor_ia: "claude",
+            chave_openai: "",
+            email_gestor: "",
+            emailjs_key: ""
+        };
 
-  // Temperamento: soma escala por temperamento
-  const tc={col:0,san:0,mel:0,fle:0};
-  TEMP_AFIRMACOES.forEach(a=>{tc[a.c]+=(R.temp[a.id]||0);});
-  const tmax=Math.max(...Object.values(tc));
-  const tnome={col:'Colérico',san:'Sanguíneo',mel:'Melancólico',fle:'Fleumático'};
-  const temp=Object.entries(tc).filter(([,v])=>v===tmax).map(([k])=>tnome[k]).join(' / ');
+        let cores = {
+            principal: "#667eea"
+        };
 
-  // Eneagrama: conta por tipo (posição no bloco)
-  const ec={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
-  Object.entries(R.enea).filter(([,v])=>v).forEach(([n])=>{ec[ENEA_MAP[n]]++;});
-  const emax=Math.max(...Object.values(ec));
-  const enea=Object.entries(ec).filter(([,v])=>v===emax).map(([k])=>'Tipo '+k).join(' / ');
-  const eneaOk=Object.values(ec).reduce((a,b)=>a+b,0)===20;
+        // ===== INICIALIZAÇÃO =====
+        document.addEventListener("DOMContentLoaded", function() {
+            carregarConfig();
+            carregarPersonalizacao();
+            renderizarPerguntas();
+            atualizarProgresso();
+        });
 
-  const perfil={nome:R.nome,setor:R.setor,linguagem:ling,temperamento:temp,eneagrama:enea,eneaOk,lingCount:lc,tempCount:tc,eneaCount:ec};
-  window._perfilAtual=perfil;
-  renderResultado(perfil);
-  buscarAnaliseIA(perfil);
-}
+        // ===== RENDERIZAÇÃO =====
+        function renderizarPerguntas() {
+            // Linguagem 1-15
+            let html1 = "";
+            for (let i = 0; i < 15; i++) {
+                const p = PERGUNTAS_LINGUAGEM[i];
+                html1 += `
+                    <div class="opcoes" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #333;">Pergunta ${p.id}</label>
+                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'a')">
+                            <input type="radio" name="ling${p.id}" value="a">
+                            <div class="opcao-texto">${p.a}</div>
+                        </div>
+                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'b')">
+                            <input type="radio" name="ling${p.id}" value="b">
+                            <div class="opcao-texto">${p.b}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById("perguntas-ling-1").innerHTML = html1;
 
-function renderResultado(p){
-  document.getElementById('r-nome').textContent=p.nome;
-  document.getElementById('r-setor').textContent=p.setor;
-  const lc={'Palavras de afirmação':'#E6F1FB','Tempo de qualidade':'#EAF3DE','Presentes / Mimos':'#FAEEDA','Atos de serviço':'#EEEDFE','Presença / Acolhimento':'#E1F5EE'};
-  const lt={'Palavras de afirmação':'#0C447C','Tempo de qualidade':'#27500A','Presentes / Mimos':'#633806','Atos de serviço':'#3C3489','Presença / Acolhimento':'#085041'};
-  const lp=p.linguagem.split(' / ')[0];
-  document.getElementById('r-grid').innerHTML=`
-    <div class="result-metric"><div class="rm-label">Linguagem Principal</div><div class="rm-value">${p.linguagem}</div><div class="rm-badge" style="background:${lc[lp]||'#E6F1FB'};color:${lt[lp]||'#0C447C'}">Como ser reconhecido</div></div>
-    <div class="result-metric"><div class="rm-label">Temperamento</div><div class="rm-value">${p.temperamento}</div><div class="rm-badge" style="background:#F1EFE8;color:#444441">Estilo natural</div></div>
-    <div class="result-metric"><div class="rm-label">Eneagrama</div><div class="rm-value">${p.eneagrama}</div><div class="rm-badge" style="background:${p.eneaOk?'#EAF3DE':'#FAEEDA'};color:${p.eneaOk?'#27500A':'#633806'}">${p.eneaOk?'Validado':'Ler com contexto'}</div></div>`;
-  const expL={'Palavras de afirmação':'Você se sente valorizado quando recebe reconhecimento verbal, elogios sinceros e feedback positivo. Palavras têm peso real para você.','Tempo de qualidade':'Você se sente valorizado quando alguém dedica atenção genuína, para para ouvir e reserva tempo de qualidade para uma troca real.','Presentes / Mimos':'Você se sente valorizado por gestos simbólicos, lembranças em datas especiais e pequenos presentes que mostram cuidado.','Atos de serviço':'Você se sente valorizado quando alguém te ajuda de forma prática, remove obstáculos do seu caminho ou antecipa necessidades.','Presença / Acolhimento':'Você se sente valorizado quando o ambiente é caloroso, receptivo e existe cordialidade genuína nas relações.'};
-  const expT={'Colérico':'Você tende à ação, decisão e resultado. Ganha energia com autonomia e metas claras. Ponto forte: liderança e execução. Atenção: impaciência com ritmos diferentes.','Sanguíneo':'Você tem facilidade relacional, expressividade e entusiasmo. Funciona bem em contextos de interação e troca. Atenção: manter constância em rotinas mais rígidas.','Melancólico':'Você é orientado à qualidade, análise e profundidade. Percebe detalhes que outros ignoram. Atenção: perfeccionismo excessivo e autocobrança alta.','Fleumático':'Você é estável, ponderado e preserva a harmonia. Funciona bem em ambientes previsíveis. Atenção: evitar conflitos necessários e postergar decisões difíceis.'};
-  const tp=p.temperamento.split(' / ')[0];
-  document.getElementById('r-explicacoes').innerHTML=`
-    <div class="result-section"><div class="rs-title">💬 Sua linguagem de valorização</div><div class="rs-text">${expL[lp]||'Perfil combinado — leia com contexto.'}</div></div>
-    <div class="result-section"><div class="rs-title">🧠 Seu temperamento</div><div class="rs-text">${expT[tp]||'Perfil combinado — leia com contexto.'}</div></div>
-    <div class="result-section" id="r-ia-placeholder"><div class="rs-title">🔑 Análise personalizada</div><div class="rs-text" style="color:var(--text3)">Gerando análise com IA...</div></div>`;
-  goTo(7);
-}
+            // Linguagem 16-30
+            let html2 = "";
+            for (let i = 15; i < 30; i++) {
+                const p = PERGUNTAS_LINGUAGEM[i];
+                html2 += `
+                    <div class="opcoes" style="margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: #333;">Pergunta ${p.id}</label>
+                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'a')">
+                            <input type="radio" name="ling${p.id}" value="a">
+                            <div class="opcao-texto">${p.a}</div>
+                        </div>
+                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'b')">
+                            <input type="radio" name="ling${p.id}" value="b">
+                            <div class="opcao-texto">${p.b}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById("perguntas-ling-2").innerHTML = html2;
 
-// ── CONFIG IA & EMAIL ────────────────────────────────────────────────────────
-let CFG_IA = {provider:'claude', openaiKey:'', gestorEmail:'', emailjsKey:''};
-let _iaResult = null;
+            // Temperamento
+            let htmlTemp = `<label style="color: #666; margin-bottom: 20px; display: block;">Para cada afirmação abaixo, escolha um valor de 1 a 5 (sendo 1 = discordo completamente, 5 = concordo totalmente)</label>`;
+            AFIRMACOES_TEMP.forEach((af, idx) => {
+                htmlTemp += `
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px;">
+                        <p style="margin-bottom: 10px; font-weight: 500;">${af.id}. ${af.texto}</p>
+                        <div class="escala-container">
+                            ${[1,2,3,4,5].map(v => `
+                                <button class="escala-btn" onclick="selecionarTemperamento(${idx}, ${v}, '${af.tipo}')">${v}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById("perguntas-temp").innerHTML = htmlTemp;
 
-function carregarConfigIA(){
-  try{const c=JSON.parse(localStorage.getItem('cfgIA')||'{}');if(c.provider)CFG_IA={...CFG_IA,...c};}catch(e){}
-}
-function abrirIAModal(){
-  document.getElementById('gestor-email').value=CFG_IA.gestorEmail||'';
-  document.getElementById('emailjs-key').value=CFG_IA.emailjsKey||'';
-  document.getElementById('openai-key').value=CFG_IA.openaiKey||'';
-  selecionarIA(CFG_IA.provider||'claude');
-  document.getElementById('ia-modal').style.display='block';
-  document.body.style.overflow='hidden';
-}
-function fecharIAModal(){document.getElementById('ia-modal').style.display='none';document.body.style.overflow='';}
-function selecionarIA(p){
-  CFG_IA.provider=p;
-  document.getElementById('btn-ia-claude').style.cssText=p==='claude'?'flex:1;padding:10px;border:2px solid var(--primary);border-radius:var(--r);background:var(--primary-light);color:var(--primary-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit':'flex:1;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit';
-  document.getElementById('btn-ia-openai').style.cssText=p==='openai'?'flex:1;padding:10px;border:2px solid #10A37F;border-radius:var(--r);background:#E6F7F3;color:#065F46;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit':'flex:1;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit';
-  document.getElementById('campo-openai-key').style.display=p==='openai'?'block':'none';
-}
-function salvarConfigIA(){
-  CFG_IA.gestorEmail=document.getElementById('gestor-email').value.trim();
-  CFG_IA.emailjsKey=document.getElementById('emailjs-key').value.trim();
-  CFG_IA.openaiKey=document.getElementById('openai-key').value.trim();
-  localStorage.setItem('cfgIA',JSON.stringify(CFG_IA));
-  fecharIAModal();
-  alert('Configurações salvas!');
-}
+            // Eneagrama 1-5
+            let htmlEnea1 = "";
+            for (let i = 0; i < 5; i++) {
+                const bloco = BLOCOS_ENEAGRAMA[i];
+                htmlEnea1 += `
+                    <div class="blocos-eneagrama">
+                        <h4>${bloco.titulo}</h4>
+                        <div class="bloco-opcoes">
+                            ${bloco.opcoes.map((op, idx) => `
+                                <div class="bloco-opcao" onclick="selecionarEneagrama(${bloco.id}, ${idx})">
+                                    <input type="radio" name="enea${bloco.id}" value="${idx}">
+                                    <label>${op}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById("eneagrama-1").innerHTML = htmlEnea1;
 
-// ── ANÁLISE IA (Claude ou OpenAI) ───────────────────────────────────────────
-async function buscarAnaliseIA(p){
-  const prompt=`Você é especialista em desenvolvimento humano e gestão educacional. Responda em português.
-Analise este perfil e retorne APENAS um JSON válido (sem markdown):
-NOME: ${p.nome} | SETOR: ${p.setor} | LINGUAGEM: ${p.linguagem} | TEMPERAMENTO: ${p.temperamento} | ENEAGRAMA: ${p.eneagrama}
-{"quem_e":"2 frases sobre esta pessoa na prática","pontos_fortes":["4 itens"],"pontos_dev":["4 itens"],"como_comunicar":"1-2 frases","como_motivar":"1-2 frases","evitar_atrito":"1-2 frases"}`;
+            // Eneagrama 6-10
+            let htmlEnea2 = "";
+            for (let i = 5; i < 10; i++) {
+                const bloco = BLOCOS_ENEAGRAMA[i];
+                htmlEnea2 += `
+                    <div class="blocos-eneagrama">
+                        <h4>${bloco.titulo}</h4>
+                        <div class="bloco-opcoes">
+                            ${bloco.opcoes.map((op, idx) => `
+                                <div class="bloco-opcao" onclick="selecionarEneagrama(${bloco.id}, ${idx})">
+                                    <input type="radio" name="enea${bloco.id}" value="${idx}">
+                                    <label>${op}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById("eneagrama-2").innerHTML = htmlEnea2;
+        }
 
-  try{
-    let ia={};
-    if(CFG_IA.provider==='openai' && CFG_IA.openaiKey){
-      const resp=await fetch('https://api.openai.com/v1/chat/completions',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':`Bearer ${CFG_IA.openaiKey}`},
-        body:JSON.stringify({model:'gpt-4o',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-      });
-      const data=await resp.json();
-      const raw=data.choices?.[0]?.message?.content||'{}';
-      ia=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    } else {
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-      });
-      const data=await resp.json();
-      const raw=data.content.find(b=>b.type==='text')?.text||'{}';
-      ia=JSON.parse(raw.replace(/```json|```/g,'').trim());
-    }
-    _iaResult=ia;
-    renderIA(ia);
-    salvarNaPlanilha(p,ia);
-    enviarEmail(p,ia);
-  }catch(e){
-    document.querySelector('#r-ia-placeholder .rs-text').textContent='Não foi possível gerar análise com IA neste momento.';
-    salvarNaPlanilha(p,{});
-  }
-}
+        // ===== SELEÇÃO DE RESPOSTAS =====
+        function selecionarLinguagem(idx, valor) {
+            const p = PERGUNTAS_LINGUAGEM[idx];
+            const letra = valor === 'a' ? p.a.match(/\(([A-E])\)/)[1] : p.b.match(/\(([A-E])\)/)[1];
+            
+            // Remove resposta anterior se existir
+            const existente = dadosFormulario.respostas_linguagem.findIndex(r => r.pergunta === p.id);
+            if (existente !== -1) {
+                dadosFormulario.respostas_linguagem.splice(existente, 1);
+            }
+            
+            dadosFormulario.respostas_linguagem.push({ pergunta: p.id, resposta: letra });
+            document.querySelector(`input[name="ling${p.id}"][value="${valor}"]`).checked = true;
+            document.querySelector(`input[name="ling${p.id}"][value="${valor}"]`).parentElement.classList.add("selecionada");
+            if (valor === 'a') {
+                document.querySelector(`input[name="ling${p.id}"][value="b"]`).parentElement.classList.remove("selecionada");
+            } else {
+                document.querySelector(`input[name="ling${p.id}"][value="a"]`).parentElement.classList.remove("selecionada");
+            }
+        }
 
-async function salvarNaPlanilha(p,ia){
-  const URL='https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec';
-  try{await fetch(URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:p.nome,email:R.email,setor:p.setor,linguagem:p.linguagem,temperamento:p.temperamento,eneagrama:p.eneagrama,lingCount:p.lingCount,tempCount:p.tempCount,eneaCount:p.eneaCount,papel:R.papel,ia})});}catch(e){console.warn(e);}
-}
+        function selecionarTemperamento(idx, valor, tipo) {
+            dadosFormulario.respostas_temperamento.push({ afirmacao: idx + 1, valor: valor, temperamento: tipo });
+            
+            document.querySelectorAll(`.escala-container`)[idx].querySelectorAll(".escala-btn").forEach((btn, i) => {
+                if (i + 1 === valor) {
+                    btn.classList.add("selecionado");
+                } else {
+                    btn.classList.remove("selecionado");
+                }
+            });
+        }
 
-// ── E-MAIL VIA EMAILJS ───────────────────────────────────────────────────────
-async function enviarEmail(p,ia){
-  if(!CFG_IA.emailjsKey || !CFG_IA.gestorEmail) return;
-  const corpo=`Perfil Comportamental — ${p.nome}
-Setor: ${p.setor}
-Linguagem: ${p.linguagem}
-Temperamento: ${p.temperamento}
-Eneagrama: ${p.eneagrama}
+        function selecionarEneagrama(blocoId, posicao) {
+            dadosFormulario.respostas_eneagrama.push({ bloco: blocoId, posicao: posicao });
+            document.querySelector(`input[name="enea${blocoId}"][value="${posicao}"]`).parentElement.classList.add("selecionada");
+            [...document.querySelectorAll(`input[name="enea${blocoId}"]`)].forEach((inp, idx) => {
+                if (idx === posicao) {
+                    inp.parentElement.classList.add("selecionada");
+                } else {
+                    inp.parentElement.classList.remove("selecionada");
+                }
+            });
+        }
 
-Quem é: ${ia.quem_e||'—'}
-Pontos fortes: ${(ia.pontos_fortes||[]).join(' | ')}
-A desenvolver: ${(ia.pontos_dev||[]).join(' | ')}
-Como comunicar: ${ia.como_comunicar||'—'}
-Como motivar: ${ia.como_motivar||'—'}
-Evitar atrito: ${ia.evitar_atrito||'—'}`;
+        // ===== NAVEGAÇÃO =====
+        function irParaTela(n) {
+            if (n === 2 && !validarTela1()) return;
+            if (n === 3 && !validarTela2()) return;
+            if (n === 4 && !validarTela3()) return;
+            if (n === 5 && !validarTela4()) return;
+            if (n === 6 && !validarTela5()) return;
 
-  const payload={service_id:'default_service',template_id:'template_perfil',user_id:CFG_IA.emailjsKey,template_params:{
-    to_email:CFG_IA.gestorEmail,
-    colaborador_email:R.email,
-    nome:p.nome,setor:p.setor,linguagem:p.linguagem,
-    temperamento:p.temperamento,eneagrama:p.eneagrama,
-    corpo,data:new Date().toLocaleString('pt-BR')
-  }};
-  try{
-    await fetch('https://api.emailjs.com/api/v1.0/email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const st=document.getElementById('r-email-status');
-    st.textContent=`✓ Resultado enviado para ${CFG_IA.gestorEmail}`;
-    st.style.display='block';
-  }catch(e){console.warn('Email não enviado:',e);}
-}
+            document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+            document.getElementById("tela" + n).classList.add("ativa");
+            atualizarProgresso();
+        }
 
-// ── PDF GERADO NA HORA ───────────────────────────────────────────────────────
-function gerarPDF(){
-  const p=window._perfilAtual;
-  const ia=_iaResult||{};
-  if(!p){window.print();return;}
+        function atualizarProgresso() {
+            const telaAtual = document.querySelector(".tela.ativa");
+            const telaNum = parseInt(telaAtual.id.replace("tela", ""));
+            const pct = (telaNum / 8) * 100;
+            document.getElementById("progressoBarra").style.width = pct + "%";
+        }
 
-  const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-  <title>Perfil — ${p.nome}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;color:#1A202C;background:#fff;padding:32px}
-    .header{background:linear-gradient(135deg,#185FA5,#0C447C);color:#fff;padding:24px 28px;border-radius:12px;margin-bottom:24px}
-    .header h1{font-size:22px;margin-bottom:4px}
-    .header p{font-size:13px;opacity:.8}
-    .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
-    .metric{border:1px solid #E2E8F0;border-radius:8px;padding:12px;text-align:center}
-    .metric-label{font-size:10px;color:#718096;text-transform:uppercase;margin-bottom:5px}
-    .metric-value{font-size:13px;font-weight:700;color:#1A202C}
-    .section{border:1px solid #E2E8F0;border-radius:8px;padding:14px;margin-bottom:12px}
-    .section-title{font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
-    .section-text{font-size:12px;line-height:1.6;color:#1A202C}
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
-    .point{display:flex;gap:6px;font-size:12px;margin-bottom:5px;line-height:1.4}
-    .dot-g{width:6px;height:6px;border-radius:50%;background:#3B6D11;flex-shrink:0;margin-top:4px}
-    .dot-a{width:6px;height:6px;border-radius:50%;background:#854F0B;flex-shrink:0;margin-top:4px}
-    .tip-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-    .tip{padding:10px;border-radius:8px;font-size:11px;line-height:1.5}
-    .tip strong{display:block;font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:2px}
-    .footer{margin-top:24px;text-align:center;font-size:10px;color:#718096}
-    @media print{body{padding:20px}}
-  </style></head><body>
-  <div class="header"><h1>${p.nome}</h1><p>${p.setor} · ${new Date().toLocaleDateString('pt-BR')}</p></div>
-  <div class="grid">
-    <div class="metric"><div class="metric-label">Linguagem Principal</div><div class="metric-value">${p.linguagem}</div></div>
-    <div class="metric"><div class="metric-label">Temperamento</div><div class="metric-value">${p.temperamento}</div></div>
-    <div class="metric"><div class="metric-label">Eneagrama</div><div class="metric-value">${p.eneagrama}</div></div>
-  </div>
-  ${ia.quem_e?`<div class="section"><div class="section-title">🔑 Perfil em Prática</div><div class="section-text">${ia.quem_e}</div></div>`:''}
-  <div class="two-col">
-    <div class="section"><div class="section-title">✔ Pontos Fortes</div>${(ia.pontos_fortes||[]).map(f=>`<div class="point"><div class="dot-g"></div><span>${f}</span></div>`).join('')}</div>
-    <div class="section"><div class="section-title">↑ A Desenvolver</div>${(ia.pontos_dev||[]).map(f=>`<div class="point"><div class="dot-a"></div><span>${f}</span></div>`).join('')}</div>
-  </div>
-  <div class="tip-row">
-    <div class="tip" style="background:#E6F1FB;color:#0C447C"><strong>Como Comunicar</strong>${ia.como_comunicar||'—'}</div>
-    <div class="tip" style="background:#EAF3DE;color:#27500A"><strong>Como Motivar</strong>${ia.como_motivar||'—'}</div>
-    <div class="tip" style="background:#FAEEDA;color:#633806"><strong>Evitar Atrito</strong>${ia.evitar_atrito||'—'}</div>
-  </div>
-  <div class="footer">Perfil Comportamental · Colégio Mundo do Saber · Uso interno e confidencial</div>
-  </body></html>`;
+        // ===== VALIDAÇÃO =====
+        function validarTela1() {
+            if (!document.getElementById("nome").value.trim()) {
+                mostrarMensagem("Por favor, preencha seu nome.", "erro");
+                return false;
+            }
+            if (!document.getElementById("email").value.trim()) {
+                mostrarMensagem("Por favor, preencha seu e-mail.", "erro");
+                return false;
+            }
+            if (!document.getElementById("setor").value) {
+                mostrarMensagem("Por favor, selecione um setor.", "erro");
+                return false;
+            }
+            dadosFormulario.nome = document.getElementById("nome").value;
+            dadosFormulario.email = document.getElementById("email").value;
+            dadosFormulario.setor = document.getElementById("setor").value;
+            return true;
+        }
 
-  const blob=new Blob([html],{type:'text/html'});
-  const url=URL.createObjectURL(blob);
-  const win=window.open(url,'_blank');
-  if(win){setTimeout(()=>win.print(),800);}
-  else{const a=document.createElement('a');a.href=url;a.download=`Perfil_${p.nome.replace(/ /g,'_')}.html`;a.click();}
-}
+        function validarTela2() {
+            if (dadosFormulario.respostas_linguagem.filter(r => r.pergunta <= 15).length < 15) {
+                mostrarMensagem("Por favor, responda todas as perguntas antes de prosseguir.", "erro");
+                return false;
+            }
+            return true;
+        }
 
-function renderIA(ia){
-  const fortes=(ia.pontos_fortes||[]).map(f=>`<div class="point"><div class="dot" style="background:#3B6D11"></div><span>${f}</span></div>`).join('');
-  const devs=(ia.pontos_dev||[]).map(f=>`<div class="point"><div class="dot" style="background:#854F0B"></div><span>${f}</span></div>`).join('');
-  document.getElementById('r-ia-placeholder').innerHTML=`
-    <div class="rs-title">🔑 Análise personalizada</div>
-    <div class="rs-text" style="margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:var(--r);border-left:3px solid var(--primary)">${ia.quem_e||''}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div><div style="font-size:11px;font-weight:600;color:#3B6D11;text-transform:uppercase;margin-bottom:8px">✔ Pontos fortes</div>${fortes}</div>
-      <div><div style="font-size:11px;font-weight:600;color:#854F0B;text-transform:uppercase;margin-bottom:8px">↑ A desenvolver</div>${devs}</div>
-    </div>
-    <div class="tip-grid">
-      <div class="tip" style="background:#E6F1FB;color:#0C447C"><strong>Como comunicar</strong>${ia.como_comunicar||''}</div>
-      <div class="tip" style="background:#EAF3DE;color:#27500A"><strong>Como motivar</strong>${ia.como_motivar||''}</div>
-      <div class="tip" style="background:#FAEEDA;color:#633806"><strong>Evitar atrito</strong>${ia.evitar_atrito||''}</div>
-    </div>`;
-}
+        function validarTela3() {
+            if (dadosFormulario.respostas_linguagem.filter(r => r.pergunta > 15).length < 15) {
+                mostrarMensagem("Por favor, responda todas as perguntas antes de prosseguir.", "erro");
+                return false;
+            }
+            return true;
+        }
 
-// ── CONFIG ───────────────────────────────────────────────────────────────────
-function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return{r,g,b};}
-function lighten(hex,pct){const{r,g,b}=hexToRgb(hex);const f=pct/100;return `rgb(${Math.round(r+(255-r)*f)},${Math.round(g+(255-g)*f)},${Math.round(b+(255-b)*f)})`;}
-function darken(hex,pct){const{r,g,b}=hexToRgb(hex);const f=1-pct/100;return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;}
-let cfgCor='#185FA5';
-function aplicarCor(hex){cfgCor=hex;document.getElementById('cfg-color-custom').value=hex;atualizarPreview();}
-function atualizarPreview(){
-  const t=document.getElementById('cfg-titulo').value||'Perfil Comportamental';
-  const s=document.getElementById('cfg-subtitulo').value||'Colégio';
-  const l=document.getElementById('cfg-logo').value.trim();
-  document.getElementById('cfg-preview').style.background=cfgCor;
-  document.getElementById('cfg-prev-title').textContent=t;
-  document.getElementById('cfg-prev-sub').textContent=s;
-  const ic=document.getElementById('cfg-prev-icon');
-  ic.innerHTML=l?`<img src="${l}" style="width:34px;height:34px;object-fit:contain;border-radius:4px">`:`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
-}
-function salvarConfig(){
-  const t=document.getElementById('cfg-titulo').value||'Perfil Comportamental';
-  const s=document.getElementById('cfg-subtitulo').value||'Colégio Mundo do Saber';
-  const l=document.getElementById('cfg-logo').value.trim();
-  const root=document.documentElement.style;
-  root.setProperty('--primary',cfgCor);
-  root.setProperty('--primary-light',lighten(cfgCor,90));
-  root.setProperty('--primary-dark',darken(cfgCor,20));
-  document.getElementById('topbar').style.background=cfgCor;
-  document.getElementById('topbar-title').textContent=t;
-  document.getElementById('topbar-sub').textContent=s;
-  const ic=document.getElementById('topbar-icon');
-  ic.style.background='rgba(255,255,255,.15)';
-  ic.innerHTML=l?`<img src="${l}" style="width:34px;height:34px;object-fit:contain;border-radius:4px">`:`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
-  localStorage.setItem('cfg',JSON.stringify({cor:cfgCor,titulo:t,sub:s,logo:l}));
-  fecharConfig();
-}
-function abrirConfig(){
-  document.getElementById('cfg-titulo').value=document.getElementById('topbar-title').textContent;
-  document.getElementById('cfg-subtitulo').value=document.getElementById('topbar-sub').textContent;
-  document.getElementById('cfg-color-custom').value=cfgCor;
-  atualizarPreview();
-  document.getElementById('config-overlay').style.display='block';
-  document.body.style.overflow='hidden';
-}
-function fecharConfig(){document.getElementById('config-overlay').style.display='none';document.body.style.overflow='';}
-function carregarConfigSalva(){
-  try{
-    const cfg=JSON.parse(localStorage.getItem('cfg')||'{}');
-    if(cfg.cor){cfgCor=cfg.cor;if(cfg.titulo)document.getElementById('cfg-titulo').value=cfg.titulo;if(cfg.sub)document.getElementById('cfg-subtitulo').value=cfg.sub;if(cfg.logo)document.getElementById('cfg-logo').value=cfg.logo;salvarConfig();}
-  }catch(e){}
-}
+        function validarTela4() {
+            if (dadosFormulario.respostas_temperamento.length < 12) {
+                mostrarMensagem("Por favor, responda todas as afirmações antes de prosseguir.", "erro");
+                return false;
+            }
+            calcularTemperamentoScores();
+            return true;
+        }
 
-init();
-carregarConfigSalva();
-carregarConfigIA();
-</script>
+        function validarTela5() {
+            if (dadosFormulario.respostas_eneagrama.filter(r => r.bloco <= 5).length < 5) {
+                mostrarMensagem("Por favor, selecione uma opção para cada bloco.", "erro");
+                return false;
+            }
+            return true;
+        }
+
+        function validarTela6() {
+            if (dadosFormulario.respostas_eneagrama.filter(r => r.bloco > 5).length < 5) {
+                mostrarMensagem("Por favor, selecione uma opção para cada bloco.", "erro");
+                return false;
+            }
+            return true;
+        }
+
+        function calcularTemperamentoScores() {
+            const scores = { colerico: 0, sanguineo: 0, melancol: 0, fleumatico: 0 };
+            dadosFormulario.respostas_temperamento.forEach(r => {
+                if (r.temperamento === "col") scores.colerico += r.valor;
+                else if (r.temperamento === "san") scores.sanguineo += r.valor;
+                else if (r.temperamento === "mel") scores.melancol += r.valor;
+                else if (r.temperamento === "fle") scores.fleumatico += r.valor;
+            });
+            dadosFormulario.scores_temperamento = scores;
+        }
+
+        // ===== ENVIO =====
+        function enviarFormulario() {
+            if (!validarTela6()) return;
+
+            irParaTela(7);
+
+            const urlAppsScript = "https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec";
+
+            // Chamar IA (opcional)
+            let promiseIA = Promise.resolve({});
+            if (config.provedor_ia === "claude") {
+                promiseIA = chamarClaude();
+            } else if (config.provedor_ia === "openai") {
+                promiseIA = chamarOpenAI();
+            }
+
+            promiseIA.then(analiseIA => {
+                dadosFormulario.analise_ia = analiseIA;
+                
+                // Enviar para Apps Script
+                fetch(urlAppsScript, {
+                    method: "POST",
+                    body: JSON.stringify(dadosFormulario)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    // Enviar e-mail (opcional)
+                    if (config.emailjs_key && config.email_gestor) {
+                        enviarEmailResultado();
+                    }
+                    exibirResultado();
+                })
+                .catch(e => {
+                    console.log("Erro ao enviar: " + e);
+                    exibirResultado(); // Mesmo com erro, mostra resultado
+                });
+            });
+        }
+
+        function exibirResultado() {
+            const contaLinguagens = {};
+            "ABCDE".split("").forEach(l => {
+                contaLinguagens[l] = dadosFormulario.respostas_linguagem.filter(r => r.resposta === l).length;
+            });
+
+            const lingPrincipal = Object.keys(contaLinguagens).reduce((a, b) =>
+                contaLinguagens[a] > contaLinguagens[b] ? a : b
+            );
+
+            const scores = dadosFormulario.scores_temperamento;
+            let tempPrincipal = "Fleumático";
+            let max = scores.fleumatico || 0;
+            if (scores.colerico > max) { tempPrincipal = "Colérico"; max = scores.colerico; }
+            if (scores.sanguineo > max) { tempPrincipal = "Sanguíneo"; max = scores.sanguineo; }
+            if (scores.melancol > max) { tempPrincipal = "Melancólico"; max = scores.melancol; }
+
+            const eneaContagem = {};
+            for (let i = 1; i <= 9; i++) eneaContagem[i] = 0;
+            dadosFormulario.respostas_eneagrama.forEach(r => {
+                const tipo = r.posicao + 1;
+                if (tipo >= 1 && tipo <= 9) eneaContagem[tipo]++;
+            });
+            const eneaPrincipal = Object.keys(eneaContagem).reduce((a, b) =>
+                eneaContagem[a] > eneaContagem[b] ? a : b
+            );
+
+            let html = `
+                <div class="resultado">
+                    <div class="resultado-card">
+                        <h3>Linguagem de Valorização</h3>
+                        <p><strong>${lingPrincipal}</strong></p>
+                        <p style="font-size: 12px; margin-top: 10px;">Distribuição: A=${contaLinguagens.A} | B=${contaLinguagens.B} | C=${contaLinguagens.C} | D=${contaLinguagens.D} | E=${contaLinguagens.E}</p>
+                    </div>
+                    <div class="resultado-card">
+                        <h3>Temperamento</h3>
+                        <p><strong>${tempPrincipal}</strong></p>
+                        <p style="font-size: 12px; margin-top: 10px;">Colérico=${scores.colerico} | Sanguíneo=${scores.sanguineo} | Melancólico=${scores.melancol} | Fleumático=${scores.fleumatico}</p>
+                    </div>
+                    <div class="resultado-card">
+                        <h3>Eneagrama</h3>
+                        <p><strong>Tipo ${eneaPrincipal}</strong></p>
+                    </div>
+            `;
+
+            if (dadosFormulario.analise_ia.quem_e) {
+                html += `
+                    <div class="resultado-card">
+                        <h3>Quem é você</h3>
+                        <p>${dadosFormulario.analise_ia.quem_e}</p>
+                    </div>
+                    <div class="resultado-card">
+                        <h3>Pontos Fortes</h3>
+                        <p>${dadosFormulario.analise_ia.pontos_fortes}</p>
+                    </div>
+                    <div class="resultado-card">
+                        <h3>Pontos a Desenvolver</h3>
+                        <p>${dadosFormulario.analise_ia.pontos_desenvolver}</p>
+                    </div>
+                    <div class="resultado-card">
+                        <h3>Como Comunicar</h3>
+                        <p>${dadosFormulario.analise_ia.como_comunicar}</p>
+                    </div>
+                    <div class="resultado-card">
+                        <h3>Como Motivar</h3>
+                        <p>${dadosFormulario.analise_ia.como_motivar}</p>
+                    </div>
+                    <div class="resultado-card">
+                        <h3>Evitar Atrito</h3>
+                        <p>${dadosFormulario.analise_ia.evitar_atrito}</p>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            document.getElementById("resultado-conteudo").innerHTML = html;
+            irParaTela(8);
+        }
+
+        function chamarClaude() {
+            return Promise.resolve({
+                quem_e: "Análise da IA não disponível (configure sua chave)",
+                pontos_fortes: "...",
+                pontos_desenvolver: "...",
+                como_comunicar: "...",
+                como_motivar: "...",
+                evitar_atrito: "..."
+            });
+        }
+
+        function chamarOpenAI() {
+            return Promise.resolve({
+                quem_e: "Análise da IA não disponível (configure sua chave)",
+                pontos_fortes: "...",
+                pontos_desenvolver: "...",
+                como_comunicar: "...",
+                como_motivar: "...",
+                evitar_atrito: "..."
+            });
+        }
+
+        function enviarEmailResultado() {
+            // Implementar com EmailJS
+        }
+
+        function baixarPDF() {
+            alert("Funcionalidade de download PDF em desenvolvimento.");
+        }
+
+        function novaConsulta() {
+            location.reload();
+        }
+
+        // ===== CONFIGURAÇÕES =====
+        function abrirConfigIA() {
+            document.getElementById("modalIA").style.display = "block";
+        }
+
+        function abrirPersonalizacao() {
+            document.getElementById("modalPersonal").style.display = "block";
+        }
+
+        function fecharModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        function salvarConfigIA() {
+            config.provedor_ia = document.getElementById("provedor-ia").value;
+            config.chave_openai = document.getElementById("chave-openai").value;
+            config.email_gestor = document.getElementById("email-gestor").value;
+            config.emailjs_key = document.getElementById("emailjs-key").value;
+            localStorage.setItem("configIA", JSON.stringify(config));
+            mostrarMensagem("Configurações salvas!", "sucesso");
+            fecharModal("modalIA");
+        }
+
+        function salvarPersonalizacao() {
+            cores.principal = document.getElementById("cor-principal").value;
+            localStorage.setItem("cores", JSON.stringify(cores));
+            mostrarMensagem("Personalização salva!", "sucesso");
+            fecharModal("modalPersonal");
+            location.reload();
+        }
+
+        function mudarProvedor() {
+            const prov = document.getElementById("provedor-ia").value;
+            document.getElementById("campo-chave").style.display = prov === "openai" ? "block" : "none";
+        }
+
+        function definirCor(cor) {
+            document.getElementById("cor-principal").value = cor;
+        }
+
+        function carregarConfig() {
+            const saved = localStorage.getItem("configIA");
+            if (saved) config = JSON.parse(saved);
+            
+            document.getElementById("provedor-ia").value = config.provedor_ia;
+            document.getElementById("chave-openai").value = config.chave_openai;
+            document.getElementById("email-gestor").value = config.email_gestor;
+            document.getElementById("emailjs-key").value = config.emailjs_key;
+            mudarProvedor();
+        }
+
+        function carregarPersonalizacao() {
+            const saved = localStorage.getItem("cores");
+            if (saved) cores = JSON.parse(saved);
+            document.documentElement.style.setProperty("--cor-principal", cores.principal);
+        }
+
+        function mostrarMensagem(msg, tipo) {
+            const el = document.getElementById("mensagem");
+            el.textContent = msg;
+            el.className = "mensagem " + tipo;
+            setTimeout(() => el.className = "mensagem", 3000);
+        }
+
+        window.onclick = function(e) {
+            if (e.target.classList.contains("modal")) {
+                e.target.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
