@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Perfis da Equipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#185FA5;--primary-light:#E6F1FB;--primary-dark:#0C447C;
+  --accent:#F4A623;--success:#3B6D11;--success-light:#EAF3DE;
+  --warn:#854F0B;--bg:#F4F6F9;--surface:#fff;--border:#E2E8F0;
+  --text:#1A202C;--text2:#4A5568;--text3:#718096;--r:10px;--rlg:14px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.shell{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+.topbar{background:var(--primary);padding:16px 20px;border-radius:var(--rlg);margin-bottom:24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2}
+.topbar-info{flex:1}
+.topbar-title{color:#fff;font-size:16px;font-weight:600}
+.topbar-sub{color:rgba(255,255,255,.75);font-size:12px}
+.btn{padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:none;transition:all .15s}
+.btn-white{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.btn-white:hover{background:rgba(255,255,255,.25)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-ghost{background:var(--surface);color:var(--text2);border:1px solid var(--border)}
+.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
+.metric-num{font-size:26px;font-weight:600;color:var(--primary)}
+.metric-lbl{font-size:11px;color:var(--text3);margin-top:2px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.controls select,.controls input{padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);outline:none}
+.controls input{flex:1;min-width:180px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--primary)}
+th{padding:12px 14px;text-align:left;font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:11px 14px;font-size:13px;color:var(--text);border-top:1px solid var(--border);vertical-align:top}
+tr:hover td{background:#F8FAFC}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty svg{width:48px;height:48px;stroke:var(--border);fill:none;stroke-width:1.5;margin:0 auto 12px;display:block}
+.config-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;margin-bottom:24px}
+.config-box h3{font-size:15px;font-weight:600;margin-bottom:14px;color:var(--text)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.field input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,.1)}
+.grid-config{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card-view{display:none}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden}
+.pcard-header{padding:14px 16px;display:flex;align-items:center;gap:10px}
+.pcard-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+.pcard-name{font-size:14px;font-weight:600;color:var(--text)}
+.pcard-role{font-size:11px;color:var(--text3)}
+.pcard-body{padding:0 16px 14px}
+.pcard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.pcard-tip{font-size:12px;color:var(--text2);line-height:1.5;padding:8px 10px;background:var(--bg);border-radius:var(--r);border-left:3px solid var(--primary)}
+.view-toggle{display:flex;gap:6px}
+.view-btn{padding:7px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;color:var(--text2)}
+.view-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+@media(max-width:700px){
+  .summary-grid{grid-template-columns:1fr 1fr 1fr}
+  .grid-config{grid-template-columns:1fr}
+  table td:nth-child(n+5){display:none}
+  table th:nth-child(n+5){display:none}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-icon">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </div>
+  <div class="topbar-info">
+    <div class="topbar-title" id="dash-title">Dashboard — Perfis da Equipe</div>
+    <div class="topbar-sub" id="dash-sub">Visualização em tempo real dos resultados</div>
+  </div>
+  <button class="btn btn-white" onclick="toggleConfig()">⚙ Configurar</button>
+  <button class="btn btn-white" onclick="carregarDados()">↻ Atualizar</button>
+  <button class="btn btn-white" onclick="exportarCSV()">⬇ Exportar CSV</button>
+</div>
+
+<!-- CONFIG BOX -->
+<div class="config-box" id="config-box" style="display:none">
+  <h3>Configuração do Dashboard</h3>
+  <div class="grid-config">
+    <div>
+      <div class="field"><label>Nome do colégio</label><input type="text" id="cfg-nome" placeholder="Colégio Mundo do Saber"></div>
+      <div class="field"><label>URL do Apps Script (Google Sheets)</label><input type="text" id="cfg-sheet-url" placeholder="https://script.google.com/macros/s/..."></div>
+    </div>
+    <div>
+      <div class="field"><label>Senha do gestor (para proteger o dashboard)</label><input type="password" id="cfg-senha" placeholder="Deixe em branco para sem senha"></div>
+      <div class="field"><label>Modo de exibição padrão</label>
+        <select id="cfg-view" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit">
+          <option value="table">Tabela</option>
+          <option value="cards">Cards</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:4px">
+    <button class="btn btn-ghost" onclick="toggleConfig()">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarConfigDash()">Salvar</button>
+  </div>
+</div>
+
+<!-- MÉTRICAS -->
+<div class="summary-grid" id="summary-grid">
+  <div class="metric"><div class="metric-num" id="m-total">—</div><div class="metric-lbl">Colaboradores</div></div>
+  <div class="metric"><div class="metric-num" id="m-setores">—</div><div class="metric-lbl">Setores</div></div>
+  <div class="metric"><div class="metric-num" id="m-ling">—</div><div class="metric-lbl">Ling. mais comum</div></div>
+  <div class="metric"><div class="metric-num" id="m-temp">—</div><div class="metric-lbl">Temp. dominante</div></div>
+  <div class="metric"><div class="metric-num" id="m-enea">—</div><div class="metric-lbl">Eneagrama top</div></div>
+</div>
+
+<!-- FILTROS -->
+<div class="controls">
+  <input type="text" id="busca" placeholder="🔍 Buscar por nome..." oninput="filtrar()">
+  <select id="filtro-setor" onchange="filtrar()"><option value="">Todos os setores</option></select>
+  <select id="filtro-ling" onchange="filtrar()"><option value="">Todas as linguagens</option></select>
+  <select id="filtro-temp" onchange="filtrar()"><option value="">Todos os temperamentos</option></select>
+  <div class="view-toggle">
+    <button class="view-btn active" id="btn-table" onclick="setView('table')">☰ Tabela</button>
+    <button class="view-btn" id="btn-cards" onclick="setView('cards')">⊞ Cards</button>
+  </div>
+</div>
+
+<!-- TABELA -->
+<div class="table-wrap" id="table-view">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th><th>Setor</th><th>Linguagem</th>
+        <th>Temperamento</th><th>Eneagrama</th>
+        <th>Como comunicar</th><th>Data</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-body">
+      <tr><td colspan="7"><div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Configure o Apps Script URL acima e clique em Atualizar</div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- CARDS -->
+<div class="card-view" id="cards-view">
+  <div class="card-grid" id="cards-container"></div>
+</div>
+
+</div>
+<script>
+const CORES=[
+  {bg:'#E6F1FB',text:'#0C447C',dot:'#185FA5'},
+  {bg:'#EEEDFE',text:'#3C3489',dot:'#534AB7'},
+  {bg:'#EAF3DE',text:'#27500A',dot:'#3B6D11'},
+  {bg:'#FAEEDA',text:'#633806',dot:'#854F0B'},
+  {bg:'#FAECE7',text:'#4A1B0C',dot:'#993C1D'},
+  {bg:'#E1F5EE',text:'#085041',dot:'#0F6E56'},
+];
+
+let CFG={nome:'Colégio Mundo do Saber',sheetUrl:'',senha:'',view:'table'};
+let DADOS=[];
+let FILTRADOS=[];
+let VIEW='table';
+
+function carregarCFG(){
+  try{const c=JSON.parse(localStorage.getItem('dashCFG')||'{}');if(c.nome)CFG={...CFG,...c};}catch(e){}
+  document.getElementById('dash-title').textContent=`Dashboard — ${CFG.nome}`;
+  document.getElementById('cfg-nome').value=CFG.nome;
+  document.getElementById('cfg-sheet-url').value=CFG.sheetUrl||'';
+  document.getElementById('cfg-senha').value=CFG.senha||'';
+  document.getElementById('cfg-view').value=CFG.view||'table';
+}
+
+function salvarConfigDash(){
+  CFG.nome=document.getElementById('cfg-nome').value.trim()||'Colégio';
+  CFG.sheetUrl=document.getElementById('cfg-sheet-url').value.trim();
+  CFG.senha=document.getElementById('cfg-senha').value;
+  CFG.view=document.getElementById('cfg-view').value;
+  localStorage.setItem('dashCFG',JSON.stringify(CFG));
+  document.getElementById('dash-title').textContent=`Dashboard — ${CFG.nome}`;
+  toggleConfig();
+  carregarDados();
+}
+
+function toggleConfig(){
+  const box=document.getElementById('config-box');
+  box.style.display=box.style.display==='none'?'block':'none';
+}
+
+async function carregarDados(){
+  if(!CFG.sheetUrl){return;}
+  try{
+    // Lê da planilha via Apps Script
+    const resp=await fetch(CFG.sheetUrl+'?action=read');
+    const data=await resp.json();
+    if(data.rows) DADOS=data.rows;
+    else DADOS=[];
+  }catch(e){
+    // Fallback: tenta ler do localStorage (dados salvos localmente)
+    try{DADOS=JSON.parse(localStorage.getItem('dashDados')||'[]');}catch(e2){DADOS=[];}
+  }
+  FILTRADOS=[...DADOS];
+  atualizarMetricas();
+  atualizarFiltros();
+  renderTabela();
+  renderCards();
+}
+
+// Escuta novos dados vindos do formulário (mesma aba)
+window.addEventListener('storage',e=>{
+  if(e.key==='novoPerfil'){
+    try{
+      const p=JSON.parse(e.newValue||'{}');
+      if(p.nome){DADOS.unshift(p);FILTRADOS=[...DADOS];atualizarMetricas();atualizarFiltros();renderTabela();renderCards();}
+    }catch(ex){}
+  }
+});
+
+function atualizarMetricas(){
+  if(!DADOS.length){['m-total','m-setores','m-ling','m-temp','m-enea'].forEach(id=>document.getElementById(id).textContent='—');return;}
+  document.getElementById('m-total').textContent=DADOS.length;
+  document.getElementById('m-setores').textContent=[...new Set(DADOS.map(d=>d.setor))].length;
+  // Linguagem mais comum
+  const lc={};DADOS.forEach(d=>{const l=d.linguagem?.split(' / ')[0]||'';lc[l]=(lc[l]||0)+1;});
+  const lmax=Object.entries(lc).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('m-ling').textContent=lmax?lmax[0].replace('Palavras de afirmação','Palavras afirm.').split(' ')[0]:'—';
+  // Temperamento dominante
+  const tc={};DADOS.forEach(d=>{const t=d.temperamento?.split(' / ')[0]||'';tc[t]=(tc[t]||0)+1;});
+  const tmax=Object.entries(tc).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('m-temp').textContent=tmax?tmax[0]:'—';
+  // Eneagrama top
+  const ec={};DADOS.forEach(d=>{const e=d.eneagrama?.split(' / ')[0]||'';ec[e]=(ec[e]||0)+1;});
+  const emax=Object.entries(ec).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('m-enea').textContent=emax?emax[0]:'—';
+}
+
+function atualizarFiltros(){
+  const setores=[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].sort();
+  const lings=[...new Set(DADOS.map(d=>d.linguagem?.split(' / ')[0]).filter(Boolean))].sort();
+  const temps=[...new Set(DADOS.map(d=>d.temperamento?.split(' / ')[0]).filter(Boolean))].sort();
+  const sel=(id,opts)=>{const el=document.getElementById(id);const cur=el.value;el.innerHTML='<option value="">'+el.options[0].text+'</option>'+opts.map(o=>`<option value="${o}">${o}</option>`).join('');el.value=cur;};
+  sel('filtro-setor',setores);sel('filtro-ling',lings);sel('filtro-temp',temps);
+}
+
+function filtrar(){
+  const busca=document.getElementById('busca').value.toLowerCase();
+  const setor=document.getElementById('filtro-setor').value;
+  const ling=document.getElementById('filtro-ling').value;
+  const temp=document.getElementById('filtro-temp').value;
+  FILTRADOS=DADOS.filter(d=>{
+    if(busca&&!d.nome?.toLowerCase().includes(busca))return false;
+    if(setor&&d.setor!==setor)return false;
+    if(ling&&!d.linguagem?.includes(ling))return false;
+    if(temp&&!d.temperamento?.includes(temp))return false;
+    return true;
+  });
+  renderTabela();renderCards();
+}
+
+function setView(v){
+  VIEW=v;
+  document.getElementById('table-view').style.display=v==='table'?'block':'none';
+  document.getElementById('cards-view').style.display=v==='cards'?'block':'none';
+  document.getElementById('btn-table').className='view-btn'+(v==='table'?' active':'');
+  document.getElementById('btn-cards').className='view-btn'+(v==='cards'?' active':'');
+}
+
+const LING_COLORS={'Palavras de afirmação':{bg:'#E6F1FB',c:'#0C447C'},'Tempo de qualidade':{bg:'#EAF3DE',c:'#27500A'},'Presentes / Mimos':{bg:'#FAEEDA',c:'#633806'},'Atos de serviço':{bg:'#EEEDFE',c:'#3C3489'},'Presença / Acolhimento':{bg:'#E1F5EE',c:'#085041'}};
+
+function renderTabela(){
+  const tb=document.getElementById('tabela-body');
+  if(!FILTRADOS.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">Nenhum resultado encontrado</div></td></tr>';return;}
+  tb.innerHTML=FILTRADOS.map((d,i)=>{
+    const lp=d.linguagem?.split(' / ')[0]||'';
+    const lc=LING_COLORS[lp]||{bg:'#F1EFE8',c:'#444441'};
+    return `<tr>
+      <td><strong>${d.nome||'—'}</strong><br><span style="font-size:11px;color:var(--text3)">${d.email||''}</span></td>
+      <td><span class="badge" style="background:#F1EFE8;color:#444441">${d.setor||'—'}</span></td>
+      <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${d.linguagem||'—'}</span></td>
+      <td>${d.temperamento||'—'}</td>
+      <td>${d.eneagrama||'—'}</td>
+      <td style="max-width:200px;font-size:12px;color:var(--text2)">${d.como_comunicar||'—'}</td>
+      <td style="font-size:11px;color:var(--text3);white-space:nowrap">${d.data||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCards(){
+  const c=document.getElementById('cards-container');
+  if(!FILTRADOS.length){c.innerHTML='<div class="empty">Nenhum resultado encontrado</div>';return;}
+  c.innerHTML=FILTRADOS.map((d,i)=>{
+    const cor=CORES[i%CORES.length];
+    const ini=(d.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const lp=d.linguagem?.split(' / ')[0]||'';
+    const lc=LING_COLORS[lp]||{bg:'#F1EFE8',c:'#444441'};
+    return `<div class="pcard">
+      <div class="pcard-header" style="background:${cor.bg}">
+        <div class="pcard-avatar" style="background:${cor.dot};color:#fff">${ini}</div>
+        <div><div class="pcard-name" style="color:${cor.text}">${d.nome||'—'}</div><div class="pcard-role">${d.setor||'—'}</div></div>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-tags" style="margin-top:12px">
+          <span class="badge" style="background:${lc.bg};color:${lc.c}">💬 ${d.linguagem||'—'}</span>
+          <span class="badge" style="background:#F1EFE8;color:#444441">🧠 ${d.temperamento?.split(' / ')[0]||'—'}</span>
+          <span class="badge" style="background:#EEEDFE;color:#3C3489">🔑 ${d.eneagrama?.split(' / ')[0]||'—'}</span>
+        </div>
+        ${d.como_comunicar?`<div class="pcard-tip">${d.como_comunicar}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function exportarCSV(){
+  if(!FILTRADOS.length)return;
+  const cols=['Nome','E-mail','Setor','Linguagem','Temperamento','Eneagrama','Como comunicar','Como motivar','Evitar atrito','Data'];
+  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,d.linguagem,d.temperamento,d.eneagrama,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv=[cols.join(','),...rows].join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Perfis_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+
+carregarCFG();
+carregarDados();
+</script>
+</body>
+</html>
