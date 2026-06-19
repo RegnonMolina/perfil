@@ -739,7 +739,7 @@ NOME: ${p.nome} | SETOR: ${p.setor} | LINGUAGEM: ${p.linguagem} | TEMPERAMENTO: 
 }
 
 async function salvarNaPlanilha(p,ia){
-  const URL='https://script.google.com/macros/s/AKfycbwrlaOOpDeBRQoZbZA5g9fk633kf2yVjNhC3osZBmCyMDajAIntUQrV9vqFLG2LoMq9/exec';
+  const URL='https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec';
   try{await fetch(URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:p.nome,email:R.email,setor:p.setor,linguagem:p.linguagem,temperamento:p.temperamento,eneagrama:p.eneagrama,lingCount:p.lingCount,tempCount:p.tempCount,eneaCount:p.eneaCount,papel:R.papel,ia})});}catch(e){console.warn(e);}
 }
 
