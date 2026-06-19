@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil Comportamental</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#185FA5;--primary-light:#E6F1FB;--primary-dark:#0C447C;
+  --accent:#F4A623;--success:#3B6D11;--success-light:#EAF3DE;
+  --warn:#854F0B;--warn-light:#FAEEDA;--danger:#A32D2D;
+  --bg:#F4F6F9;--surface:#fff;--border:#E2E8F0;
+  --text:#1A202C;--text2:#4A5568;--text3:#718096;
+  --r:10px;--rlg:14px;--sh:0 1px 3px rgba(0,0,0,.08)
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.shell{max-width:680px;margin:0 auto;padding:24px 16px 80px}
+.screen{display:none}.screen.active{display:block}
+
+/* TOPBAR */
+.topbar{background:var(--primary);padding:16px 20px;border-radius:var(--rlg);margin-bottom:24px;display:flex;align-items:center;gap:14px}
+.topbar-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2}
+.topbar-title{color:#fff;font-size:16px;font-weight:600}
+.topbar-sub{color:rgba(255,255,255,.75);font-size:12px;margin-top:2px}
+
+/* PROGRESS */
+.prog-wrap{margin-bottom:20px}
+.prog-top{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px}
+.prog-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .4s ease}
+
+/* SECTION */
+.sec-head{margin-bottom:20px}
+.sec-head h2{font-size:19px;font-weight:600;color:var(--text)}
+.sec-head p{font-size:13px;color:var(--text2);margin-top:4px;line-height:1.5}
+.sec-badge{display:inline-block;background:var(--primary-light);color:var(--primary-dark);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;margin-bottom:14px;box-shadow:var(--sh)}
+.card-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px}
+
+/* FIELDS */
+.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+
+/* RADIO QUESTION */
+.question{margin-bottom:22px}
+.question:last-child{margin-bottom:0}
+.q-text{font-size:14px;color:var(--text);margin-bottom:10px;line-height:1.5;font-weight:500}
+.q-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--primary-light);color:var(--primary-dark);border-radius:50%;font-size:11px;font-weight:600;margin-right:8px;flex-shrink:0;vertical-align:middle}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;background:var(--surface)}
+.opt:hover{border-color:var(--primary);background:var(--primary-light)}
+.opt.sel{border:2px solid var(--primary);background:var(--primary-light)}
+.opt input[type=radio]{display:none}
+.opt-circle{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.opt.sel .opt-circle{border-color:var(--primary);background:var(--primary)}
+.opt.sel .opt-circle::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff}
+.opt-text{font-size:13px;color:var(--text);line-height:1.45}
+.opt.sel .opt-text{color:var(--primary-dark)}
+
+/* SCALE */
+.scale-q{font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px}
+.scale-row{display:flex;gap:8px;flex-wrap:wrap}
+.scale-btn{min-width:44px;height:44px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;font-weight:500;color:var(--text3);transition:all .15s;font-family:inherit;flex:1;max-width:80px}
+.scale-btn:hover{border-color:var(--primary);color:var(--primary)}
+.scale-btn.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+.scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ENEAGRAMA BLOCO */
+.enea-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+.enea-title{font-size:13px;font-weight:600;color:var(--primary-dark);background:var(--primary-light);padding:6px 12px;border-radius:6px;margin-bottom:14px;display:inline-block}
+.enea-instruction{font-size:12px;color:var(--text3);margin-bottom:12px;font-style:italic}
+.enea-opts{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.enea-opt{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;background:var(--surface)}
+.enea-opt:hover{border-color:var(--primary);background:var(--primary-light)}
+.enea-opt.sel{border:2px solid var(--primary);background:var(--primary-light)}
+.enea-opt input[type=checkbox]{display:none}
+.enea-check{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0;margin-top:1px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.enea-opt.sel .enea-check{background:var(--primary);border-color:var(--primary)}
+.enea-opt.sel .enea-check::after{content:'✓';font-size:10px;color:#fff;font-weight:700}
+.enea-opt-text{font-size:12px;color:var(--text);line-height:1.4}
+.enea-opt.sel .enea-opt-text{color:var(--primary-dark)}
+.enea-counter{font-size:11px;margin-top:6px;font-weight:600}
+.enea-counter.ok{color:var(--success)}
+.enea-counter.warn{color:var(--danger)}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+.btn{padding:11px 26px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;border:1px solid transparent}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-ghost{background:var(--surface);color:var(--text2);border-color:var(--border)}
+.btn-ghost:hover{background:var(--bg)}
+
+/* RESULTADO */
+.result-hero{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:var(--rlg);padding:28px 24px;color:#fff;margin-bottom:20px;text-align:center}
+.result-hero h2{font-size:22px;font-weight:600;margin-bottom:6px}
+.result-hero p{font-size:13px;opacity:.85}
+.result-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.result-metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;box-shadow:var(--sh)}
+.rm-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.rm-value{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.rm-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:4px}
+.result-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+.rs-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.rs-text{font-size:13px;color:var(--text);line-height:1.6}
+.point{display:flex;gap:8px;margin-bottom:8px;font-size:13px;line-height:1.4}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.tip-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tip{padding:10px 12px;border-radius:var(--r);font-size:12px;line-height:1.5}
+.tip strong{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.loading-wrap{text-align:center;padding:60px 20px}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-size:16px;font-weight:500;margin-bottom:6px}
+.loading-sub{font-size:13px;color:var(--text3)}
+@media(max-width:500px){
+  .result-grid{grid-template-columns:1fr 1fr}
+  .tip-grid{grid-template-columns:1fr}
+  .enea-opts{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="topbar" id="topbar">
+  <div class="topbar-icon" id="topbar-icon">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+  </div>
+  <div style="flex:1">
+    <div class="topbar-title" id="topbar-title">Perfil Comportamental</div>
+    <div class="topbar-sub" id="topbar-sub">Colégio Mundo do Saber</div>
+  </div>
+  <button onclick="abrirConfig()" title="Personalizar" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</div>
+
+<!-- PAINEL DE CONFIGURAÇÃO -->
+<div id="config-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;overflow-y:auto;padding:24px 16px">
+  <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <!-- Header do painel -->
+    <div style="background:var(--primary);padding:18px 20px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="color:#fff;font-size:15px;font-weight:600">Personalizar formulário</div>
+        <div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:2px">Altere cores, textos e logo do topo</div>
+      </div>
+      <button onclick="fecharConfig()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <!-- Corpo do painel -->
+    <div style="padding:20px">
+
+      <!-- Preview ao vivo -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:600;color:#718096;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Preview em tempo real</div>
+        <div id="cfg-preview" style="border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div id="cfg-prev-icon" style="width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div>
+            <div id="cfg-prev-title" style="color:#fff;font-size:15px;font-weight:600">Perfil Comportamental</div>
+            <div id="cfg-prev-sub" style="color:rgba(255,255,255,.75);font-size:12px;margin-top:2px">Colégio Mundo do Saber</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cor principal -->
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:8px">Cor principal</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="color-presets">
+          <button onclick="aplicarCor('#185FA5')" style="width:32px;height:32px;border-radius:50%;background:#185FA5;border:2px solid transparent;cursor:pointer" title="Azul"></button>
+          <button onclick="aplicarCor('#1A7A4A')" style="width:32px;height:32px;border-radius:50%;background:#1A7A4A;border:2px solid transparent;cursor:pointer" title="Verde"></button>
+          <button onclick="aplicarCor('#7B3FA0')" style="width:32px;height:32px;border-radius:50%;background:#7B3FA0;border:2px solid transparent;cursor:pointer" title="Roxo"></button>
+          <button onclick="aplicarCor('#C0392B')" style="width:32px;height:32px;border-radius:50%;background:#C0392B;border:2px solid transparent;cursor:pointer" title="Vermelho"></button>
+          <button onclick="aplicarCor('#D35400')" style="width:32px;height:32px;border-radius:50%;background:#D35400;border:2px solid transparent;cursor:pointer" title="Laranja"></button>
+          <button onclick="aplicarCor('#17A589')" style="width:32px;height:32px;border-radius:50%;background:#17A589;border:2px solid transparent;cursor:pointer" title="Teal"></button>
+          <button onclick="aplicarCor('#1A252F')" style="width:32px;height:32px;border-radius:50%;background:#1A252F;border:2px solid transparent;cursor:pointer" title="Escuro"></button>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="color" id="cfg-color-custom" value="#185FA5" oninput="aplicarCor(this.value)" style="width:32px;height:32px;border:1px solid #E2E8F0;border-radius:50%;padding:2px;cursor:pointer;background:none">
+            <span style="font-size:11px;color:#718096">Personalizada</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Título -->
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Título principal</label>
+        <input type="text" id="cfg-titulo" value="Perfil Comportamental" oninput="atualizarPreview()" placeholder="Ex: Teste de Perfil da Equipe" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+      </div>
+
+      <!-- Subtítulo -->
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">Nome do colégio</label>
+        <input type="text" id="cfg-subtitulo" value="Colégio Mundo do Saber" oninput="atualizarPreview()" placeholder="Ex: Colégio São Paulo" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+      </div>
+
+      <!-- Logo URL -->
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:13px;font-weight:500;color:#4A5568;margin-bottom:6px">URL do logo <span style="font-weight:400;color:#718096">(opcional)</span></label>
+        <input type="url" id="cfg-logo" oninput="atualizarPreview()" placeholder="https://seusite.com/logo.png" style="width:100%;padding:10px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+        <div style="font-size:11px;color:#718096;margin-top:5px">Cole o link direto de uma imagem. Funciona com links do Google Drive (compartilhado como público), Imgur ou qualquer URL de imagem.</div>
+      </div>
+
+      <!-- Botões -->
+      <div style="display:flex;gap:10px">
+        <button onclick="fecharConfig()" style="flex:1;padding:11px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;font-size:14px;cursor:pointer;font-family:inherit;color:#4A5568">Cancelar</button>
+        <button onclick="salvarConfig()" style="flex:2;padding:11px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit">Aplicar personalização</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TELA 1: IDENTIFICAÇÃO -->
+<div class="screen active" id="s0">
+  <div class="sec-head">
+    <div class="sec-badge">Início</div>
+    <h2>Identificação</h2>
+    <p>Preencha seus dados para começar o teste. Todas as respostas são confidenciais e usadas apenas para análise comportamental.</p>
+  </div>
+  <div class="card">
+    <div class="field"><label>Nome completo *</label><input type="text" id="i-nome" placeholder="Seu nome completo"></div>
+    <div class="field"><label>E-mail *</label><input type="email" id="i-email" placeholder="seu@email.com"></div>
+    <div class="field">
+      <label>Setor *</label>
+      <select id="i-setor">
+        <option value="">Selecione seu setor...</option>
+        <option>Administrativo</option>
+        <option>Auxiliar de sala</option>
+        <option>Comercial</option>
+        <option>Coordenação</option>
+        <option>Cozinha</option>
+        <option>Limpeza</option>
+        <option>Professor(a)</option>
+        <option>Segurança</option>
+      </select>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goTo(1)">Iniciar teste →</button>
+  </div>
+</div>
+
+<!-- TELA 2: LINGUAGENS DE VALORIZAÇÃO (perguntas 1-15) -->
+<div class="screen" id="s1">
+  <div class="prog-wrap">
+    <div class="prog-top"><span>Parte 1 de 4 — Linguagens de Valorização</span><span>1–15 de 30</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:8%"></div></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-badge">Linguagens de Valorização</div>
+    <h2>Como você prefere ser reconhecido?</h2>
+    <p>Escolha a opção que mais se identifica com você em cada situação. Não há resposta certa ou errada — responda com sinceridade.</p>
+  </div>
+  <div class="card" id="ling1-15"></div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goTo(0)">← Voltar</button>
+    <button class="btn btn-primary" onclick="goTo(2)">Continuar →</button>
+  </div>
+</div>
+
+<!-- TELA 3: LINGUAGENS DE VALORIZAÇÃO (perguntas 16-30) -->
+<div class="screen" id="s2">
+  <div class="prog-wrap">
+    <div class="prog-top"><span>Parte 1 de 4 — Linguagens de Valorização</span><span>16–30 de 30</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:25%"></div></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-badge">Linguagens de Valorização</div>
+    <h2>Como você prefere ser reconhecido?</h2>
+    <p>Continue respondendo com sinceridade. Pense em situações reais do seu dia a dia no trabalho.</p>
+  </div>
+  <div class="card" id="ling16-30"></div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goTo(1)">← Voltar</button>
+    <button class="btn btn-primary" onclick="goTo(3)">Continuar →</button>
+  </div>
+</div>
+
+<!-- TELA 4: TEMPERAMENTO -->
+<div class="screen" id="s3">
+  <div class="prog-wrap">
+    <div class="prog-top"><span>Parte 2 de 4 — Temperamento</span><span>Escala 1 a 5</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:50%"></div></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-badge">Temperamento</div>
+    <h2>Como você age e reage naturalmente?</h2>
+    <p>Para cada afirmação, escolha de 1 (discordo totalmente) a 5 (concordo totalmente). Depois, indique seu papel natural em grupo.</p>
+  </div>
+  <div class="card" id="temp-card"></div>
+  <div class="card">
+    <div class="card-title">Em grupo, geralmente assumo um destes papéis</div>
+    <div class="opts" id="papel-opts">
+      <label class="opt" onclick="selOpt('papel',this,'A) Liderar e decidir')"><div class="opt-circle"></div><div class="opt-text">A) Liderar e decidir</div></label>
+      <label class="opt" onclick="selOpt('papel',this,'B) Animar e envolver as pessoas')"><div class="opt-circle"></div><div class="opt-text">B) Animar e envolver as pessoas</div></label>
+      <label class="opt" onclick="selOpt('papel',this,'C) Organizar e garantir qualidade')"><div class="opt-circle"></div><div class="opt-text">C) Organizar e garantir qualidade</div></label>
+      <label class="opt" onclick="selOpt('papel',this,'D) Trazer calma e equilíbrio')"><div class="opt-circle"></div><div class="opt-text">D) Trazer calma e equilíbrio</div></label>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goTo(2)">← Voltar</button>
+    <button class="btn btn-primary" onclick="goTo(4)">Continuar →</button>
+  </div>
+</div>
+
+<!-- TELA 5: ENEAGRAMA blocos 1-5 -->
+<div class="screen" id="s4">
+  <div class="prog-wrap">
+    <div class="prog-top"><span>Parte 3 de 4 — Eneagrama</span><span>Blocos 1–5 de 10</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:70%"></div></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-badge">Eneagrama</div>
+    <h2>Escolha 2 opções em cada bloco</h2>
+    <p>Em cada bloco abaixo, escolha <strong>exatamente 2 afirmações</strong> que mais combinam com você. Não mais, não menos.</p>
+  </div>
+  <div id="enea-1-5"></div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goTo(3)">← Voltar</button>
+    <button class="btn btn-primary" onclick="goTo(5)">Continuar →</button>
+  </div>
+</div>
+
+<!-- TELA 6: ENEAGRAMA blocos 6-10 -->
+<div class="screen" id="s5">
+  <div class="prog-wrap">
+    <div class="prog-top"><span>Parte 4 de 4 — Eneagrama</span><span>Blocos 6–10 de 10</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:88%"></div></div>
+  </div>
+  <div class="sec-head">
+    <div class="sec-badge">Eneagrama</div>
+    <h2>Continue — últimos 5 blocos</h2>
+    <p>Lembre-se: <strong>exatamente 2 opções</strong> por bloco. Quase lá!</p>
+  </div>
+  <div id="enea-6-10"></div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goTo(4)">← Voltar</button>
+    <button class="btn btn-primary" onclick="calcular()">Ver meu resultado →</button>
+  </div>
+</div>
+
+<!-- TELA 7: LOADING -->
+<div class="screen" id="s6">
+  <div class="loading-wrap">
+    <div class="spinner"></div>
+    <div class="loading-title">Calculando seu perfil...</div>
+    <div class="loading-sub">Analisando linguagens, temperamento e eneagrama</div>
+  </div>
+</div>
+
+<!-- TELA 8: RESULTADO -->
+<div class="screen" id="s7">
+  <div class="result-hero">
+    <h2 id="r-nome">Seu Perfil Comportamental</h2>
+    <p id="r-setor"></p>
+  </div>
+  <div class="result-grid" id="r-grid"></div>
+  <div id="r-explicacoes"></div>
+  <div id="r-ia-section"></div>
+  <div class="btn-row" style="justify-content:center;margin-top:8px">
+    <button class="btn btn-ghost" onclick="window.print()">⬇ Salvar / Imprimir</button>
+    <button class="btn btn-primary" onclick="location.reload()">Refazer teste</button>
+  </div>
+</div>
+
+</div><!-- /shell -->
+
+<script>
+// ─── DADOS ────────────────────────────────────────────────────────────────────
+
+const LING_PERGUNTAS = [
+  {n:1,  t:'Gosto de receber elogios por um trabalho bem feito.', l:'A'},
+  {n:2,  t:'Valorizo quando a coordenação dedica tempo para me ouvir.', l:'B'},
+  {n:3,  t:'Gosto de receber mimos ou lembranças em datas especiais.', l:'C'},
+  {n:4,  t:'Sinto-me acolhido com um sorriso e um "bom dia" entusiasmado.', l:'E'},
+  {n:5,  t:'Um tapinha de encorajamento nas costas (parabenização) me faz bem.', l:'E'},
+  {n:6,  t:'Gosto de ter momentos de troca de ideias com meus líderes.', l:'B'},
+  {n:7,  t:'Sinto-me motivado quando recebo um feedback positivo por escrito.', l:'A'},
+  {n:8,  t:'Sinto-me integrado quando o ambiente é receptivo e caloroso.', l:'E'},
+  {n:9,  t:'Valorizo quando alguém para o que está fazendo para me dar atenção.', l:'B'},
+  {n:10, t:'Palavras de incentivo são fundamentais para o meu dia.', l:'A'},
+  {n:11, t:'Gosto quando elogiam minha competência técnica.', l:'A'},
+  {n:12, t:'Sinto-me seguro em um ambiente onde as pessoas são cordiais no trato físico.', l:'E'},
+  {n:13, t:'Prefiro um elogio sincero a um presente caro.', l:'A'},
+  {n:14, t:'Um cumprimento de mão firme me passa confiança.', l:'E'},
+  {n:15, t:'Gosto que a direção reconheça meu esforço extra.', l:'A'},
+  {n:16, t:'Gosto de ser consultado antes de decisões importantes serem tomadas.', l:'B'},
+  {n:17, t:'Adoro ganhar itens personalizados com a marca do Colégio.', l:'C'},
+  {n:18, t:'Gosto que elogiem minha postura profissional.', l:'A'},
+  {n:19, t:'Ver que alguém se preocupou em facilitar meu trabalho me deixa feliz.', l:'D'},
+  {n:20, t:'Gosto de ganhar kits ou presentes úteis para o meu dia a dia.', l:'C'},
+  {n:21, t:'Atenção total durante uma conversa é o melhor reconhecimento.', l:'B'},
+  {n:22, t:'Sinto-me especial quando o Colégio celebra meu aniversário.', l:'C'},
+  {n:23, t:'Alguém me ajudar com a papelada/burocracia me faz sentir amado(a).', l:'D'},
+  {n:24, t:'Valorizo quando sou ouvido sem ser julgado.', l:'B'},
+  {n:25, t:'Gosto de participar de reuniões de planejamento estratégico.', l:'B'},
+  {n:26, t:'Fico feliz quando ganho um "mimo" inesperado.', l:'C'},
+  {n:27, t:'Ouvir um "obrigado por tudo o que você faz" me dá energia.', l:'A'},
+  {n:28, t:'Pequenos gestos (como um doce com um bilhete) são marcantes.', l:'C'},
+  {n:29, t:'O reconhecimento verbal me faz sentir que pertenço ao lugar.', l:'A'},
+  {n:30, t:'O feedback de palavras positivas é o que me faz crescer.', l:'A'},
+];
+
+const LING_OPTS = {
+  A:{label:'(A)', text:'Palavras de afirmação'},
+  B:{label:'(B)', text:'Tempo de qualidade'},
+  C:{label:'(C)', text:'Presentes / Mimos'},
+  D:{label:'(D)', text:'Atos de serviço'},
+  E:{label:'(E)', text:'Presença / Acolhimento'},
+};
+
+const TEMP_AFIRMACOES = [
+  {id:'t1',  t:'Quando surge um problema, minha reação mais natural é assumir o controle.', c:'col'},
+  {id:'t2',  t:'Eu costumo ser comunicativo e me envolver com facilidade com as pessoas.', c:'san'},
+  {id:'t3',  t:'Sou detalhista e percebo coisas que muita gente deixa passar.', c:'mel'},
+  {id:'t4',  t:'Normalmente ajo com calma, mesmo quando os outros estão tensos.', c:'fle'},
+  {id:'t5',  t:'Gosto de decidir rápido e partir para a ação.', c:'col'},
+  {id:'t6',  t:'Tenho facilidade para animar o ambiente e deixar tudo mais leve.', c:'san'},
+  {id:'t7',  t:'Costumo pensar bastante antes de confiar que algo está realmente certo.', c:'mel'},
+  {id:'t8',  t:'Evito conflitos desnecessários e prefiro manter a harmonia.', c:'fle'},
+  {id:'t9',  t:'Fico incomodado quando vejo lentidão, enrolação ou falta de resultado.', c:'col'},
+  {id:'t10', t:'Sou naturalmente expressivo e costumo demonstrar o que sinto.', c:'san'},
+  {id:'t11', t:'Tenho tendência a ser exigente comigo mesmo e com a qualidade das coisas.', c:'mel'},
+  {id:'t12', t:'As pessoas costumam me ver como alguém estável e tranquilo.', c:'fle'},
+];
+
+const ENEA_BLOCOS = [
+  {titulo:'MUNDO IDEAL', instrucao:'Marque 2 opções que mais descrevem seu mundo ideal:',
+   opts:[
+    {n:1,t:'Mundo ético, moral e de respeito às regras.'},{n:2,t:'Mundo de solidariedade e apoio.'},
+    {n:3,t:'Mundo de desafios e oportunidades.'},{n:4,t:'Mundo espiritualizado e criativo.'},
+    {n:5,t:'Mundo de respeito à privacidade e à individualidade.'},{n:6,t:'Mundo de segurança e lealdade.'},
+    {n:7,t:'Mundo de liberdade e novas experiências.'},{n:8,t:'Mundo de força e justiça.'},
+    {n:9,t:'Mundo estável e tranquilo.'}
+  ]},
+  {titulo:'RELACIONAMENTO PROFISSIONAL', instrucao:'Marque 2 opções que descrevem melhor seu perfil de relacionamento:',
+   opts:[
+    {n:10,t:'Responsável. Dedicado. Autodisciplinado. Exigente.'},{n:11,t:'Solidário. Conselheiro. Prestativo. Estimulador.'},
+    {n:12,t:'Competente. Entusiasmado. Autoconfiante. Realizador.'},{n:13,t:'Espirituoso. Criativo. Empático. Diferenciado.'},
+    {n:14,t:'Curioso. Observador. Independente. Objetivo.'},{n:15,t:'Comprometido. Precavido. Colaborativo. Leal.'},
+    {n:16,t:'Alegre. Espontâneo. Versátil. Aventureiro.'},{n:17,t:'Franco. Entusiasmado. Protetor. Batalhador.'},
+    {n:18,t:'Sereno. Descomplicado. Resignado. Mediador.'}
+  ]},
+  {titulo:'AUTO-IMAGEM', instrucao:'Marque 2 opções que melhor descrevem como você se vê:',
+   opts:[
+    {n:19,t:'Pessoa correta e exigente consigo mesma.'},{n:20,t:'Pessoa compreensiva e útil aos demais.'},
+    {n:21,t:'Pessoa sempre em busca de desafios e realizações.'},{n:22,t:'Pessoa idealista que se expressa com emoção.'},
+    {n:23,t:'Pessoa analítica e reservada.'},{n:24,t:'Pessoa cumpridora do dever e controladora da situação.'},
+    {n:25,t:'Pessoa idealista, de bem com o mundo e consigo mesma.'},{n:26,t:'Pessoa disposta a lutar por suas ideias e princípios.'},
+    {n:27,t:'Pessoa mediadora e tranquila.'}
+  ]},
+  {titulo:'PARTICIPAÇÃO E INFLUÊNCIA', instrucao:'Marque 2 opções que descrevem como você participa e influencia:',
+   opts:[
+    {n:28,t:'Fazer o que é certo e dentro das regras.'},{n:29,t:'Ajudar as pessoas a crescerem.'},
+    {n:30,t:'Motivar as pessoas a "fazer acontecer".'},{n:31,t:'Apresentar alternativas criativas e incomuns.'},
+    {n:32,t:'Propor questionamentos que previnem futuros problemas.'},{n:33,t:'Manter a segurança e o controle das situações.'},
+    {n:34,t:'Participar de forma agradável e intensa.'},{n:35,t:'Propor soluções diretas e corajosas.'},
+    {n:36,t:'Conviver em harmonia e paz.'}
+  ]},
+  {titulo:'GRUPOS', instrucao:'Marque 2 tipos de grupos que mais combinam com você:',
+   opts:[
+    {n:37,t:'Grupos reformistas e éticos, ligados às grandes causas.'},{n:38,t:'Grupos de solidariedade e valorização da vida.'},
+    {n:39,t:'Grupos de alta performance e resultados.'},{n:40,t:'Grupos artísticos, filosóficos e criativos.'},
+    {n:41,t:'Grupos de estudos (Filosofia, Ciências, Autoconhecimento).'},{n:42,t:'Grupos de confiança mútua e comprometimento.'},
+    {n:43,t:'Grupos sociais e recreativos. Movimentos associativos.'},{n:44,t:'Grupos de defesa dos direitos das pessoas. Trabalho voluntário.'},
+    {n:45,t:'Grupos pacifistas e ligados à natureza.'}
+  ]},
+  {titulo:'SENSIBILIDADE', instrucao:'Marque 2 afirmações que mais descrevem sua sensibilidade:',
+   opts:[
+    {n:46,t:'Anima os outros a fazerem o que é correto.'},{n:47,t:'Ajuda as pessoas a acreditarem no seu próprio valor.'},
+    {n:48,t:'Cria atmosfera de "vamos conseguir".'},{n:49,t:'Incentiva a criatividade e a emoção.'},
+    {n:50,t:'Analisa metodicamente os fatos e as impressões.'},{n:51,t:'Coloca o grupo em alerta para os riscos.'},
+    {n:52,t:'Focaliza o lado bom da vida e da liberdade.'},{n:53,t:'Posiciona-se com clareza e decisão.'},
+    {n:54,t:'Aceita as pessoas sem preconceitos.'}
+  ]},
+  {titulo:'CONDUTA', instrucao:'Marque 2 afirmações que melhor descrevem sua conduta:',
+   opts:[
+    {n:55,t:'Viver de acordo com princípios elevados.'},{n:56,t:'Ser solidário.'},
+    {n:57,t:'Causar boa impressão.'},{n:58,t:'Ser autêntico e diferente.'},
+    {n:59,t:'Saber ouvir.'},{n:60,t:'Tornar realidade.'},
+    {n:61,t:'Estar bem com tudo e com todos.'},{n:62,t:'Ser autêntico e lutador.'},
+    {n:63,t:'Manter o equilíbrio.'}
+  ]},
+  {titulo:'SUCESSO PESSOAL', instrucao:'Marque 2 afirmações que descrevem o que é sucesso para você:',
+   opts:[
+    {n:64,t:'Alcançar padrões elevados de qualidade.'},{n:65,t:'Sentir-se amado e apreciado.'},
+    {n:66,t:'Alcançar resultados e ser vencedor.'},{n:67,t:'Ser valorizado pela sua criatividade.'},
+    {n:68,t:'Buscar saber sempre mais.'},{n:69,t:'Cumprir o dever.'},
+    {n:70,t:'Ser feliz.'},{n:71,t:'Exercer poder e liderança.'},
+    {n:72,t:'Manter a paz e o equilíbrio.'}
+  ]},
+  {titulo:'BUSCA PESSOAL', instrucao:'Marque 2 afirmações que representam sua busca pessoal:',
+   opts:[
+    {n:73,t:'Ficar do lado do bem e da razão.'},{n:74,t:'Ajudar as demais pessoas.'},
+    {n:75,t:'Superar-se continuamente.'},{n:76,t:'Aprofundar o autoconhecimento.'},
+    {n:77,t:'Aprender cada vez mais.'},{n:78,t:'Previr problemas.'},
+    {n:79,t:'Manter o otimismo.'},{n:80,t:'Defender aquilo em que acredita.'},
+    {n:81,t:'Encontrar a paz interior.'}
+  ]},
+  {titulo:'IMAGEM PÚBLICA', instrucao:'Marque 2 adjetivos que melhor descrevem como você quer ser visto:',
+   opts:[
+    {n:82,t:'Organizado. Responsável. Perfeccionista.'},{n:83,t:'Bondoso. Gentil. Generoso.'},
+    {n:84,t:'Eficiente. Determinado. Desprendido.'},{n:85,t:'Original. Emotivo. Alguém especial.'},
+    {n:86,t:'Atencioso. Reservado. Estudioso.'},{n:87,t:'Confiável. Fiel. Comprometido.'},
+    {n:88,t:'Alegre. Otimista. Imaginativo.'},{n:89,t:'Forte. Decidido. Protetor.'},
+    {n:90,t:'Pacifista. Generoso. Fácil relacionamento.'}
+  ]},
+];
+
+// mapeamento eneagrama: número da opção → tipo
+const ENEA_MAP = {};
+ENEA_BLOCOS.forEach(b=> b.opts.forEach(o=>{
+  const tipo = ((o.n-1)%9)+1;
+  ENEA_MAP[o.n] = tipo;
+}));
+
+// ─── ESTADO ───────────────────────────────────────────────────────────────────
+const R = {
+  nome:'', email:'', setor:'',
+  ling: {}, // pergunta → letra
+  temp: {}, // id → valor 1-5
+  papel: '',
+  enea: {}, // n → bool
+};
+
+// ─── BUILD UI ─────────────────────────────────────────────────────────────────
+function buildLingPerguntas(containerId, from, to){
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  const pergs = LING_PERGUNTAS.slice(from-1, to);
+  pergs.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'question';
+    div.innerHTML = `<div class="q-text"><span class="q-num">${p.n}</span>${p.t}</div>
+    <div class="opts">
+      ${['A','B','C','D','E'].map(l=>`
+      <label class="opt" onclick="selLing(${p.n},'${l}',this)">
+        <div class="opt-circle"></div>
+        <div class="opt-text"><strong>(${l})</strong> ${LING_OPTS[l].text}</div>
+      </label>`).join('')}
+    </div>`;
+    c.appendChild(div);
+    // separator
+    const hr = document.createElement('div');
+    hr.style.cssText='border-top:1px solid var(--border);margin:16px 0';
+    if(p.n < to) c.appendChild(hr);
+  });
+}
+
+function buildTemp(){
+  const c = document.getElementById('temp-card');
+  c.innerHTML = '<div class="card-title">Escala: 1 = Discordo totalmente · 5 = Concordo totalmente</div>';
+  TEMP_AFIRMACOES.forEach(a=>{
+    const div = document.createElement('div');
+    div.style.marginBottom='16px';
+    div.innerHTML = `<div class="scale-q">${a.t}</div>
+    <div class="scale-row" id="sr-${a.id}">
+      ${[1,2,3,4,5].map(v=>`<button class="scale-btn" onclick="selTemp('${a.id}',${v},this)">${v}</button>`).join('')}
+    </div>
+    <div class="scale-labels"><span>Discordo totalmente</span><span>Concordo totalmente</span></div>`;
+    c.appendChild(div);
+  });
+}
+
+function buildEnea(containerId, from, to){
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  ENEA_BLOCOS.slice(from-1, to).forEach((b,i)=>{
+    const blockN = from + i;
+    const div = document.createElement('div');
+    div.className = 'enea-block';
+    div.innerHTML = `<div class="enea-title">${b.titulo}</div>
+    <div class="enea-instruction">${b.instrucao}</div>
+    <div class="enea-opts" id="eopts-${blockN}">
+      ${b.opts.map(o=>`
+      <label class="enea-opt" onclick="selEnea(${blockN},${o.n},this)" id="eo-${o.n}">
+        <div class="enea-check"></div>
+        <div class="enea-opt-text">${o.t}</div>
+      </label>`).join('')}
+    </div>
+    <div class="enea-counter warn" id="ecount-${blockN}">0 de 2 selecionados</div>`;
+    c.appendChild(div);
+  });
+}
+
+function init(){
+  buildLingPerguntas('ling1-15', 1, 15);
+  buildLingPerguntas('ling16-30', 16, 30);
+  buildTemp();
+  buildEnea('enea-1-5', 1, 5);
+  buildEnea('enea-6-10', 6, 10);
+}
+
+// ─── SELEÇÃO ──────────────────────────────────────────────────────────────────
+function selOpt(group, el, val){
+  document.querySelectorAll(`#${group}-opts .opt`).forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  R[group] = val;
+}
+
+function selLing(n, l, el){
+  const parent = el.closest('.question');
+  parent.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  R.ling[n] = l;
+}
+
+function selTemp(id, v, btn){
+  R.temp[id] = v;
+  document.querySelectorAll(`#sr-${id} .scale-btn`).forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function selEnea(blockN, n, el){
+  const block = ENEA_BLOCOS[blockN-1];
+  const nums = block.opts.map(o=>o.n);
+  const selected = nums.filter(x=> R.enea[x]);
+  if(!R.enea[n] && selected.length >= 2) return; // já tem 2
+  R.enea[n] = !R.enea[n];
+  el.classList.toggle('sel', R.enea[n]);
+  const selCount = nums.filter(x=> R.enea[x]).length;
+  const counter = document.getElementById(`ecount-${blockN}`);
+  counter.textContent = `${selCount} de 2 selecionados`;
+  counter.className = 'enea-counter ' + (selCount===2?'ok':'warn');
+}
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────────────────────────
+function goTo(s){
+  if(s===1){
+    const nome=document.getElementById('i-nome').value.trim();
+    const email=document.getElementById('i-email').value.trim();
+    const setor=document.getElementById('i-setor').value;
+    if(!nome||!email||!setor){alert('Preencha todos os campos de identificação.');return;}
+    R.nome=nome; R.email=email; R.setor=setor;
+  }
+  if(s===2){
+    const unanswered = LING_PERGUNTAS.slice(0,15).filter(p=>!R.ling[p.n]);
+    if(unanswered.length>0){alert(`Responda todas as 15 perguntas desta seção.\nFaltam: ${unanswered.map(p=>p.n).join(', ')}`);return;}
+  }
+  if(s===3){
+    const unanswered = LING_PERGUNTAS.slice(15,30).filter(p=>!R.ling[p.n]);
+    if(unanswered.length>0){alert(`Responda todas as perguntas desta seção.\nFaltam: ${unanswered.map(p=>p.n).join(', ')}`);return;}
+  }
+  if(s===4){
+    const unanswered = TEMP_AFIRMACOES.filter(a=>!R.temp[a.id]);
+    if(unanswered.length>0){alert('Avalie todas as afirmações de temperamento.');return;}
+    if(!R.papel){alert('Selecione seu papel em grupo.');return;}
+  }
+  if(s===5){
+    for(let b=1;b<=5;b++){
+      const block=ENEA_BLOCOS[b-1];
+      const sel=block.opts.filter(o=>R.enea[o.n]);
+      if(sel.length!==2){alert(`No bloco "${block.titulo}", selecione exatamente 2 opções.`);return;}
+    }
+  }
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+s).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ─── CÁLCULO ──────────────────────────────────────────────────────────────────
+function calcular(){
+  for(let b=6;b<=10;b++){
+    const block=ENEA_BLOCOS[b-1];
+    const sel=block.opts.filter(o=>R.enea[o.n]);
+    if(sel.length!==2){alert(`No bloco "${block.titulo}", selecione exatamente 2 opções.`);return;}
+  }
+  goTo(6);
+  setTimeout(processar, 500);
+}
+
+function processar(){
+  // LINGUAGENS
+  const lingCount={A:0,B:0,C:0,D:0,E:0};
+  Object.values(R.ling).forEach(l=>lingCount[l]++);
+  const lingMax=Math.max(...Object.values(lingCount));
+  const lingPrincipal=Object.entries(lingCount).filter(([,v])=>v===lingMax).map(([k])=>k);
+  const lingNome={A:'Palavras de afirmação',B:'Tempo de qualidade',C:'Presentes / Mimos',D:'Atos de serviço',E:'Presença / Acolhimento'};
+
+  // TEMPERAMENTO
+  const tempCount={col:0,san:0,mel:0,fle:0};
+  TEMP_AFIRMACOES.forEach(a=>{ tempCount[a.c] += (R.temp[a.id]||0); });
+  const tempMax=Math.max(...Object.values(tempCount));
+  const tempNome={col:'Colérico',san:'Sanguíneo',mel:'Melancólico',fle:'Fleumático'};
+  const tempPrincipal=Object.entries(tempCount).filter(([,v])=>v===tempMax).map(([k])=>tempNome[k]);
+
+  // ENEAGRAMA
+  const eneaCount={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
+  Object.entries(R.enea).filter(([,v])=>v).forEach(([n])=>{ eneaCount[ENEA_MAP[n]]++; });
+  const eneaMax=Math.max(...Object.values(eneaCount));
+  const eneaPrincipal=Object.entries(eneaCount).filter(([,v])=>v===eneaMax).map(([k])=>'Tipo '+k);
+  const totalEnea=Object.values(eneaCount).reduce((a,b)=>a+b,0);
+  const eneaOk = totalEnea===20;
+
+  const perfil = {
+    nome: R.nome, setor: R.setor,
+    linguagem: lingPrincipal.map(l=>lingNome[l]).join(' / '),
+    temperamento: tempPrincipal.join(' / '),
+    eneagrama: eneaPrincipal.join(' / '),
+    eneaOk,
+    lingCount, tempCount, eneaCount,
+  };
+
+  renderResultado(perfil);
+  buscarAnaliseIA(perfil);
+}
+
+function renderResultado(p){
+  document.getElementById('r-nome').textContent = p.nome;
+  document.getElementById('r-setor').textContent = p.setor;
+
+  const lingColors={'Palavras de afirmação':'#E6F1FB','Tempo de qualidade':'#EAF3DE','Presentes / Mimos':'#FAEEDA','Atos de serviço':'#EEEDFE','Presença / Acolhimento':'#E1F5EE'};
+  const lingTextColors={'Palavras de afirmação':'#0C447C','Tempo de qualidade':'#27500A','Presentes / Mimos':'#633806','Atos de serviço':'#3C3489','Presença / Acolhimento':'#085041'};
+
+  document.getElementById('r-grid').innerHTML=`
+    <div class="result-metric">
+      <div class="rm-label">Linguagem Principal</div>
+      <div class="rm-value">${p.linguagem}</div>
+      <div class="rm-badge" style="background:${lingColors[p.linguagem.split(' / ')[0]]||'#E6F1FB'};color:${lingTextColors[p.linguagem.split(' / ')[0]]||'#0C447C'}">Como ser reconhecido</div>
+    </div>
+    <div class="result-metric">
+      <div class="rm-label">Temperamento</div>
+      <div class="rm-value">${p.temperamento}</div>
+      <div class="rm-badge" style="background:#F1EFE8;color:#444441">Estilo natural</div>
+    </div>
+    <div class="result-metric">
+      <div class="rm-label">Eneagrama</div>
+      <div class="rm-value">${p.eneagrama}</div>
+      <div class="rm-badge" style="background:${p.eneaOk?'#EAF3DE':'#FAEEDA'};color:${p.eneaOk?'#27500A':'#633806'}">${p.eneaOk?'Validado':'Ler com contexto'}</div>
+    </div>`;
+
+  // Explicações
+  const expLing = {
+    'Palavras de afirmação':'Você se sente valorizado quando recebe reconhecimento verbal, elogios sinceros e feedback positivo. Palavras têm peso real para você.',
+    'Tempo de qualidade':'Você se sente valorizado quando alguém dedica atenção genuína, para para ouvir e reserva tempo de qualidade para uma troca real.',
+    'Presentes / Mimos':'Você se sente valorizado por gestos simbólicos, lembranças em datas especiais e pequenos presentes que mostram cuidado.',
+    'Atos de serviço':'Você se sente valorizado quando alguém te ajuda de forma prática, remove obstáculos do seu caminho ou antecipa necessidades.',
+    'Presença / Acolhimento':'Você se sente valorizado quando o ambiente é caloroso, receptivo e existe cordialidade genuína nas relações.',
+  };
+  const expTemp = {
+    'Colérico':'Você tende à ação, decisão e resultado. Ganha energia com autonomia e metas claras. Ponto forte: liderança e execução. Atenção: impaciência com ritmos diferentes.',
+    'Sanguíneo':'Você tem facilidade relacional, expressividade e entusiasmo. Funciona bem em contextos de interação e troca. Atenção: manter constância em rotinas mais rígidas.',
+    'Melancólico':'Você é orientado à qualidade, análise e profundidade. Percebe detalhes que outros ignoram. Atenção: perfeccionismo excessivo e autocobrança alta.',
+    'Fleumático':'Você é estável, ponderado e preserva a harmonia. Funciona bem em ambientes previsíveis. Atenção: evitar conflitos necessários e postergar decisões difíceis.',
+  };
+
+  const lingPrim = p.linguagem.split(' / ')[0];
+  const tempPrim = p.temperamento.split(' / ')[0];
+
+  document.getElementById('r-explicacoes').innerHTML=`
+    <div class="result-section">
+      <div class="rs-title">💬 Sua linguagem de valorização</div>
+      <div class="rs-text">${expLing[lingPrim]||'Perfil combinado — leia com contexto.'}</div>
+    </div>
+    <div class="result-section">
+      <div class="rs-title">🧠 Seu temperamento</div>
+      <div class="rs-text">${expTemp[tempPrim]||'Perfil combinado — leia com contexto.'}</div>
+    </div>
+    <div class="result-section" id="r-ia-placeholder">
+      <div class="rs-title">🔑 Análise personalizada</div>
+      <div class="rs-text" style="color:var(--text3)">Gerando análise com IA...</div>
+    </div>`;
+
+  goTo(7);
+}
+
+async function buscarAnaliseIA(p){
+  const prompt=`Você é especialista em desenvolvimento humano e gestão educacional. Responda em português.
+Analise este perfil e retorne APENAS um JSON válido (sem markdown):
+
+NOME: ${p.nome} | SETOR: ${p.setor}
+LINGUAGEM: ${p.linguagem} | TEMPERAMENTO: ${p.temperamento} | ENEAGRAMA: ${p.eneagrama}
+
+{"quem_e":"2 frases sobre esta pessoa na prática","pontos_fortes":["4 itens"],"pontos_dev":["4 itens"],"como_comunicar":"1-2 frases","como_motivar":"1-2 frases","evitar_atrito":"1-2 frases"}`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    const raw=data.content.find(b=>b.type==='text')?.text||'{}';
+    const ia=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    renderIA(ia);
+    // Salvar na planilha depois de ter a análise da IA
+    salvarNaPlanilha(p, ia);
+  }catch(e){
+    document.querySelector('#r-ia-placeholder .rs-text').textContent='Não foi possível gerar análise com IA neste momento.';
+    // Salvar mesmo sem análise da IA
+    salvarNaPlanilha(p, {});
+  }
+}
+
+async function salvarNaPlanilha(p, ia){
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwrlaOOpDeBRQoZbZA5g9fk633kf2yVjNhC3osZBmCyMDajAIntUQrV9vqFLG2LoMq9/exec';
+  try{
+    await fetch(SHEET_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        nome:        p.nome,
+        email:       R.email,
+        setor:       p.setor,
+        linguagem:   p.linguagem,
+        temperamento:p.temperamento,
+        eneagrama:   p.eneagrama,
+        lingCount:   p.lingCount,
+        tempCount:   p.tempCount,
+        eneaCount:   p.eneaCount,
+        papel:       R.papel,
+        ia:          ia,
+      })
+    });
+  }catch(e){
+    console.warn('Erro ao salvar na planilha:', e);
+  }
+}
+
+function renderIA(ia){
+  const fortes=(ia.pontos_fortes||[]).map(f=>`<div class="point"><div class="dot" style="background:#3B6D11"></div><span>${f}</span></div>`).join('');
+  const devs=(ia.pontos_dev||[]).map(f=>`<div class="point"><div class="dot" style="background:#854F0B"></div><span>${f}</span></div>`).join('');
+  document.getElementById('r-ia-placeholder').innerHTML=`
+    <div class="rs-title">🔑 Análise personalizada</div>
+    <div class="rs-text" style="margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:var(--r);border-left:3px solid var(--primary)">${ia.quem_e||''}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div><div style="font-size:11px;font-weight:600;color:#3B6D11;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">✔ Pontos fortes</div>${fortes}</div>
+      <div><div style="font-size:11px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">↑ A desenvolver</div>${devs}</div>
+    </div>
+    <div class="tip-grid">
+      <div class="tip" style="background:#E6F1FB;color:#0C447C"><strong>Como comunicar</strong>${ia.como_comunicar||''}</div>
+      <div class="tip" style="background:#EAF3DE;color:#27500A"><strong>Como motivar</strong>${ia.como_motivar||''}</div>
+      <div class="tip" style="background:#FAEEDA;color:#633806"><strong>Evitar atrito</strong>${ia.evitar_atrito||''}</div>
+    </div>`;
+}
+
+// ─── CONFIGURAÇÃO / PERSONALIZAÇÃO ───────────────────────────────────────────
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return{r,g,b};
+}
+function lighten(hex,pct){
+  const{r,g,b}=hexToRgb(hex);
+  const f=pct/100;
+  return `rgb(${Math.round(r+(255-r)*f)},${Math.round(g+(255-g)*f)},${Math.round(b+(255-b)*f)})`;
+}
+function darken(hex,pct){
+  const{r,g,b}=hexToRgb(hex);
+  const f=1-pct/100;
+  return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;
+}
+
+let cfgCor = '#185FA5';
+
+function aplicarCor(hex){
+  cfgCor = hex;
+  document.getElementById('cfg-color-custom').value = hex;
+  // destacar preset selecionado
+  document.querySelectorAll('#color-presets button').forEach(b=>{
+    b.style.outline = b.title && b.style.background===hexToCSS(hex) ? '3px solid #1A202C' : 'none';
+  });
+  atualizarPreview();
+}
+
+function hexToCSS(hex){ return hex; }
+
+function atualizarPreview(){
+  const titulo = document.getElementById('cfg-titulo').value || 'Perfil Comportamental';
+  const sub    = document.getElementById('cfg-subtitulo').value || 'Colégio';
+  const logo   = document.getElementById('cfg-logo').value.trim();
+
+  document.getElementById('cfg-preview').style.background = cfgCor;
+  document.getElementById('cfg-prev-title').textContent = titulo;
+  document.getElementById('cfg-prev-sub').textContent = sub;
+
+  const iconEl = document.getElementById('cfg-prev-icon');
+  if(logo){
+    iconEl.innerHTML = `<img src="${logo}" style="width:34px;height:34px;object-fit:contain;border-radius:4px" onerror="this.style.display='none'">`;
+  } else {
+    iconEl.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  }
+}
+
+function salvarConfig(){
+  const titulo = document.getElementById('cfg-titulo').value || 'Perfil Comportamental';
+  const sub    = document.getElementById('cfg-subtitulo').value || 'Colégio Mundo do Saber';
+  const logo   = document.getElementById('cfg-logo').value.trim();
+
+  // Aplicar cor em todo o site via CSS variables
+  const root = document.documentElement.style;
+  root.setProperty('--primary', cfgCor);
+  root.setProperty('--primary-light', lighten(cfgCor, 90));
+  root.setProperty('--primary-dark',  darken(cfgCor, 20));
+
+  // Atualizar topbar
+  document.getElementById('topbar').style.background = cfgCor;
+  document.getElementById('topbar-title').textContent = titulo;
+  document.getElementById('topbar-sub').textContent = sub;
+
+  const iconEl = document.getElementById('topbar-icon');
+  if(logo){
+    iconEl.style.background = 'rgba(255,255,255,.15)';
+    iconEl.innerHTML = `<img src="${logo}" style="width:34px;height:34px;object-fit:contain;border-radius:4px" onerror="this.innerHTML='<svg viewBox=\\'0 0 24 24\\' width=\\'20\\' height=\\'20\\' fill=\\'none\\' stroke=\\'#fff\\' stroke-width=\\'2\\'><circle cx=\\'12\\' cy=\\'8\\' r=\\'4\\'/><path d=\\'M4 20c0-4 3.6-7 8-7s8 3 8 7\\'/></svg>'">`;
+  } else {
+    iconEl.style.background = 'rgba(255,255,255,.15)';
+    iconEl.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+  }
+
+  // Salvar no localStorage para persistir
+  localStorage.setItem('cfg', JSON.stringify({cor:cfgCor, titulo, sub, logo}));
+
+  fecharConfig();
+}
+
+function abrirConfig(){
+  // Carregar valores atuais nos campos
+  document.getElementById('cfg-titulo').value    = document.getElementById('topbar-title').textContent;
+  document.getElementById('cfg-subtitulo').value = document.getElementById('topbar-sub').textContent;
+  document.getElementById('cfg-color-custom').value = cfgCor;
+  atualizarPreview();
+  document.getElementById('config-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharConfig(){
+  document.getElementById('config-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function carregarConfigSalva(){
+  try{
+    const cfg = JSON.parse(localStorage.getItem('cfg')||'{}');
+    if(cfg.cor){
+      cfgCor = cfg.cor;
+      document.getElementById('cfg-color-custom').value = cfg.cor;
+      // pré-preencher campos
+      if(cfg.titulo)   document.getElementById('cfg-titulo').value    = cfg.titulo;
+      if(cfg.sub)      document.getElementById('cfg-subtitulo').value = cfg.sub;
+      if(cfg.logo)     document.getElementById('cfg-logo').value      = cfg.logo;
+      salvarConfig();
+    }
+  }catch(e){}
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+init();
+carregarConfigSalva();
+</script>
+</body>
+</html>
