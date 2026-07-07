@@ -508,24 +508,13 @@
         <div class="modal-content">
             <span class="fechar-modal" onclick="fecharModal('modalIA')">&times;</span>
             <h3>⚙️ Configurar IA & E-mail</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                A análise por IA (Claude) e o envio de e-mails são feitos automaticamente pelo servidor
+                (Google Apps Script). A chave da API fica protegida lá — nada é configurado nesta página.
+            </p>
             <div class="form-group">
-                <label>Provedor de IA</label>
-                <select id="provedor-ia" onchange="mudarProvedor()">
-                    <option value="claude">Claude (Anthropic)</option>
-                    <option value="openai">GPT-4o (OpenAI)</option>
-                </select>
-            </div>
-            <div class="form-group" id="campo-chave" style="display:none;">
-                <label>Chave API OpenAI (sk-...)</label>
-                <input type="password" id="chave-openai" placeholder="sk-...">
-            </div>
-            <div class="form-group">
-                <label>E-mail do Gestor (para receber cópias)</label>
+                <label>E-mail do Gestor (para receber cópia dos resultados)</label>
                 <input type="email" id="email-gestor" placeholder="gestor@colegio.com.br">
-            </div>
-            <div class="form-group">
-                <label>Chave EmailJS (Opcional)</label>
-                <input type="text" id="emailjs-key" placeholder="Seu User ID do EmailJS">
             </div>
             <button onclick="salvarConfigIA()">Salvar Configurações</button>
         </div>
@@ -633,10 +622,7 @@
         };
 
         let config = {
-            provedor_ia: "claude",
-            chave_openai: "",
-            email_gestor: "",
-            emailjs_key: ""
+            email_gestor: ""
         };
 
         let cores = {
@@ -772,6 +758,11 @@
         }
 
         function selecionarTemperamento(idx, valor, tipo) {
+            // Substitui a resposta anterior da mesma afirmação (evita pontuação duplicada ao mudar de opção)
+            const existente = dadosFormulario.respostas_temperamento.findIndex(r => r.afirmacao === idx + 1);
+            if (existente !== -1) {
+                dadosFormulario.respostas_temperamento.splice(existente, 1);
+            }
             dadosFormulario.respostas_temperamento.push({ afirmacao: idx + 1, valor: valor, temperamento: tipo });
             
             document.querySelectorAll(`.escala-container`)[idx].querySelectorAll(".escala-btn").forEach((btn, i) => {
@@ -784,6 +775,11 @@
         }
 
         function selecionarEneagrama(blocoId, posicao) {
+            // Substitui a resposta anterior do mesmo bloco (evita contagem duplicada ao mudar de opção)
+            const existente = dadosFormulario.respostas_eneagrama.findIndex(r => r.bloco === blocoId);
+            if (existente !== -1) {
+                dadosFormulario.respostas_eneagrama.splice(existente, 1);
+            }
             dadosFormulario.respostas_eneagrama.push({ bloco: blocoId, posicao: posicao });
             document.querySelector(`input[name="enea${blocoId}"][value="${posicao}"]`).parentElement.classList.add("selecionada");
             [...document.querySelectorAll(`input[name="enea${blocoId}"]`)].forEach((inp, idx) => {
@@ -887,152 +883,209 @@
             dadosFormulario.scores_temperamento = scores;
         }
 
+        // ===== CÁLCULO DO PERFIL =====
+        const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec";
+
+        const NOMES_LINGUAGEM = {
+            A: "Palavras de afirmação",
+            B: "Tempo de qualidade",
+            C: "Presentes / Mimos",
+            D: "Atos de serviço",
+            E: "Presença / Acolhimento"
+        };
+
+        // Retorna todas as chaves empatadas com a maior pontuação (perfil combinado em caso de empate)
+        function chavesNoTopo(contagens) {
+            const max = Math.max(...Object.values(contagens));
+            if (max <= 0) return [];
+            return Object.keys(contagens).filter(k => contagens[k] === max);
+        }
+
+        function calcularPerfil() {
+            const contaLinguagens = {};
+            "ABCDE".split("").forEach(l => {
+                contaLinguagens[l] = dadosFormulario.respostas_linguagem.filter(r => r.resposta === l).length;
+            });
+            const lingTop = chavesNoTopo(contaLinguagens);
+
+            const nomesTemp = { colerico: "Colérico", sanguineo: "Sanguíneo", melancol: "Melancólico", fleumatico: "Fleumático" };
+            const tempTop = chavesNoTopo(dadosFormulario.scores_temperamento).map(k => nomesTemp[k]);
+
+            const eneaContagem = {};
+            dadosFormulario.respostas_eneagrama.forEach(r => {
+                const tipo = r.posicao + 1;
+                eneaContagem[tipo] = (eneaContagem[tipo] || 0) + 1;
+            });
+            const eneaTop = chavesNoTopo(eneaContagem).map(t => "Tipo " + t);
+
+            return {
+                linguagem: lingTop.map(l => NOMES_LINGUAGEM[l]).join(" / "),
+                distribuicao_linguagem: contaLinguagens,
+                temperamento: tempTop.join(" / "),
+                eneagrama: eneaTop.join(" / ")
+            };
+        }
+
         // ===== ENVIO =====
         function enviarFormulario() {
             if (!validarTela6()) return;
 
             irParaTela(7);
 
-            const urlAppsScript = "https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec";
+            const perfil = calcularPerfil();
+            dadosFormulario.perfil = perfil;
 
-            // Chamar IA (opcional)
-            let promiseIA = Promise.resolve({});
-            if (config.provedor_ia === "claude") {
-                promiseIA = chamarClaude();
-            } else if (config.provedor_ia === "openai") {
-                promiseIA = chamarOpenAI();
-            }
+            const payload = {
+                action: "submit",
+                nome: dadosFormulario.nome,
+                email: dadosFormulario.email,
+                setor: dadosFormulario.setor,
+                linguagem: perfil.linguagem,
+                distribuicao_linguagem: perfil.distribuicao_linguagem,
+                temperamento: perfil.temperamento,
+                scores_temperamento: dadosFormulario.scores_temperamento,
+                eneagrama: perfil.eneagrama,
+                email_gestor: config.email_gestor || ""
+            };
 
-            promiseIA.then(analiseIA => {
-                dadosFormulario.analise_ia = analiseIA;
-                
-                // Enviar para Apps Script
-                fetch(urlAppsScript, {
-                    method: "POST",
-                    body: JSON.stringify(dadosFormulario)
-                })
-                .then(r => r.json())
-                .then(data => {
-                    // Enviar e-mail (opcional)
-                    if (config.emailjs_key && config.email_gestor) {
-                        enviarEmailResultado();
-                    }
-                    exibirResultado();
-                })
-                .catch(e => {
-                    console.log("Erro ao enviar: " + e);
-                    exibirResultado(); // Mesmo com erro, mostra resultado
-                });
+            // O Apps Script salva na planilha, gera a análise com IA (Claude) e envia os e-mails.
+            fetch(URL_APPS_SCRIPT, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.analise && data.analise.quem_e) {
+                    dadosFormulario.analise_ia = data.analise;
+                }
+                exibirResultado();
+            })
+            .catch(e => {
+                console.log("Erro ao enviar: " + e);
+                exibirResultado(); // Mesmo com erro, mostra o resultado calculado localmente
             });
         }
 
         function exibirResultado() {
-            const contaLinguagens = {};
-            "ABCDE".split("").forEach(l => {
-                contaLinguagens[l] = dadosFormulario.respostas_linguagem.filter(r => r.resposta === l).length;
-            });
-
-            const lingPrincipal = Object.keys(contaLinguagens).reduce((a, b) =>
-                contaLinguagens[a] > contaLinguagens[b] ? a : b
-            );
-
+            const perfil = dadosFormulario.perfil || calcularPerfil();
+            const c = perfil.distribuicao_linguagem;
             const scores = dadosFormulario.scores_temperamento;
-            let tempPrincipal = "Fleumático";
-            let max = scores.fleumatico || 0;
-            if (scores.colerico > max) { tempPrincipal = "Colérico"; max = scores.colerico; }
-            if (scores.sanguineo > max) { tempPrincipal = "Sanguíneo"; max = scores.sanguineo; }
-            if (scores.melancol > max) { tempPrincipal = "Melancólico"; max = scores.melancol; }
-
-            const eneaContagem = {};
-            for (let i = 1; i <= 9; i++) eneaContagem[i] = 0;
-            dadosFormulario.respostas_eneagrama.forEach(r => {
-                const tipo = r.posicao + 1;
-                if (tipo >= 1 && tipo <= 9) eneaContagem[tipo]++;
-            });
-            const eneaPrincipal = Object.keys(eneaContagem).reduce((a, b) =>
-                eneaContagem[a] > eneaContagem[b] ? a : b
-            );
+            const ia = dadosFormulario.analise_ia || {};
 
             let html = `
                 <div class="resultado">
                     <div class="resultado-card">
                         <h3>Linguagem de Valorização</h3>
-                        <p><strong>${lingPrincipal}</strong></p>
-                        <p style="font-size: 12px; margin-top: 10px;">Distribuição: A=${contaLinguagens.A} | B=${contaLinguagens.B} | C=${contaLinguagens.C} | D=${contaLinguagens.D} | E=${contaLinguagens.E}</p>
+                        <p><strong>${perfil.linguagem}</strong></p>
+                        <p style="font-size: 12px; margin-top: 10px;">Distribuição: A=${c.A} | B=${c.B} | C=${c.C} | D=${c.D} | E=${c.E}</p>
                     </div>
                     <div class="resultado-card">
                         <h3>Temperamento</h3>
-                        <p><strong>${tempPrincipal}</strong></p>
+                        <p><strong>${perfil.temperamento}</strong></p>
                         <p style="font-size: 12px; margin-top: 10px;">Colérico=${scores.colerico} | Sanguíneo=${scores.sanguineo} | Melancólico=${scores.melancol} | Fleumático=${scores.fleumatico}</p>
                     </div>
                     <div class="resultado-card">
                         <h3>Eneagrama</h3>
-                        <p><strong>Tipo ${eneaPrincipal}</strong></p>
+                        <p><strong>${perfil.eneagrama}</strong></p>
                     </div>
             `;
 
-            if (dadosFormulario.analise_ia.quem_e) {
+            if (ia.quem_e) {
                 html += `
                     <div class="resultado-card">
                         <h3>Quem é você</h3>
-                        <p>${dadosFormulario.analise_ia.quem_e}</p>
+                        <p>${ia.quem_e}</p>
                     </div>
                     <div class="resultado-card">
                         <h3>Pontos Fortes</h3>
-                        <p>${dadosFormulario.analise_ia.pontos_fortes}</p>
+                        <p>${ia.pontos_fortes}</p>
                     </div>
                     <div class="resultado-card">
                         <h3>Pontos a Desenvolver</h3>
-                        <p>${dadosFormulario.analise_ia.pontos_desenvolver}</p>
+                        <p>${ia.pontos_desenvolver}</p>
                     </div>
                     <div class="resultado-card">
                         <h3>Como Comunicar</h3>
-                        <p>${dadosFormulario.analise_ia.como_comunicar}</p>
+                        <p>${ia.como_comunicar}</p>
                     </div>
                     <div class="resultado-card">
                         <h3>Como Motivar</h3>
-                        <p>${dadosFormulario.analise_ia.como_motivar}</p>
+                        <p>${ia.como_motivar}</p>
                     </div>
                     <div class="resultado-card">
                         <h3>Evitar Atrito</h3>
-                        <p>${dadosFormulario.analise_ia.evitar_atrito}</p>
+                        <p>${ia.evitar_atrito}</p>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="resultado-card">
+                        <p style="font-size: 13px; color: #666;">A análise personalizada por IA não pôde ser gerada agora, mas suas respostas foram registradas normalmente.</p>
                     </div>
                 `;
             }
 
             html += `</div>`;
             document.getElementById("resultado-conteudo").innerHTML = html;
+
+            // Avisa o dashboard aberto em outra aba do mesmo navegador
+            try {
+                localStorage.setItem("novoPerfil", JSON.stringify({
+                    data: new Date().toLocaleDateString("pt-BR"),
+                    nome: dadosFormulario.nome,
+                    email: dadosFormulario.email,
+                    setor: dadosFormulario.setor,
+                    linguagem: perfil.linguagem,
+                    temperamento: perfil.temperamento,
+                    eneagrama: perfil.eneagrama,
+                    como_comunicar: ia.como_comunicar || ""
+                }));
+            } catch (e) {}
+
             irParaTela(8);
         }
 
-        function chamarClaude() {
-            return Promise.resolve({
-                quem_e: "Análise da IA não disponível (configure sua chave)",
-                pontos_fortes: "...",
-                pontos_desenvolver: "...",
-                como_comunicar: "...",
-                como_motivar: "...",
-                evitar_atrito: "..."
-            });
-        }
-
-        function chamarOpenAI() {
-            return Promise.resolve({
-                quem_e: "Análise da IA não disponível (configure sua chave)",
-                pontos_fortes: "...",
-                pontos_desenvolver: "...",
-                como_comunicar: "...",
-                como_motivar: "...",
-                evitar_atrito: "..."
-            });
-        }
-
-        function enviarEmailResultado() {
-            // Implementar com EmailJS
-        }
-
         function baixarPDF() {
-            alert("Funcionalidade de download PDF em desenvolvimento.");
+            const perfil = dadosFormulario.perfil || calcularPerfil();
+            const c = perfil.distribuicao_linguagem;
+            const scores = dadosFormulario.scores_temperamento;
+            const ia = dadosFormulario.analise_ia || {};
+
+            const secoesIA = ia.quem_e ? `
+                <h2>Quem é você</h2><p>${ia.quem_e}</p>
+                <h2>Pontos Fortes</h2><p>${ia.pontos_fortes}</p>
+                <h2>Pontos a Desenvolver</h2><p>${ia.pontos_desenvolver}</p>
+                <h2>Como Comunicar</h2><p>${ia.como_comunicar}</p>
+                <h2>Como Motivar</h2><p>${ia.como_motivar}</p>
+                <h2>Evitar Atrito</h2><p>${ia.evitar_atrito}</p>` : "";
+
+            const win = window.open("", "_blank");
+            if (!win) {
+                mostrarMensagem("Permita pop-ups para baixar o PDF.", "erro");
+                return;
+            }
+            win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+                <title>Perfil Comportamental - ${dadosFormulario.nome}</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #222; max-width: 720px; margin: 30px auto; padding: 0 20px; }
+                    .topo { text-align: center; border-bottom: 3px solid #1f4788; padding-bottom: 15px; margin-bottom: 25px; }
+                    .topo h1 { color: #1f4788; font-size: 24px; margin-bottom: 4px; }
+                    .topo p { color: #666; font-size: 13px; }
+                    h2 { color: #1f4788; font-size: 15px; margin: 22px 0 6px; border-left: 4px solid #1f4788; padding-left: 8px; }
+                    p { font-size: 13px; line-height: 1.6; }
+                    .dados { font-size: 13px; margin-bottom: 10px; line-height: 1.7; }
+                    @media print { body { margin: 10mm auto; } }
+                </style></head><body>
+                <div class="topo"><h1>Perfil Comportamental</h1><p>Colégio Mundo do Saber — ${new Date().toLocaleDateString("pt-BR")}</p></div>
+                <div class="dados"><strong>Nome:</strong> ${dadosFormulario.nome}<br><strong>E-mail:</strong> ${dadosFormulario.email}<br><strong>Setor:</strong> ${dadosFormulario.setor}</div>
+                <h2>Linguagem de Valorização</h2><p><strong>${perfil.linguagem}</strong><br>Distribuição: A=${c.A} | B=${c.B} | C=${c.C} | D=${c.D} | E=${c.E}</p>
+                <h2>Temperamento</h2><p><strong>${perfil.temperamento}</strong><br>Colérico=${scores.colerico} | Sanguíneo=${scores.sanguineo} | Melancólico=${scores.melancol} | Fleumático=${scores.fleumatico}</p>
+                <h2>Eneagrama</h2><p><strong>${perfil.eneagrama}</strong></p>
+                ${secoesIA}
+                </body></html>`);
+            win.document.close();
+            win.focus();
+            setTimeout(() => win.print(), 400);
         }
 
         function novaConsulta() {
@@ -1053,10 +1106,7 @@
         }
 
         function salvarConfigIA() {
-            config.provedor_ia = document.getElementById("provedor-ia").value;
-            config.chave_openai = document.getElementById("chave-openai").value;
             config.email_gestor = document.getElementById("email-gestor").value;
-            config.emailjs_key = document.getElementById("emailjs-key").value;
             localStorage.setItem("configIA", JSON.stringify(config));
             mostrarMensagem("Configurações salvas!", "sucesso");
             fecharModal("modalIA");
@@ -1070,24 +1120,14 @@
             location.reload();
         }
 
-        function mudarProvedor() {
-            const prov = document.getElementById("provedor-ia").value;
-            document.getElementById("campo-chave").style.display = prov === "openai" ? "block" : "none";
-        }
-
         function definirCor(cor) {
             document.getElementById("cor-principal").value = cor;
         }
 
         function carregarConfig() {
             const saved = localStorage.getItem("configIA");
-            if (saved) config = JSON.parse(saved);
-            
-            document.getElementById("provedor-ia").value = config.provedor_ia;
-            document.getElementById("chave-openai").value = config.chave_openai;
-            document.getElementById("email-gestor").value = config.email_gestor;
-            document.getElementById("emailjs-key").value = config.emailjs_key;
-            mudarProvedor();
+            if (saved) config = { ...config, ...JSON.parse(saved) };
+            document.getElementById("email-gestor").value = config.email_gestor || "";
         }
 
         function carregarPersonalizacao() {
