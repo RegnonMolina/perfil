@@ -124,8 +124,10 @@ function gerarAnaliseIA(dados) {
   var d = dados.distribuicao_linguagem || {};
   var s = dados.scores_temperamento || {};
 
+  var escola = dados.escola || "uma escola";
+
   var prompt =
-    "Analise o perfil comportamental deste colaborador de uma escola (Colégio Mundo do Saber) " +
+    "Analise o perfil comportamental deste colaborador de uma escola (" + escola + ") " +
     "e escreva uma análise em português do Brasil, em tom acolhedor e profissional, " +
     "dirigida ao próprio colaborador (use 'você'). Cada campo deve ter de 2 a 4 frases.\n\n" +
     "Dados do colaborador:\n" +
@@ -232,16 +234,23 @@ function enviarEmails(dados, analise) {
 
 function montarEmailHtml(dados, analise) {
   var a = analise || {};
+  var cor = dados.cor || "#1f4788";
+  var escola = dados.escola || "";
+  var logo = dados.logo_url
+    ? '<img src="' + dados.logo_url + '" alt="Logo" style="max-height:48px;max-width:180px;margin-bottom:8px">'
+    : "";
+
   var secao = function (titulo, texto) {
     if (!texto) return "";
-    return '<h3 style="color:#1f4788;font-size:15px;margin:18px 0 4px">' + titulo + "</h3>" +
+    return '<h3 style="color:' + cor + ';font-size:15px;margin:18px 0 4px">' + titulo + "</h3>" +
       '<p style="font-size:13px;line-height:1.6;margin:0">' + texto + "</p>";
   };
 
   return '<div style="font-family:Segoe UI,Tahoma,sans-serif;max-width:640px;margin:0 auto;color:#222">' +
-    '<div style="background:#1f4788;color:#fff;padding:18px;text-align:center;border-radius:8px 8px 0 0">' +
+    '<div style="background:' + cor + ';color:#fff;padding:18px;text-align:center;border-radius:8px 8px 0 0">' +
+    logo +
     "<h2 style='margin:0;font-size:20px'>Perfil Comportamental</h2>" +
-    "<p style='margin:4px 0 0;font-size:12px;opacity:.85'>Colégio Mundo do Saber</p></div>" +
+    "<p style='margin:4px 0 0;font-size:12px;opacity:.85'>" + escola + "</p></div>" +
     '<div style="border:1px solid #ddd;border-top:none;padding:20px;border-radius:0 0 8px 8px">' +
     '<p style="font-size:13px"><strong>Nome:</strong> ' + dados.nome +
     "<br><strong>Setor:</strong> " + dados.setor +
