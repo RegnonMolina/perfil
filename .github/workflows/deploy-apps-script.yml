@@ -1,0 +1,52 @@
+# Publica o Apps Script automaticamente a cada alteração na pasta apps-script/
+# que chegar na branch main (merge de PR ou push direto).
+#
+# Requisito único (uma vez só): criar o segredo CLASPRC_JSON no repositório.
+# Passo a passo completo no CONFIGURACAO.md, seção "Publicação automática".
+#
+# O ID da implantação abaixo é o mesmo da URL pública do App da Web
+# (script.google.com/macros/s/<ID>/exec) — publicar nele mantém a URL.
+
+name: Publicar Apps Script
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps-script/**"
+      - ".clasp.json"
+  workflow_dispatch: {}
+
+env:
+  DEPLOYMENT_ID: AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar clasp
+        run: npm install -g @google/clasp@2.4.2
+
+      - name: Verificar credencial
+        run: |
+          if [ -z "${{ secrets.CLASPRC_JSON }}" ]; then
+            echo "::error::Segredo CLASPRC_JSON não configurado. Veja CONFIGURACAO.md, seção 'Publicação automática'."
+            exit 1
+          fi
+
+      - name: Autenticar
+        run: echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
+
+      - name: Enviar código para o Apps Script (clasp push)
+        run: clasp push -f
+
+      - name: Publicar nova versão na implantação existente (URL preservada)
+        run: clasp deploy --deploymentId "$DEPLOYMENT_ID" --description "Publicação automática via GitHub Actions ($GITHUB_SHA)"
