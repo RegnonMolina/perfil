@@ -61,6 +61,38 @@ No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `h
 
 ---
 
+## Publicação automática do Apps Script (opcional)
+
+Com esta automação, **toda alteração na pasta `apps-script/` que entrar na branch `main` é publicada sozinha** no seu projeto Apps Script — sem copiar e colar. Ela usa o GitHub Actions (arquivo `.github/workflows/deploy-apps-script.yml`) e a ferramenta oficial `clasp` do Google.
+
+### Configuração única (precisa de um computador, ~10 minutos)
+
+1. **Ativar a API do Apps Script** na sua conta Google: abra <https://script.google.com/home/usersettings> e ligue a chave **"API Google Apps Script"**.
+2. **Instalar o clasp e fazer login** (no terminal do computador — requer [Node.js](https://nodejs.org) instalado):
+   ```bash
+   npm install -g @google/clasp@2.4.2
+   clasp login
+   ```
+   O navegador abrirá para você autorizar com a sua conta Google (a mesma dona da planilha).
+3. **Copiar a credencial gerada**: abra o arquivo `.clasprc.json` que ficou na sua pasta de usuário
+   (Windows: `C:\Users\SEU_USUARIO\.clasprc.json` · Mac/Linux: `~/.clasprc.json`) e copie **todo** o conteúdo.
+4. **Criar o segredo no GitHub**: no repositório → **Settings → Secrets and variables → Actions → New repository secret**:
+   - Nome: `CLASPRC_JSON`
+   - Valor: o conteúdo copiado no passo 3
+5. Pronto. Para testar sem esperar um merge: aba **Actions → Publicar Apps Script → Run workflow**.
+
+> ⚠️ Essa credencial dá acesso aos seus projetos Apps Script — guarde-a **somente** como segredo do GitHub (nunca em arquivo do repositório). Se suspeitar de vazamento, revogue em <https://myaccount.google.com/permissions> e faça `clasp login` de novo.
+
+### Em colégios replicados
+
+Cada cópia do projeto aponta para o próprio script. No repositório do outro colégio, ajustar:
+
+- `.clasp.json` → `scriptId` do projeto Apps Script **dele** (na URL do editor: `script.google.com/d/SCRIPT_ID/edit`);
+- `.github/workflows/deploy-apps-script.yml` → `DEPLOYMENT_ID` com o ID da implantação **dele** (o trecho `AKfycb...` da URL `/exec`);
+- o segredo `CLASPRC_JSON` com o login **dele**.
+
+---
+
 ## Parte 2 — Replicar para OUTRO colégio
 
 Cada colégio tem a sua própria cópia independente: site, planilha, chave de IA e custos separados. Passo a passo para o seu amigo:
