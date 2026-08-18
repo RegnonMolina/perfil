@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Perfis da Equipe</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="config.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -85,9 +86,10 @@ tr:hover td{background:#F8FAFC}
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="topbar-icon">
+  <div class="topbar-icon" id="topbar-icon">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </div>
+  <img id="topbar-logo" alt="Logo" style="display:none;max-height:40px;max-width:120px;background:#fff;border-radius:8px;padding:3px 6px">
   <div class="topbar-info">
     <div class="topbar-title" id="dash-title">Dashboard — Perfis da Equipe</div>
     <div class="topbar-sub" id="dash-sub">Visualização em tempo real dos resultados</div>
@@ -102,10 +104,12 @@ tr:hover td{background:#F8FAFC}
   <h3>Configuração do Dashboard</h3>
   <div class="grid-config">
     <div>
-      <div class="field"><label>Nome do colégio</label><input type="text" id="cfg-nome" placeholder="Colégio Mundo do Saber"></div>
+      <div class="field"><label>Nome do colégio</label><input type="text" id="cfg-nome" placeholder="Colégio Exemplo"></div>
       <div class="field"><label>URL do Apps Script (Google Sheets)</label><input type="text" id="cfg-sheet-url" placeholder="https://script.google.com/macros/s/..."></div>
+      <div class="field"><label>URL da logo (opcional)</label><input type="text" id="cfg-logo" placeholder="https://..."></div>
     </div>
     <div>
+      <div class="field"><label>Cor institucional</label><input type="color" id="cfg-cor" style="width:100%;height:38px;padding:3px;border:1px solid var(--border);border-radius:var(--r)"></div>
       <div class="field"><label>Senha do gestor (para proteger o dashboard)</label><input type="password" id="cfg-senha" placeholder="Deixe em branco para sem senha"></div>
       <div class="field"><label>Modo de exibição padrão</label>
         <select id="cfg-view" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit">
@@ -181,16 +185,41 @@ const CORES=[
   {bg:'#E1F5EE',text:'#085041',dot:'#0F6E56'},
 ];
 
-let CFG={nome:'Colégio Mundo do Saber',sheetUrl:'https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec',senha:'',view:'table'};
+// Padrões vêm do config.js (mesmo arquivo usado pelo questionário);
+// ajustes feitos na caixa de configuração valem só para este navegador.
+const ESCOLA=window.CONFIG_ESCOLA||{};
+let CFG={
+  nome:ESCOLA.nome||'Colégio',
+  sheetUrl:ESCOLA.urlAppsScript||'',
+  logoUrl:ESCOLA.logoUrl||'',
+  cor:ESCOLA.corPrimaria||'#185FA5',
+  senha:'',
+  view:'table'
+};
 let DADOS=[];
 let FILTRADOS=[];
 let VIEW='table';
 
+function aplicarBrandingDash(){
+  const r=document.documentElement.style;
+  r.setProperty('--primary',CFG.cor);
+  r.setProperty('--primary-dark',`color-mix(in srgb, ${CFG.cor} 72%, black)`);
+  r.setProperty('--primary-light',`color-mix(in srgb, ${CFG.cor} 10%, white)`);
+  document.title=`Dashboard — ${CFG.nome}`;
+  document.getElementById('dash-title').textContent=`Dashboard — ${CFG.nome}`;
+  const logo=document.getElementById('topbar-logo');
+  const icone=document.getElementById('topbar-icon');
+  if(CFG.logoUrl){logo.src=CFG.logoUrl;logo.style.display='block';icone.style.display='none';}
+  else{logo.style.display='none';icone.style.display='flex';}
+}
+
 function carregarCFG(){
   try{const c=JSON.parse(localStorage.getItem('dashCFG')||'{}');if(c.nome)CFG={...CFG,...c};}catch(e){}
-  document.getElementById('dash-title').textContent=`Dashboard — ${CFG.nome}`;
+  aplicarBrandingDash();
   document.getElementById('cfg-nome').value=CFG.nome;
   document.getElementById('cfg-sheet-url').value=CFG.sheetUrl||'';
+  document.getElementById('cfg-logo').value=CFG.logoUrl||'';
+  document.getElementById('cfg-cor').value=CFG.cor;
   document.getElementById('cfg-senha').value=CFG.senha||'';
   document.getElementById('cfg-view').value=CFG.view||'table';
 }
@@ -198,10 +227,12 @@ function carregarCFG(){
 function salvarConfigDash(){
   CFG.nome=document.getElementById('cfg-nome').value.trim()||'Colégio';
   CFG.sheetUrl=document.getElementById('cfg-sheet-url').value.trim();
+  CFG.logoUrl=document.getElementById('cfg-logo').value.trim();
+  CFG.cor=document.getElementById('cfg-cor').value;
   CFG.senha=document.getElementById('cfg-senha').value;
   CFG.view=document.getElementById('cfg-view').value;
   localStorage.setItem('dashCFG',JSON.stringify(CFG));
-  document.getElementById('dash-title').textContent=`Dashboard — ${CFG.nome}`;
+  aplicarBrandingDash();
   toggleConfig();
   carregarDados();
 }

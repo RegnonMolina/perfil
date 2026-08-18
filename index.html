@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil Comportamental - Mundo do Saber</title>
+    <title>Perfil Comportamental</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
     <style>
         * {
             margin: 0;
@@ -11,9 +14,17 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --cor-primaria: #1f4788;
+            --cor-secundaria: #667eea;
+            --cor-primaria-escura: color-mix(in srgb, var(--cor-primaria) 75%, black);
+            --cor-secundaria-escura: color-mix(in srgb, var(--cor-secundaria) 80%, black);
+            --cor-secundaria-suave: color-mix(in srgb, var(--cor-secundaria) 10%, white);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--cor-secundaria) 0%, var(--cor-primaria) 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -22,27 +33,52 @@
             max-width: 700px;
             margin: 0 auto;
             background: white;
-            border-radius: 10px;
+            border-radius: 14px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #1f4788 0%, #0d47a1 100%);
+            background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-primaria-escura) 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
 
+        .header img {
+            max-height: 64px;
+            max-width: 220px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
         .header p {
             font-size: 14px;
             opacity: 0.9;
         }
+
+        .rodape {
+            max-width: 700px;
+            margin: 14px auto 0;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.85);
+            display: none;
+        }
+
+        .mini-barras { margin-top: 12px; }
+        .mini-barra-linha { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .mini-barra-nome { flex: 0 0 170px; font-size: 12px; color: #555; }
+        .mini-barra-trilha { flex: 1; height: 12px; background: #f0f0f0; border-radius: 6px; overflow: hidden; }
+        .mini-barra-preenchida { height: 100%; border-radius: 6px; background: var(--cor-secundaria); min-width: 2px; transition: width .3s; }
+        .mini-barra-num { flex: 0 0 22px; font-size: 12px; color: #888; text-align: right; }
+        @media (max-width: 480px) { .mini-barra-nome { flex-basis: 120px; } }
 
         .config-bar {
             background: #f5f5f5;
@@ -55,7 +91,7 @@
         .config-btn {
             padding: 8px 15px;
             border: none;
-            background: #1f4788;
+            background: var(--cor-primaria);
             color: white;
             border-radius: 5px;
             cursor: pointer;
@@ -63,7 +99,7 @@
         }
 
         .config-btn:hover {
-            background: #0d47a1;
+            background: var(--cor-primaria-escura);
         }
 
         .content {
@@ -85,7 +121,7 @@
         }
 
         .tela h2 {
-            color: #1f4788;
+            color: var(--cor-primaria);
             margin-bottom: 20px;
             font-size: 20px;
         }
@@ -128,12 +164,12 @@
 
         .opcao:hover {
             background: #f9f9f9;
-            border-color: #667eea;
+            border-color: var(--cor-secundaria);
         }
 
         .opcao.selecionada {
-            background: #e3f2fd;
-            border-color: #667eea;
+            background: var(--cor-secundaria-suave);
+            border-color: var(--cor-secundaria);
         }
 
         .opcao input[type="radio"] {
@@ -163,15 +199,15 @@
         }
 
         .escala-btn:hover {
-            background: #667eea;
+            background: var(--cor-secundaria);
             color: white;
-            border-color: #667eea;
+            border-color: var(--cor-secundaria);
         }
 
         .escala-btn.selecionado {
-            background: #667eea;
+            background: var(--cor-secundaria);
             color: white;
-            border-color: #667eea;
+            border-color: var(--cor-secundaria);
         }
 
         .blocos-eneagrama {
@@ -204,13 +240,13 @@
         }
 
         .bloco-opcao:hover {
-            border-color: #667eea;
+            border-color: var(--cor-secundaria);
             background: #f9f9f9;
         }
 
         .bloco-opcao.selecionada {
-            background: #e3f2fd;
-            border-color: #667eea;
+            background: var(--cor-secundaria-suave);
+            border-color: var(--cor-secundaria);
         }
 
         .bloco-opcao input[type="radio"] {
@@ -236,12 +272,12 @@
         }
 
         .btn-primario {
-            background: #667eea;
+            background: var(--cor-secundaria);
             color: white;
         }
 
         .btn-primario:hover {
-            background: #5568d3;
+            background: var(--cor-secundaria-escura);
         }
 
         .btn-secundario {
@@ -262,7 +298,7 @@
         }
 
         .progresso-barra {
-            background: #667eea;
+            background: var(--cor-secundaria);
             height: 100%;
             width: 0%;
             transition: width 0.3s;
@@ -280,11 +316,11 @@
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 15px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid var(--cor-secundaria);
         }
 
         .resultado-card h3 {
-            color: #1f4788;
+            color: var(--cor-primaria);
             margin-bottom: 10px;
         }
 
@@ -300,7 +336,7 @@
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid var(--cor-secundaria);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -335,7 +371,7 @@
         }
 
         .modal-content h3 {
-            color: #1f4788;
+            color: var(--cor-primaria);
             margin-bottom: 20px;
         }
 
@@ -346,7 +382,7 @@
         .modal-content button {
             width: 100%;
             padding: 12px;
-            background: #667eea;
+            background: var(--cor-secundaria);
             color: white;
             border: none;
             border-radius: 5px;
@@ -386,13 +422,13 @@
 <body>
     <div class="container">
         <div class="header">
+            <img id="header-logo" alt="Logo">
             <h1>Perfil Comportamental</h1>
-            <p>Colégio Mundo do Saber</p>
+            <p id="header-nome">Colégio</p>
         </div>
 
         <div class="config-bar">
-            <button class="config-btn" onclick="abrirConfigIA()">🤖 IA & E-mail</button>
-            <button class="config-btn" onclick="abrirPersonalizacao()">⚙️ Personalizar</button>
+            <button class="config-btn" onclick="abrirConfiguracoes()">⚙️ Personalizar</button>
         </div>
 
         <div class="content">
@@ -503,46 +539,55 @@
         </div>
     </div>
 
-    <!-- Modal Configuração IA -->
-    <div class="modal" id="modalIA">
+    <div class="rodape" id="rodape"></div>
+
+    <!-- Modal de Configurações / Personalização -->
+    <div class="modal" id="modalConfig">
         <div class="modal-content">
-            <span class="fechar-modal" onclick="fecharModal('modalIA')">&times;</span>
-            <h3>⚙️ Configurar IA & E-mail</h3>
-            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
-                A análise por IA (Claude) e o envio de e-mails são feitos automaticamente pelo servidor
-                (Google Apps Script). A chave da API fica protegida lá — nada é configurado nesta página.
+            <span class="fechar-modal" onclick="fecharModal('modalConfig')">&times;</span>
+            <h3>⚙️ Personalização do Colégio</h3>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                As alterações feitas aqui valem para <strong>este navegador</strong> (pré-visualização).
+                Para valer para todos que acessarem o site, edite o arquivo <code>config.js</code> do repositório.
             </p>
             <div class="form-group">
-                <label>E-mail do Gestor (para receber cópia dos resultados)</label>
-                <input type="email" id="email-gestor" placeholder="gestor@colegio.com.br">
-            </div>
-            <button onclick="salvarConfigIA()">Salvar Configurações</button>
-        </div>
-    </div>
-
-    <!-- Modal Personalização -->
-    <div class="modal" id="modalPersonal">
-        <div class="modal-content">
-            <span class="fechar-modal" onclick="fecharModal('modalPersonal')">&times;</span>
-            <h3>🎨 Personalizar Formulário</h3>
-            <div class="form-group">
-                <label>Cor Principal</label>
-                <input type="color" id="cor-principal" value="#667eea">
-                <div style="margin-top: 10px; display: flex; gap: 5px;">
-                    <button class="config-btn" style="flex:1; background: #667eea" onclick="definirCor('#667eea')">Roxo</button>
-                    <button class="config-btn" style="flex:1; background: #2196F3" onclick="definirCor('#2196F3')">Azul</button>
-                    <button class="config-btn" style="flex:1; background: #4CAF50" onclick="definirCor('#4CAF50')">Verde</button>
-                </div>
-            </div>
-            <div class="form-group">
                 <label>Nome da Instituição</label>
-                <input type="text" id="nome-instituicao" value="Colégio Mundo do Saber">
+                <input type="text" id="cfg-nome" placeholder="Colégio Exemplo">
+            </div>
+            <div class="form-group">
+                <label>Subtítulo do cabeçalho</label>
+                <input type="text" id="cfg-subtitulo" placeholder="Avaliação de Perfil Comportamental">
             </div>
             <div class="form-group">
                 <label>URL da Logo (opcional)</label>
-                <input type="text" id="url-logo" placeholder="https://...">
+                <input type="text" id="cfg-logo" placeholder="https://...">
             </div>
-            <button onclick="salvarPersonalizacao()">Salvar Personalização</button>
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex:1">
+                    <label>Cor primária</label>
+                    <input type="color" id="cfg-cor-primaria" style="width:100%; height: 42px; padding: 4px;">
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>Cor de destaque</label>
+                    <input type="color" id="cfg-cor-secundaria" style="width:100%; height: 42px; padding: 4px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>URL do Apps Script (planilha + IA + e-mail)</label>
+                <input type="text" id="cfg-url-script" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <div class="form-group">
+                <label>E-mail do Gestor (recebe cópia dos resultados)</label>
+                <input type="email" id="cfg-email-gestor" placeholder="gestor@colegio.com.br">
+            </div>
+            <div class="form-group">
+                <label>Rodapé (opcional)</label>
+                <input type="text" id="cfg-rodape" placeholder="© Colégio Exemplo — Recursos Humanos">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button style="background: #ddd; color: #333;" onclick="restaurarPadrao()">Restaurar padrão</button>
+                <button onclick="salvarConfiguracoes()">Salvar</button>
+            </div>
         </div>
     </div>
 
@@ -621,18 +666,57 @@
             analise_ia: {}
         };
 
-        let config = {
-            email_gestor: ""
+        // ===== IDENTIDADE VISUAL (BRANDING) =====
+        // Padrões definidos em config.js; ajustes locais (deste navegador) por cima.
+        const BRANDING_PADRAO = {
+            nome: "Colégio",
+            subtitulo: "Avaliação de Perfil Comportamental",
+            logoUrl: "",
+            corPrimaria: "#1f4788",
+            corSecundaria: "#667eea",
+            urlAppsScript: "",
+            emailGestor: "",
+            rodape: ""
         };
 
-        let cores = {
-            principal: "#667eea"
-        };
+        let branding = {};
+
+        function carregarBranding() {
+            let overrides = {};
+            try { overrides = JSON.parse(localStorage.getItem("brandingOverrides") || "{}"); } catch (e) {}
+            branding = { ...BRANDING_PADRAO, ...(window.CONFIG_ESCOLA || {}), ...overrides };
+        }
+
+        function aplicarBranding() {
+            const raiz = document.documentElement.style;
+            raiz.setProperty("--cor-primaria", branding.corPrimaria);
+            raiz.setProperty("--cor-secundaria", branding.corSecundaria);
+
+            document.title = "Perfil Comportamental — " + branding.nome;
+            document.getElementById("header-nome").textContent = branding.nome +
+                (branding.subtitulo ? " · " + branding.subtitulo : "");
+
+            const logo = document.getElementById("header-logo");
+            if (branding.logoUrl) {
+                logo.src = branding.logoUrl;
+                logo.style.display = "inline-block";
+            } else {
+                logo.style.display = "none";
+            }
+
+            const rodape = document.getElementById("rodape");
+            if (branding.rodape) {
+                rodape.textContent = branding.rodape;
+                rodape.style.display = "block";
+            } else {
+                rodape.style.display = "none";
+            }
+        }
 
         // ===== INICIALIZAÇÃO =====
         document.addEventListener("DOMContentLoaded", function() {
-            carregarConfig();
-            carregarPersonalizacao();
+            carregarBranding();
+            aplicarBranding();
             renderizarPerguntas();
             atualizarProgresso();
         });
@@ -884,8 +968,6 @@
         }
 
         // ===== CÁLCULO DO PERFIL =====
-        const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec";
-
         const NOMES_LINGUAGEM = {
             A: "Palavras de afirmação",
             B: "Tempo de qualidade",
@@ -945,11 +1027,14 @@
                 temperamento: perfil.temperamento,
                 scores_temperamento: dadosFormulario.scores_temperamento,
                 eneagrama: perfil.eneagrama,
-                email_gestor: config.email_gestor || ""
+                email_gestor: branding.emailGestor || "",
+                escola: branding.nome,
+                cor: branding.corPrimaria,
+                logo_url: branding.logoUrl || ""
             };
 
             // O Apps Script salva na planilha, gera a análise com IA (Claude) e envia os e-mails.
-            fetch(URL_APPS_SCRIPT, {
+            fetch(branding.urlAppsScript, {
                 method: "POST",
                 body: JSON.stringify(payload)
             })
@@ -966,6 +1051,29 @@
             });
         }
 
+        function miniBarrasHtml(pares) {
+            const max = Math.max(...pares.map(p => p.valor), 1);
+            return '<div class="mini-barras">' + pares.map(p => `
+                <div class="mini-barra-linha">
+                    <div class="mini-barra-nome">${p.nome}</div>
+                    <div class="mini-barra-trilha"><div class="mini-barra-preenchida" style="width:${Math.round(p.valor / max * 100)}%"></div></div>
+                    <div class="mini-barra-num">${p.valor}</div>
+                </div>`).join('') + '</div>';
+        }
+
+        function paresLinguagem(c) {
+            return "ABCDE".split("").map(l => ({ nome: NOMES_LINGUAGEM[l], valor: c[l] || 0 }));
+        }
+
+        function paresTemperamento(s) {
+            return [
+                { nome: "Colérico", valor: s.colerico || 0 },
+                { nome: "Sanguíneo", valor: s.sanguineo || 0 },
+                { nome: "Melancólico", valor: s.melancol || 0 },
+                { nome: "Fleumático", valor: s.fleumatico || 0 }
+            ];
+        }
+
         function exibirResultado() {
             const perfil = dadosFormulario.perfil || calcularPerfil();
             const c = perfil.distribuicao_linguagem;
@@ -975,14 +1083,18 @@
             let html = `
                 <div class="resultado">
                     <div class="resultado-card">
+                        <h3>${dadosFormulario.nome}</h3>
+                        <p style="font-size: 13px;">${dadosFormulario.setor} · ${branding.nome} · ${new Date().toLocaleDateString("pt-BR")}</p>
+                    </div>
+                    <div class="resultado-card">
                         <h3>Linguagem de Valorização</h3>
                         <p><strong>${perfil.linguagem}</strong></p>
-                        <p style="font-size: 12px; margin-top: 10px;">Distribuição: A=${c.A} | B=${c.B} | C=${c.C} | D=${c.D} | E=${c.E}</p>
+                        ${miniBarrasHtml(paresLinguagem(c))}
                     </div>
                     <div class="resultado-card">
                         <h3>Temperamento</h3>
                         <p><strong>${perfil.temperamento}</strong></p>
-                        <p style="font-size: 12px; margin-top: 10px;">Colérico=${scores.colerico} | Sanguíneo=${scores.sanguineo} | Melancólico=${scores.melancol} | Fleumático=${scores.fleumatico}</p>
+                        ${miniBarrasHtml(paresTemperamento(scores))}
                     </div>
                     <div class="resultado-card">
                         <h3>Eneagrama</h3>
@@ -1064,22 +1176,28 @@
                 mostrarMensagem("Permita pop-ups para baixar o PDF.", "erro");
                 return;
             }
+            const cor = branding.corPrimaria;
+            const logoHtml = branding.logoUrl ? `<img src="${branding.logoUrl}" alt="Logo" style="max-height:56px;max-width:200px;margin-bottom:8px">` : "";
+            const listaLing = paresLinguagem(c).map(p => p.nome + ": " + p.valor).join(" · ");
+            const listaTemp = paresTemperamento(scores).map(p => p.nome + ": " + p.valor).join(" · ");
+
             win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
                 <title>Perfil Comportamental - ${dadosFormulario.nome}</title>
                 <style>
-                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #222; max-width: 720px; margin: 30px auto; padding: 0 20px; }
-                    .topo { text-align: center; border-bottom: 3px solid #1f4788; padding-bottom: 15px; margin-bottom: 25px; }
-                    .topo h1 { color: #1f4788; font-size: 24px; margin-bottom: 4px; }
+                    body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #222; max-width: 720px; margin: 30px auto; padding: 0 20px; }
+                    .topo { text-align: center; border-bottom: 3px solid ${cor}; padding-bottom: 15px; margin-bottom: 25px; }
+                    .topo h1 { color: ${cor}; font-size: 24px; margin-bottom: 4px; }
                     .topo p { color: #666; font-size: 13px; }
-                    h2 { color: #1f4788; font-size: 15px; margin: 22px 0 6px; border-left: 4px solid #1f4788; padding-left: 8px; }
+                    h2 { color: ${cor}; font-size: 15px; margin: 22px 0 6px; border-left: 4px solid ${cor}; padding-left: 8px; }
                     p { font-size: 13px; line-height: 1.6; }
                     .dados { font-size: 13px; margin-bottom: 10px; line-height: 1.7; }
+                    .detalhe { font-size: 12px; color: #555; }
                     @media print { body { margin: 10mm auto; } }
                 </style></head><body>
-                <div class="topo"><h1>Perfil Comportamental</h1><p>Colégio Mundo do Saber — ${new Date().toLocaleDateString("pt-BR")}</p></div>
+                <div class="topo">${logoHtml}<h1>Perfil Comportamental</h1><p>${branding.nome} — ${new Date().toLocaleDateString("pt-BR")}</p></div>
                 <div class="dados"><strong>Nome:</strong> ${dadosFormulario.nome}<br><strong>E-mail:</strong> ${dadosFormulario.email}<br><strong>Setor:</strong> ${dadosFormulario.setor}</div>
-                <h2>Linguagem de Valorização</h2><p><strong>${perfil.linguagem}</strong><br>Distribuição: A=${c.A} | B=${c.B} | C=${c.C} | D=${c.D} | E=${c.E}</p>
-                <h2>Temperamento</h2><p><strong>${perfil.temperamento}</strong><br>Colérico=${scores.colerico} | Sanguíneo=${scores.sanguineo} | Melancólico=${scores.melancol} | Fleumático=${scores.fleumatico}</p>
+                <h2>Linguagem de Valorização</h2><p><strong>${perfil.linguagem}</strong><br><span class="detalhe">${listaLing}</span></p>
+                <h2>Temperamento</h2><p><strong>${perfil.temperamento}</strong><br><span class="detalhe">${listaTemp}</span></p>
                 <h2>Eneagrama</h2><p><strong>${perfil.eneagrama}</strong></p>
                 ${secoesIA}
                 </body></html>`);
@@ -1093,47 +1211,46 @@
         }
 
         // ===== CONFIGURAÇÕES =====
-        function abrirConfigIA() {
-            document.getElementById("modalIA").style.display = "block";
-        }
-
-        function abrirPersonalizacao() {
-            document.getElementById("modalPersonal").style.display = "block";
+        function abrirConfiguracoes() {
+            document.getElementById("cfg-nome").value = branding.nome;
+            document.getElementById("cfg-subtitulo").value = branding.subtitulo || "";
+            document.getElementById("cfg-logo").value = branding.logoUrl || "";
+            document.getElementById("cfg-cor-primaria").value = branding.corPrimaria;
+            document.getElementById("cfg-cor-secundaria").value = branding.corSecundaria;
+            document.getElementById("cfg-url-script").value = branding.urlAppsScript || "";
+            document.getElementById("cfg-email-gestor").value = branding.emailGestor || "";
+            document.getElementById("cfg-rodape").value = branding.rodape || "";
+            document.getElementById("modalConfig").style.display = "block";
         }
 
         function fecharModal(id) {
             document.getElementById(id).style.display = "none";
         }
 
-        function salvarConfigIA() {
-            config.email_gestor = document.getElementById("email-gestor").value;
-            localStorage.setItem("configIA", JSON.stringify(config));
-            mostrarMensagem("Configurações salvas!", "sucesso");
-            fecharModal("modalIA");
+        function salvarConfiguracoes() {
+            const overrides = {
+                nome: document.getElementById("cfg-nome").value.trim() || BRANDING_PADRAO.nome,
+                subtitulo: document.getElementById("cfg-subtitulo").value.trim(),
+                logoUrl: document.getElementById("cfg-logo").value.trim(),
+                corPrimaria: document.getElementById("cfg-cor-primaria").value,
+                corSecundaria: document.getElementById("cfg-cor-secundaria").value,
+                urlAppsScript: document.getElementById("cfg-url-script").value.trim(),
+                emailGestor: document.getElementById("cfg-email-gestor").value.trim(),
+                rodape: document.getElementById("cfg-rodape").value.trim()
+            };
+            localStorage.setItem("brandingOverrides", JSON.stringify(overrides));
+            carregarBranding();
+            aplicarBranding();
+            mostrarMensagem("Personalização salva neste navegador!", "sucesso");
+            fecharModal("modalConfig");
         }
 
-        function salvarPersonalizacao() {
-            cores.principal = document.getElementById("cor-principal").value;
-            localStorage.setItem("cores", JSON.stringify(cores));
-            mostrarMensagem("Personalização salva!", "sucesso");
-            fecharModal("modalPersonal");
-            location.reload();
-        }
-
-        function definirCor(cor) {
-            document.getElementById("cor-principal").value = cor;
-        }
-
-        function carregarConfig() {
-            const saved = localStorage.getItem("configIA");
-            if (saved) config = { ...config, ...JSON.parse(saved) };
-            document.getElementById("email-gestor").value = config.email_gestor || "";
-        }
-
-        function carregarPersonalizacao() {
-            const saved = localStorage.getItem("cores");
-            if (saved) cores = JSON.parse(saved);
-            document.documentElement.style.setProperty("--cor-principal", cores.principal);
+        function restaurarPadrao() {
+            localStorage.removeItem("brandingOverrides");
+            carregarBranding();
+            aplicarBranding();
+            mostrarMensagem("Personalização restaurada para o padrão do config.js.", "sucesso");
+            fecharModal("modalConfig");
         }
 
         function mostrarMensagem(msg, tipo) {

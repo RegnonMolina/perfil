@@ -1,61 +1,86 @@
-# Configuração do Perfil Comportamental
+# Perfil Comportamental — Configuração e Replicação
 
-Este projeto tem três partes:
+Sistema de avaliação de perfil comportamental **white-label**: cada colégio coloca a própria marca (nome, logo, cores) no teste, no resultado, no PDF, nos e-mails e no dashboard, editando **um único arquivo** (`config.js`).
+
+## Estrutura do projeto
 
 | Arquivo | O que é |
 |---|---|
+| `config.js` | **Identidade do colégio** — nome, logo, cores, URL do Apps Script. O único arquivo que cada colégio edita. |
 | `index.html` | O questionário que os colaboradores respondem |
-| `dashboard.html` | O painel do gestor com todos os resultados |
-| `apps-script/Codigo.gs` | O "servidor" (Google Apps Script): salva na planilha, gera a análise com IA e envia os e-mails |
+| `dashboard.html` | O painel do gestor com todos os resultados e gráficos |
+| `apps-script/Codigo.gs` | O "servidor" (Google Apps Script): salva na planilha, gera a análise com IA (Claude) e envia os e-mails |
 
-## Passo 1 — Atualizar o Apps Script
+---
 
-1. Abra a sua planilha do Google que recebe as respostas.
-2. Vá em **Extensões → Apps Script**.
-3. Apague o código antigo e cole todo o conteúdo de `apps-script/Codigo.gs`.
-4. Salve (ícone de disquete).
+## Parte 1 — Configurar o SEU colégio
 
-## Passo 2 — Configurar a chave da IA (Claude)
+### 1.1 Identidade visual (`config.js`)
 
-1. Crie uma chave de API em <https://console.anthropic.com> (menu **API Keys**).
-   É um serviço pago por uso — cada teste respondido custa cerca de **US$ 0,03** (uns R$ 0,17).
-2. No Apps Script, vá em **Configurações do projeto** (ícone de engrenagem) → **Propriedades do script** → **Adicionar propriedade**:
-   - Propriedade: `ANTHROPIC_API_KEY`
-   - Valor: sua chave (`sk-ant-...`)
-3. (Opcional) Adicione também `EMAIL_GESTOR` com o e-mail que deve receber cópia de todos os resultados.
+Edite o arquivo `config.js` e preencha:
 
-> A chave fica guardada **só no Apps Script** — ela nunca aparece na página pública, então ninguém consegue roubá-la.
+```js
+nome: "Colégio Exemplo",
+subtitulo: "Avaliação de Perfil Comportamental",
+logoUrl: "https://exemplo.com/logo.png",   // ou "" para sem logo
+corPrimaria: "#1f4788",     // cor institucional (cabeçalho, títulos)
+corSecundaria: "#667eea",   // cor de destaque (botões, seleções)
+urlAppsScript: "https://script.google.com/macros/s/SEU_ID/exec",
+emailGestor: "gestor@colegioexemplo.com.br",
+rodape: "© Colégio Exemplo — Recursos Humanos"
+```
 
-## Passo 3 — Reimplantar o App da Web
+Essas cores e textos se aplicam automaticamente a **tudo**: teste, tela de resultado, PDF, e-mails e dashboard.
 
-1. No Apps Script, clique em **Implantar → Gerenciar implantações**.
-2. Clique no lápis (editar) da implantação existente → em **Versão**, escolha **Nova versão** → **Implantar**.
+> 💡 Também dá para ajustar pelo botão **⚙️ Personalizar** dentro das páginas — útil para testar cores ao vivo — mas esses ajustes valem só para o navegador de quem mexeu. O que vale para todo mundo é o `config.js`.
+
+### 1.2 Planilha + Apps Script (banco de dados, IA e e-mail)
+
+1. Crie uma planilha no Google Sheets (ou use a existente).
+2. Na planilha: **Extensões → Apps Script** → apague o código e cole todo o conteúdo de `apps-script/Codigo.gs` → salve.
+3. **Chave da IA**: crie uma chave em <https://console.anthropic.com> (menu API Keys). É paga por uso — cerca de **US$ 0,03 (~R$ 0,17) por teste respondido**. No Apps Script: **Configurações do projeto (engrenagem) → Propriedades do script → Adicionar**:
+   - `ANTHROPIC_API_KEY` = sua chave (`sk-ant-...`)
+   - `EMAIL_GESTOR` = e-mail padrão do gestor (opcional)
+4. **Implantar → Nova implantação → App da Web**:
    - Executar como: **você**
    - Quem pode acessar: **Qualquer pessoa**
-3. Se a URL da implantação **mudou**, atualize a constante `URL_APPS_SCRIPT` no `index.html` e o campo "URL do Apps Script" no dashboard.
+5. Copie a **URL do App da Web** e cole no campo `urlAppsScript` do `config.js`.
 
-> Na primeira execução o Google vai pedir autorização para o script acessar a planilha e enviar e-mails — autorize com a sua conta.
+> 🔒 A chave da API fica guardada **só no Apps Script** — nunca aparece no site público.
+> Na primeira execução o Google pedirá autorização para acessar a planilha e enviar e-mails — autorize.
 
-## Passo 4 — Testar
+### 1.3 Publicar o site
 
-1. Abra o `index.html` e responda um teste completo.
-2. Verifique:
-   - A tela de resultado mostra os cards de análise da IA ("Quem é você", "Pontos Fortes"...)
-   - Chegou uma linha nova na aba **Respostas** da planilha
-   - O colaborador e o gestor receberam o e-mail
-   - O botão **Baixar PDF** abre a janela de impressão (escolha "Salvar como PDF")
-3. Abra o `dashboard.html` e clique em **Atualizar** — os gráficos e a tabela devem carregar.
+No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `https://SEU_USUARIO.github.io/NOME_DO_REPOSITORIO/`.
 
-## O que mudou nesta versão
+### 1.4 Testar
 
-- **Análise por IA de verdade**: o Apps Script chama o Claude (modelo `claude-opus-4-8`) e devolve os 6 cards de análise personalizados. Antes, as funções eram apenas esqueletos.
-- **E-mail automático**: o resultado é enviado por e-mail ao colaborador e ao gestor via `MailApp` (o e-mail sai da sua conta Google — sem precisar de EmailJS).
-- **PDF**: o botão "Baixar PDF" gera uma página formatada e abre a impressão do navegador (salvar como PDF).
-- **Empates no perfil**: em caso de empate (ex.: mesma pontuação em Colérico e Sanguíneo), o resultado mostra o perfil combinado ("Colérico / Sanguíneo") em vez de escolher um silenciosamente.
-- **Correção de bug**: mudar de resposta no Temperamento ou no Eneagrama não infla mais a pontuação (antes, cada clique somava de novo).
-- **Dashboard**: gráficos de distribuição (linguagens, temperamentos, setores) e senha do gestor agora funcional.
+1. Responda um teste completo no `index.html`.
+2. Confira: cards de análise da IA no resultado, linha nova na planilha, e-mails recebidos, botão **Baixar PDF** (escolha "Salvar como PDF" na impressão).
+3. Abra o `dashboard.html` → **Atualizar**: gráficos e tabela carregam. Se configurar senha, ela é pedida ao abrir.
 
-## Avisos
+---
 
-- A **senha do dashboard** é verificada no navegador: serve para evitar acesso casual, mas não é uma autenticação de verdade. Não publique o dashboard em local público se os dados forem sensíveis.
-- O `MailApp` do Google tem limite diário de envio (100 e-mails/dia em contas gratuitas, 1.500/dia no Workspace) — mais que suficiente para o uso normal.
+## Parte 2 — Replicar para OUTRO colégio
+
+Cada colégio tem a sua própria cópia independente: site, planilha, chave de IA e custos separados. Passo a passo para o seu amigo:
+
+1. **Copiar o projeto**: no GitHub, abrir o seu repositório → botão **Fork** (ou **Use this template**, se configurado) → agora ele tem a cópia dele.
+2. **Personalizar**: editar o `config.js` com nome, logo, cores e (depois do passo 3) a URL do Apps Script **dele**.
+3. **Criar o backend próprio**: seguir a Parte 1.2 acima com a planilha e a conta Google **dele** — inclusive a chave da API da Anthropic dele (assim cada colégio paga o próprio consumo).
+4. **Publicar**: ativar o GitHub Pages no repositório dele (Parte 1.3).
+5. **Testar** (Parte 1.4).
+
+Pronto: o teste dele terá a cara do colégio dele, salvando na planilha dele, sem misturar dados entre colégios.
+
+---
+
+## Perguntas frequentes
+
+**Posso mudar as perguntas?** As perguntas do instrumento ficam em `index.html` (constantes `PERGUNTAS_LINGUAGEM`, `AFIRMACOES_TEMP` e `BLOCOS_ENEAGRAMA`). Recomendamos não alterar, para manter a validade do teste e a comparabilidade entre resultados.
+
+**Quanto custa?** GitHub Pages, Google Sheets e Apps Script são gratuitos. O único custo é a API da IA: ~US$ 0,03 por teste (100 testes ≈ R$ 17). Sem a chave configurada, tudo funciona normalmente — apenas sem os cards de análise da IA e sem e-mails com análise.
+
+**Limites de e-mail:** o `MailApp` do Google envia até 100 e-mails/dia em contas gratuitas (1.500/dia no Workspace).
+
+**A senha do dashboard é segura?** É uma verificação no navegador: evita acesso casual, mas não é autenticação de verdade. Não divulgue o link do dashboard publicamente se os dados forem sensíveis.
