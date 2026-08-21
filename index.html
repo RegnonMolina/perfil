@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
     <script src="instrumento.js"></script>
+    <script src="clima.js" defer></script>
     <style>
         * {
             margin: 0;
@@ -62,6 +63,11 @@
         .header p {
             font-size: 14px;
             opacity: 0.9;
+        }
+
+        .clima-topo {
+            max-width: 700px;
+            margin: 0 auto;
         }
 
         .rodape {
@@ -650,6 +656,8 @@
     </style>
 </head>
 <body>
+    <div id="clima-topo" class="clima-topo"></div>
+
     <div class="container">
         <div class="header">
             <img id="header-logo" alt="Logo">

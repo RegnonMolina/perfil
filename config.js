@@ -37,6 +37,17 @@ window.CONFIG_ESCOLA = {
   // Texto pequeno exibido no rodapé das páginas (deixe "" para ocultar)
   rodape: "",
 
+  // Card de clima exibido no topo das páginas (dados da API gratuita Open-Meteo)
+  clima: {
+    exibir: true,             // false esconde o card em todas as páginas
+    fonte: "dispositivo",     // "dispositivo" = posição atual de quem acessa; "cidade" = a cidade abaixo
+    cidade: "Ribeirão Preto", // usada quando fonte é "cidade" e quando o dispositivo não informa a posição
+    latitude: null,           // opcional: preencha lat/lon para dispensar a busca pelo nome
+    longitude: null,
+    unidade: "C",             // "C" (Celsius) ou "F" (Fahrenheit)
+    mostrarConfiguracoes: true // false esconde o botão ⚙ do card
+  },
+
   // ----------------------------------------------------------
   //  VOCABULÁRIO DA ORGANIZAÇÃO
   // ----------------------------------------------------------
