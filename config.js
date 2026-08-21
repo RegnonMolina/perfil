@@ -35,5 +35,50 @@ window.CONFIG_ESCOLA = {
   emailGestor: "",
 
   // Texto pequeno exibido no rodapé das páginas (deixe "" para ocultar)
-  rodape: ""
+  rodape: "",
+
+  // ----------------------------------------------------------
+  //  VOCABULÁRIO DA ORGANIZAÇÃO
+  // ----------------------------------------------------------
+  //
+  // É daqui que saem as palavras usadas na tela e, principalmente, na análise
+  // gerada pela IA. Antes da v2.0 esse vocabulário estava fixo no código do
+  // Apps Script ("colaborador de uma escola", "ambiente escolar", "gestor"),
+  // o que obrigava a manter uma cópia separada do backend para cada cliente.
+  //
+  // Os ITENS do questionário continuam iguais para todo mundo, de propósito:
+  // mudar o texto das perguntas por cliente tornaria os resultados
+  // incomparáveis entre si. O que muda por aqui é só a linguagem da análise.
+  //
+  // Para outro tipo de organização, veja o exemplo pronto em config.bni.js.
+  contexto: {
+    // Como a organização é descrita para a IA ("uma escola", "um grupo de
+    // networking", "uma clínica"...). Entra em frases, então use o artigo.
+    tipoOrganizacao: "uma escola",
+
+    // Como se chama quem responde ao teste.
+    termoPessoa: "colaborador",
+
+    // Como se chama quem recebe a cópia do resultado e lidera a pessoa.
+    termoLider: "gestor",
+
+    // Rótulo do campo de agrupamento na tela de identificação.
+    termoGrupo: "Setor",
+
+    // Descrição do ambiente, usada pela IA para dar exemplos concretos.
+    descricaoAmbiente: "o dia a dia escolar",
+
+    // Opções do campo de agrupamento.
+    opcoesGrupo: [
+      "Administrativo",
+      "Comercial",
+      "Coordenação",
+      "Auxiliar de sala",
+      "Professor(a)",
+      "Cozinha",
+      "Limpeza",
+      "Segurança",
+      "Externo (Consultor, Amigo, Parente)"
+    ]
+  }
 };

@@ -6,10 +6,42 @@ Sistema de avaliação de perfil comportamental **white-label**: cada colégio c
 
 | Arquivo | O que é |
 |---|---|
-| `config.js` | **Identidade do colégio** — nome, logo, cores, URL do Apps Script. O único arquivo que cada colégio edita. |
-| `index.html` | O questionário que os colaboradores respondem |
-| `dashboard.html` | O painel do gestor com todos os resultados e gráficos |
+| `config.js` | **Identidade da organização** — nome, logo, cores, URL do Apps Script e o vocabulário (`contexto`). O único arquivo que cada organização edita. |
+| `config.bni.js` | Exemplo de configuração para um grupo de networking, com outro vocabulário |
+| `instrumento.js` | **O questionário e o cálculo** — banco de itens dos quatro módulos e as funções de pontuação. Não edite sem rodar `npm test`. |
+| `index.html` | O questionário que as pessoas respondem |
+| `dashboard.html` | O painel com todos os resultados e gráficos |
 | `apps-script/Codigo.gs` | O "servidor" (Google Apps Script): salva na planilha, gera a análise com IA (Claude) e envia os e-mails |
+| `tests/` | Testes automatizados que provam as propriedades do questionário |
+| `docs/` | Relatório da correção do instrumento e o convite para refazer o teste |
+
+## O instrumento (v2.0)
+
+São quatro módulos, 75 itens pontuados, cerca de 12 minutos:
+
+| Módulo | Itens | Formato | O que devolve |
+|---|---|---|---|
+| Linguagens de Valorização | 20 | Pares de escolha forçada | Principal, secundária e distribuição nas 5 linguagens |
+| Temperamento | 16 | Escala 1 a 5 | Principal, secundário e percentual nos 4 temperamentos |
+| Eneagrama | 27 | Escala 1 a 5 | Tipo (1 a 9), asa e centro de inteligência |
+| DISC | 12 blocos | Tétrade MAIS/MENOS | Score dos 4 fatores, dominante, secundário e combinação |
+
+Mais um item de atenção, que não pontua e serve para identificar quem respondeu
+no automático.
+
+> ⚠️ As perguntas são **iguais para todas as organizações**, de propósito: mudar o
+> texto dos itens por cliente tornaria os resultados incomparáveis entre si. O que
+> muda por organização é o vocabulário da análise (bloco `contexto` do `config.js`).
+
+> Este é um instrumento de autoconhecimento e desenvolvimento. Não é ferramenta de
+> seleção, não constitui diagnóstico clínico e não substitui avaliação profissional.
+
+### Se você mexer no questionário
+
+Rode `npm test` antes de publicar. Os testes verificam, entre outras coisas, que
+todas as linguagens têm as mesmas chances de pontuar, que nenhum item está
+duplicado, que os nove tipos do eneagrama são todos alcançáveis e que o DISC
+continua balanceado. São exatamente as falhas que existiam na versão anterior.
 
 ---
 
@@ -27,8 +59,22 @@ corPrimaria: "#1f4788",     // cor institucional (cabeçalho, títulos)
 corSecundaria: "#667eea",   // cor de destaque (botões, seleções)
 urlAppsScript: "https://script.google.com/macros/s/SEU_ID/exec",
 emailGestor: "gestor@colegioexemplo.com.br",
-rodape: "© Colégio Exemplo — Recursos Humanos"
+rodape: "© Colégio Exemplo — Recursos Humanos",
+
+// Vocabulário usado na tela, no e-mail e na análise da IA
+contexto: {
+  tipoOrganizacao: "uma escola",       // "um grupo de networking", "uma clínica"...
+  termoPessoa: "colaborador",          // "membro", "profissional"...
+  termoLider: "gestor",                // "líder do capítulo", "coordenador"...
+  termoGrupo: "Setor",                 // rótulo do campo de agrupamento
+  descricaoAmbiente: "o dia a dia escolar",
+  opcoesGrupo: ["Administrativo", "Coordenação", "Professor(a)"]
+}
 ```
+
+O bloco `contexto` é o que permite um único backend atender o colégio e o grupo de
+networking sem manter duas cópias do `Codigo.gs`. Veja `config.bni.js` para um
+exemplo completo com outro vocabulário.
 
 Essas cores e textos se aplicam automaticamente a **tudo**: teste, tela de resultado, PDF, e-mails e dashboard.
 
@@ -58,6 +104,13 @@ No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `h
 1. Responda um teste completo no `index.html`.
 2. Confira: cards de análise da IA no resultado, linha nova na planilha, e-mails recebidos, botão **Baixar PDF** (escolha "Salvar como PDF" na impressão).
 3. Abra o `dashboard.html` → **Atualizar**: gráficos e tabela carregam. Se configurar senha, ela é pedida ao abrir.
+4. Confira que a planilha ganhou a aba **"Respostas v2"** com o cabeçalho novo, e que a aba **"Respostas"** (histórico da versão anterior) continua intocada.
+
+> As respostas da versão antiga do questionário aparecem no dashboard com o selo
+> `v1` e podem ser separadas pelo filtro de versões. Não misture `v1` e `v2` em
+> médias ou comparações: os questionários são diferentes. O relatório completo do
+> que mudou está em `docs/RELATORIO-INSTRUMENTO-V2.md`, e há um convite pronto para
+> pedir que as pessoas refaçam o teste em `docs/CONVITE-REFAZER-TESTE.md`.
 
 ---
 

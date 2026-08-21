@@ -1,27 +1,58 @@
 /**
  * Perfil Comportamental — Backend (Google Apps Script)
- * Colégio Mundo do Saber
  *
  * O que este script faz:
  *  1. Recebe as respostas do formulário (index.html) via POST
  *  2. Salva o resultado na planilha
  *  3. Gera a análise personalizada com IA (Claude / Anthropic)
- *  4. Envia o resultado por e-mail para o colaborador e para o gestor
+ *  4. Envia o resultado por e-mail para a pessoa e para quem lidera
  *  5. Fornece os dados para o dashboard (dashboard.html) via GET ?action=read
+ *
+ * INSTRUMENTO v2.0 — quatro módulos:
+ *   Linguagens de Valorização, Temperamento, Eneagrama (9 tipos) e DISC.
+ *
+ * SOBRE AS DUAS ABAS
+ *  A aba "Respostas" guarda o histórico da v1 e NÃO é mais escrita nem alterada.
+ *  As respostas novas vão para "Respostas v2", que tem colunas a mais (DISC,
+ *  asa, centro, controle de qualidade, versão do instrumento).
+ *  O dashboard lê as duas e mostra a versão de cada linha, porque resultados
+ *  da v1 e da v2 não são comparáveis entre si: o questionário mudou.
+ *
+ * SOBRE O VOCABULÁRIO
+ *  Palavras como "escola", "colaborador" e "gestor" não estão mais fixas aqui.
+ *  Elas chegam no campo "contexto" do POST, vindo do config.js de cada
+ *  organização. É isso que permite um único backend atender o colégio e o
+ *  grupo de networking sem manter duas cópias deste arquivo.
  *
  * CONFIGURAÇÃO (veja também o arquivo CONFIGURACAO.md no repositório):
  *  - Crie o script VINCULADO à sua planilha (Extensões > Apps Script)
  *  - Em Configurações do projeto > Propriedades do script, adicione:
  *      ANTHROPIC_API_KEY  = sua chave da API da Anthropic (sk-ant-...)
- *      EMAIL_GESTOR       = e-mail padrão do gestor (opcional)
+ *      EMAIL_GESTOR       = e-mail padrão de quem lidera (opcional)
  *  - Implante como App da Web: executar como VOCÊ, acesso "Qualquer pessoa"
  */
 
+// Aba do instrumento v1 — preservada apenas para leitura do histórico.
 var NOME_ABA = "Respostas";
 
+// Aba do instrumento v2 — onde as respostas novas são gravadas.
+var NOME_ABA_V2 = "Respostas v2";
+
+// Cabeçalho da v1, mantido para conseguir ler as linhas antigas.
 var CABECALHO = [
   "Data", "Nome", "E-mail", "Setor",
   "Linguagem", "Temperamento", "Eneagrama",
+  "Quem é", "Pontos fortes", "Pontos a desenvolver",
+  "Como comunicar", "Como motivar", "Evitar atrito"
+];
+
+var CABECALHO_V2 = [
+  "Data", "Versão", "Nome", "E-mail", "Grupo",
+  "Linguagem", "Linguagem secundária", "Distribuição linguagem",
+  "Temperamento", "Temperamento secundário", "Percentual temperamento",
+  "Eneagrama", "Asa", "Centro", "Scores eneagrama",
+  "DISC", "DISC dominante", "DISC secundário", "Scores DISC",
+  "Qualidade", "Alertas", "Duração (s)",
   "Quem é", "Pontos fortes", "Pontos a desenvolver",
   "Como comunicar", "Como motivar", "Evitar atrito"
 ];
@@ -59,6 +90,7 @@ function doGet(e) {
 
 // ===== PLANILHA =====
 
+// Aba do histórico v1. Só é usada para leitura — nunca recebe linha nova.
 function obterAba() {
   var planilha = SpreadsheetApp.getActiveSpreadsheet();
   var aba = planilha.getSheetByName(NOME_ABA);
@@ -72,16 +104,60 @@ function obterAba() {
   return aba;
 }
 
+function obterAbaV2() {
+  var planilha = SpreadsheetApp.getActiveSpreadsheet();
+  var aba = planilha.getSheetByName(NOME_ABA_V2);
+  if (!aba) {
+    aba = planilha.insertSheet(NOME_ABA_V2);
+  }
+  if (aba.getLastRow() === 0) {
+    aba.appendRow(CABECALHO_V2);
+    aba.getRange(1, 1, 1, CABECALHO_V2.length).setFontWeight("bold");
+    aba.setFrozenRows(1);
+  }
+  return aba;
+}
+
+// Transforma um objeto de scores em texto legível na planilha.
+// Exemplo: { A: 6, B: 3 }  =>  "A: 6 | B: 3"
+function formatarScores(objeto) {
+  if (!objeto) return "";
+  return Object.keys(objeto).map(function (k) {
+    return k + ": " + objeto[k];
+  }).join(" | ");
+}
+
 function salvarNaPlanilha(dados, analise) {
   var a = analise || {};
-  obterAba().appendRow([
+  obterAbaV2().appendRow([
     Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm"),
+    dados.versao_instrumento || "v2.0",
     dados.nome || "",
     dados.email || "",
     dados.setor || "",
+
     dados.linguagem || "",
+    dados.linguagem_secundaria || "",
+    formatarScores(dados.distribuicao_linguagem),
+
     dados.temperamento || "",
+    dados.temperamento_secundario || "",
+    formatarScores(dados.percentual_temperamento),
+
     dados.eneagrama || "",
+    dados.eneagrama_asa || "",
+    dados.eneagrama_centro || "",
+    formatarScores(dados.scores_eneagrama),
+
+    dados.disc || "",
+    dados.disc_dominante || "",
+    dados.disc_secundario || "",
+    formatarScores(dados.scores_disc),
+
+    dados.qualidade_status || "",
+    dados.qualidade_alertas || "",
+    dados.duracao_segundos || "",
+
     a.quem_e || "",
     a.pontos_fortes || "",
     a.pontos_desenvolver || "",
@@ -91,20 +167,36 @@ function salvarNaPlanilha(dados, analise) {
   ]);
 }
 
+// Lê as duas abas e devolve tudo com a versão marcada.
+// As linhas da v1 vêm com os campos novos vazios — o dashboard sabe lidar.
 function lerRespostas() {
+  return lerRespostasV2().concat(lerRespostasV1());
+}
+
+function lerRespostasV1() {
   var aba = obterAba();
   if (aba.getLastRow() < 2) return [];
 
   var valores = aba.getRange(2, 1, aba.getLastRow() - 1, CABECALHO.length).getValues();
   return valores.map(function (linha) {
     return {
+      versao: "v1",
       data: String(linha[0]),
       nome: linha[1],
       email: linha[2],
       setor: linha[3],
       linguagem: linha[4],
+      linguagem_secundaria: "",
       temperamento: linha[5],
+      temperamento_secundario: "",
       eneagrama: linha[6],
+      eneagrama_asa: "",
+      eneagrama_centro: "",
+      disc: "",
+      disc_dominante: "",
+      disc_secundario: "",
+      qualidade: "",
+      alertas: "",
       quem_e: linha[7],
       pontos_fortes: linha[8],
       pontos_desenvolver: linha[9],
@@ -115,46 +207,139 @@ function lerRespostas() {
   }).reverse(); // mais recentes primeiro
 }
 
+function lerRespostasV2() {
+  var aba = obterAbaV2();
+  if (aba.getLastRow() < 2) return [];
+
+  var valores = aba.getRange(2, 1, aba.getLastRow() - 1, CABECALHO_V2.length).getValues();
+  return valores.map(function (linha) {
+    return {
+      data: String(linha[0]),
+      versao: linha[1] || "v2.0",
+      nome: linha[2],
+      email: linha[3],
+      setor: linha[4],
+      linguagem: linha[5],
+      linguagem_secundaria: linha[6],
+      distribuicao_linguagem: linha[7],
+      temperamento: linha[8],
+      temperamento_secundario: linha[9],
+      percentual_temperamento: linha[10],
+      eneagrama: linha[11],
+      eneagrama_asa: linha[12],
+      eneagrama_centro: linha[13],
+      scores_eneagrama: linha[14],
+      disc: linha[15],
+      disc_dominante: linha[16],
+      disc_secundario: linha[17],
+      scores_disc: linha[18],
+      qualidade: linha[19],
+      alertas: linha[20],
+      duracao: linha[21],
+      quem_e: linha[22],
+      pontos_fortes: linha[23],
+      pontos_desenvolver: linha[24],
+      como_comunicar: linha[25],
+      como_motivar: linha[26],
+      evitar_atrito: linha[27]
+    };
+  }).reverse(); // mais recentes primeiro
+}
+
 // ===== ANÁLISE COM IA (CLAUDE) =====
+
+// Lê o vocabulário enviado pelo config.js da organização, com um padrão
+// seguro para o caso de um front antigo enviar o POST sem esse bloco.
+function obterContexto(dados) {
+  var c = (dados && dados.contexto) || {};
+  return {
+    tipoOrganizacao: c.tipoOrganizacao || "uma organização",
+    termoPessoa: c.termoPessoa || "colaborador",
+    termoLider: c.termoLider || "gestor",
+    termoGrupo: c.termoGrupo || "Grupo",
+    descricaoAmbiente: c.descricaoAmbiente || "o dia a dia de trabalho"
+  };
+}
 
 function gerarAnaliseIA(dados) {
   var chave = PropertiesService.getScriptProperties().getProperty("ANTHROPIC_API_KEY");
   if (!chave) return null;
 
-  var d = dados.distribuicao_linguagem || {};
-  var s = dados.scores_temperamento || {};
+  var ctx = obterContexto(dados);
+  var organizacao = dados.organizacao || dados.escola || "";
 
-  var escola = dados.escola || "uma escola";
+  var d = dados.distribuicao_linguagem || {};
+  var t = dados.percentual_temperamento || dados.scores_temperamento || {};
+  var en = dados.scores_eneagrama || {};
+  var di = dados.scores_disc || {};
 
   var prompt =
-    "Analise o perfil comportamental deste colaborador de uma escola (" + escola + ") " +
-    "e escreva uma análise em português do Brasil, em tom acolhedor e profissional, " +
-    "dirigida ao próprio colaborador (use 'você'). Cada campo deve ter de 2 a 4 frases.\n\n" +
-    "Dados do colaborador:\n" +
+    "Analise o perfil comportamental desta pessoa e escreva em português do Brasil, " +
+    "em tom acolhedor e profissional, dirigida à própria pessoa (use 'você'). " +
+    "Cada campo deve ter de 2 a 4 frases.\n\n" +
+
+    "CONTEXTO\n" +
+    "- A pessoa é " + ctx.termoPessoa + " de " + ctx.tipoOrganizacao +
+    (organizacao ? " (" + organizacao + ")" : "") + ".\n" +
+    "- O ambiente a considerar nos exemplos é " + ctx.descricaoAmbiente + ".\n" +
+    "- Quem lidera esta pessoa é tratado como " + ctx.termoLider + ".\n" +
+    "- " + ctx.termoGrupo + ": " + (dados.setor || "não informado") + "\n\n" +
+
+    "DADOS\n" +
     "- Nome: " + dados.nome + "\n" +
-    "- Setor: " + dados.setor + "\n" +
     "- Linguagem de valorização principal: " + dados.linguagem +
-    " (distribuição: Palavras de afirmação=" + (d.A || 0) +
+    (dados.linguagem_secundaria ? " (secundária: " + dados.linguagem_secundaria + ")" : "") +
+    " — distribuição: Palavras de afirmação=" + (d.A || 0) +
     ", Tempo de qualidade=" + (d.B || 0) +
     ", Presentes/Mimos=" + (d.C || 0) +
     ", Atos de serviço=" + (d.D || 0) +
-    ", Presença/Acolhimento=" + (d.E || 0) + ")\n" +
+    ", Presença/Acolhimento=" + (d.E || 0) + "\n" +
+
     "- Temperamento predominante: " + dados.temperamento +
-    " (Colérico=" + (s.colerico || 0) + ", Sanguíneo=" + (s.sanguineo || 0) +
-    ", Melancólico=" + (s.melancol || 0) + ", Fleumático=" + (s.fleumatico || 0) + ")\n" +
-    "- Eneagrama: " + dados.eneagrama + "\n\n" +
-    "Os campos 'como_comunicar', 'como_motivar' e 'evitar_atrito' devem orientar o GESTOR " +
-    "sobre como lidar com este colaborador no dia a dia escolar.";
+    (dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "") +
+    " — percentuais: Colérico=" + (t.colerico || 0) +
+    ", Sanguíneo=" + (t.sanguineo || 0) +
+    ", Melancólico=" + (t.melancol || 0) +
+    ", Fleumático=" + (t.fleumatico || 0) + "\n" +
+
+    "- Eneagrama: " + dados.eneagrama +
+    (dados.eneagrama_asa ? ", com asa em " + dados.eneagrama_asa : "") +
+    (dados.eneagrama_centro ? ", centro de inteligência " + dados.eneagrama_centro : "") +
+    " — pontuação por tipo: " + formatarScores(en) + "\n" +
+
+    "- DISC: " + (dados.disc || "não informado") +
+    (dados.disc_dominante ? " — fator dominante " + dados.disc_dominante : "") +
+    (dados.disc_secundario ? ", secundário " + dados.disc_secundario : "") +
+    " — scores (faixa de -12 a +12): " + formatarScores(di) + "\n\n" +
+
+    "INSTRUÇÕES\n" +
+    "- Integre os QUATRO instrumentos em uma leitura única e coerente. Não " +
+    "descreva um por um: mostre como eles se reforçam ou se tensionam.\n" +
+    "- Quando dois instrumentos apontarem para lados opostos, diga isso com " +
+    "naturalidade, como uma nuance da pessoa, e não como contradição ou erro.\n" +
+    "- Os campos 'como_comunicar', 'como_motivar' e 'evitar_atrito' orientam " +
+    ctx.termoLider + " sobre como lidar com esta pessoa no dia a dia, com " +
+    "exemplos concretos de " + ctx.descricaoAmbiente + ".\n" +
+    "- Não use rótulos determinísticos ('você é assim e pronto'). Fale em " +
+    "tendências e preferências.\n" +
+    "- Não sugira decisões de contratação, promoção ou desligamento: este é um " +
+    "instrumento de desenvolvimento, não de seleção." +
+
+    (dados.qualidade_status && dados.qualidade_status !== "OK"
+      ? "\n- ATENÇÃO: o preenchimento levantou alertas de qualidade (" +
+        dados.qualidade_alertas + "). Escreva a análise normalmente, mas de " +
+        "forma um pouco mais cautelosa e menos categórica."
+      : "");
 
   var esquema = {
     type: "object",
     properties: {
-      quem_e: { type: "string", description: "Síntese de quem é a pessoa, integrando linguagem, temperamento e eneagrama" },
+      quem_e: { type: "string", description: "Síntese de quem é a pessoa, integrando linguagem de valorização, temperamento, eneagrama e DISC" },
       pontos_fortes: { type: "string", description: "Principais pontos fortes no ambiente de trabalho" },
       pontos_desenvolver: { type: "string", description: "Pontos de atenção e desenvolvimento, com tom construtivo" },
-      como_comunicar: { type: "string", description: "Orientação ao gestor: como se comunicar com esta pessoa" },
-      como_motivar: { type: "string", description: "Orientação ao gestor: como motivar e reconhecer esta pessoa" },
-      evitar_atrito: { type: "string", description: "Orientação ao gestor: o que evitar para não gerar atrito" }
+      como_comunicar: { type: "string", description: "Orientação a quem lidera: como se comunicar com esta pessoa" },
+      como_motivar: { type: "string", description: "Orientação a quem lidera: como motivar e reconhecer esta pessoa" },
+      evitar_atrito: { type: "string", description: "Orientação a quem lidera: o que evitar para não gerar atrito" }
     },
     required: ["quem_e", "pontos_fortes", "pontos_desenvolver", "como_comunicar", "como_motivar", "evitar_atrito"],
     additionalProperties: false
@@ -163,7 +348,8 @@ function gerarAnaliseIA(dados) {
   var corpo = {
     model: "claude-opus-4-8",
     max_tokens: 2000,
-    system: "Você é um especialista em comportamento humano e gestão de pessoas em ambiente escolar.",
+    system: "Você é um especialista em comportamento humano e desenvolvimento de pessoas, " +
+      "com domínio das cinco linguagens de valorização, dos quatro temperamentos, do eneagrama e do DISC.",
     messages: [{ role: "user", content: prompt }],
     output_config: { format: { type: "json_schema", schema: esquema } }
   };
@@ -203,7 +389,7 @@ function enviarEmails(dados, analise) {
   var corpoHtml = montarEmailHtml(dados, analise);
   var assunto = "Perfil Comportamental — " + dados.nome;
 
-  // Para o colaborador
+  // Para a própria pessoa
   if (dados.email) {
     try {
       MailApp.sendEmail({
@@ -212,22 +398,22 @@ function enviarEmails(dados, analise) {
         htmlBody: corpoHtml
       });
     } catch (erro) {
-      console.error("Falha ao enviar e-mail ao colaborador: " + erro);
+      console.error("Falha ao enviar e-mail à pessoa: " + erro);
     }
   }
 
-  // Para o gestor (o informado no formulário, ou o padrão das propriedades do script)
-  var gestor = dados.email_gestor ||
+  // Para quem lidera (o informado no formulário, ou o padrão das propriedades do script)
+  var lider = dados.email_gestor ||
     PropertiesService.getScriptProperties().getProperty("EMAIL_GESTOR");
-  if (gestor && gestor !== dados.email) {
+  if (lider && lider !== dados.email) {
     try {
       MailApp.sendEmail({
-        to: gestor,
+        to: lider,
         subject: assunto + " (" + dados.setor + ")",
         htmlBody: corpoHtml
       });
     } catch (erro) {
-      console.error("Falha ao enviar e-mail ao gestor: " + erro);
+      console.error("Falha ao enviar e-mail a quem lidera: " + erro);
     }
   }
 }
@@ -235,7 +421,8 @@ function enviarEmails(dados, analise) {
 function montarEmailHtml(dados, analise) {
   var a = analise || {};
   var cor = dados.cor || "#1f4788";
-  var escola = dados.escola || "";
+  var ctx = obterContexto(dados);
+  var organizacao = dados.organizacao || dados.escola || "";
   var logo = dados.logo_url
     ? '<img src="' + dados.logo_url + '" alt="Logo" style="max-height:48px;max-width:180px;margin-bottom:8px">'
     : "";
@@ -246,23 +433,56 @@ function montarEmailHtml(dados, analise) {
       '<p style="font-size:13px;line-height:1.6;margin:0">' + texto + "</p>";
   };
 
+  var linha = function (rotulo, valor) {
+    if (!valor) return "";
+    return "<strong>" + rotulo + ":</strong> " + valor + "<br>";
+  };
+
+  // Monta "valor principal (complemento)" só quando o valor principal existe.
+  // Sem esta guarda, um campo ausente virava a string "undefined" no e-mail,
+  // porque undefined + "" resulta em "undefined", que é um texto verdadeiro.
+  var composto = function (base, complemento) {
+    if (!base) return "";
+    return base + (complemento || "");
+  };
+
+  var alerta = (dados.qualidade_status && dados.qualidade_status !== "OK")
+    ? '<p style="background:#fff8e1;border-left:4px solid #f9a825;padding:10px;font-size:12px;' +
+      'color:#7a5c00;margin:0 0 14px">O preenchimento levantou alertas de qualidade (' +
+      dados.qualidade_alertas + '). Leia o resultado com essa ressalva.</p>'
+    : "";
+
   return '<div style="font-family:Segoe UI,Tahoma,sans-serif;max-width:640px;margin:0 auto;color:#222">' +
     '<div style="background:' + cor + ';color:#fff;padding:18px;text-align:center;border-radius:8px 8px 0 0">' +
     logo +
     "<h2 style='margin:0;font-size:20px'>Perfil Comportamental</h2>" +
-    "<p style='margin:4px 0 0;font-size:12px;opacity:.85'>" + escola + "</p></div>" +
+    "<p style='margin:4px 0 0;font-size:12px;opacity:.85'>" + organizacao + "</p></div>" +
     '<div style="border:1px solid #ddd;border-top:none;padding:20px;border-radius:0 0 8px 8px">' +
-    '<p style="font-size:13px"><strong>Nome:</strong> ' + dados.nome +
-    "<br><strong>Setor:</strong> " + dados.setor +
-    "<br><strong>Linguagem de Valorização:</strong> " + dados.linguagem +
-    "<br><strong>Temperamento:</strong> " + dados.temperamento +
-    "<br><strong>Eneagrama:</strong> " + dados.eneagrama + "</p>" +
+    alerta +
+    '<p style="font-size:13px">' +
+    linha("Nome", dados.nome) +
+    linha(ctx.termoGrupo, dados.setor) +
+    linha("Linguagem de Valorização", composto(dados.linguagem,
+      dados.linguagem_secundaria ? " (secundária: " + dados.linguagem_secundaria + ")" : "")) +
+    linha("Temperamento", composto(dados.temperamento,
+      dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "")) +
+    linha("Eneagrama", composto(dados.eneagrama,
+      (dados.eneagrama_asa ? " — asa " + dados.eneagrama_asa : "") +
+      (dados.eneagrama_centro ? ", centro " + dados.eneagrama_centro : ""))) +
+    linha("DISC", composto(dados.disc,
+      (dados.disc_dominante ? " — dominante " + dados.disc_dominante : "") +
+      (dados.disc_secundario ? ", secundário " + dados.disc_secundario : ""))) +
+    "</p>" +
     secao("Quem é você", a.quem_e) +
     secao("Pontos Fortes", a.pontos_fortes) +
     secao("Pontos a Desenvolver", a.pontos_desenvolver) +
     secao("Como Comunicar", a.como_comunicar) +
     secao("Como Motivar", a.como_motivar) +
     secao("Evitar Atrito", a.evitar_atrito) +
+    '<p style="font-size:10px;color:#888;margin-top:24px;border-top:1px solid #ddd;padding-top:10px;line-height:1.6">' +
+    "Instrumento de autoconhecimento e desenvolvimento (" + (dados.versao_instrumento || "v2.0") + "). " +
+    "Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional." +
+    "</p>" +
     "</div></div>";
 }
 

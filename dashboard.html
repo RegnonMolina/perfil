@@ -127,11 +127,12 @@ tr:hover td{background:#F8FAFC}
 
 <!-- MÉTRICAS -->
 <div class="summary-grid" id="summary-grid">
-  <div class="metric"><div class="metric-num" id="m-total">—</div><div class="metric-lbl">Colaboradores</div></div>
-  <div class="metric"><div class="metric-num" id="m-setores">—</div><div class="metric-lbl">Setores</div></div>
+  <div class="metric"><div class="metric-num" id="m-total">—</div><div class="metric-lbl" id="m-total-lbl">Pessoas</div></div>
+  <div class="metric"><div class="metric-num" id="m-setores">—</div><div class="metric-lbl" id="m-setores-lbl">Setores</div></div>
   <div class="metric"><div class="metric-num" id="m-ling">—</div><div class="metric-lbl">Ling. mais comum</div></div>
   <div class="metric"><div class="metric-num" id="m-temp">—</div><div class="metric-lbl">Temp. dominante</div></div>
   <div class="metric"><div class="metric-num" id="m-enea">—</div><div class="metric-lbl">Eneagrama top</div></div>
+  <div class="metric"><div class="metric-num" id="m-disc">—</div><div class="metric-lbl">DISC dominante</div></div>
 </div>
 
 <!-- GRÁFICOS -->
@@ -139,6 +140,8 @@ tr:hover td{background:#F8FAFC}
   <div class="chart-box"><h3>💬 Linguagens de Valorização</h3><div id="chart-ling"><div class="empty" style="padding:20px">—</div></div></div>
   <div class="chart-box"><h3>🧠 Temperamentos</h3><div id="chart-temp"><div class="empty" style="padding:20px">—</div></div></div>
   <div class="chart-box"><h3>🏢 Setores</h3><div id="chart-setor"><div class="empty" style="padding:20px">—</div></div></div>
+  <div class="chart-box"><h3>🎯 Eneagrama</h3><div id="chart-enea"><div class="empty" style="padding:20px">—</div></div></div>
+  <div class="chart-box"><h3>📊 DISC</h3><div id="chart-disc"><div class="empty" style="padding:20px">—</div></div></div>
 </div>
 
 <!-- FILTROS -->
@@ -147,6 +150,7 @@ tr:hover td{background:#F8FAFC}
   <select id="filtro-setor" onchange="filtrar()"><option value="">Todos os setores</option></select>
   <select id="filtro-ling" onchange="filtrar()"><option value="">Todas as linguagens</option></select>
   <select id="filtro-temp" onchange="filtrar()"><option value="">Todos os temperamentos</option></select>
+  <select id="filtro-versao" onchange="filtrar()"><option value="">Todas as versões</option></select>
   <div class="view-toggle">
     <button class="view-btn active" id="btn-table" onclick="setView('table')">☰ Tabela</button>
     <button class="view-btn" id="btn-cards" onclick="setView('cards')">⊞ Cards</button>
@@ -159,12 +163,12 @@ tr:hover td{background:#F8FAFC}
     <thead>
       <tr>
         <th>Nome</th><th>Setor</th><th>Linguagem</th>
-        <th>Temperamento</th><th>Eneagrama</th>
-        <th>Como comunicar</th><th>Data</th>
+        <th>Temperamento</th><th>Eneagrama</th><th>DISC</th>
+        <th>Como comunicar</th><th>Versão</th><th>Data</th>
       </tr>
     </thead>
     <tbody id="tabela-body">
-      <tr><td colspan="7"><div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Configure o Apps Script URL acima e clique em Atualizar</div></td></tr>
+      <tr><td colspan="9"><div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Configure o Apps Script URL acima e clique em Atualizar</div></td></tr>
     </tbody>
   </table>
 </div>
@@ -198,6 +202,34 @@ let CFG={
 };
 let DADOS=[];
 let FILTRADOS=[];
+
+// Vocabulário da organização (config.js). Cai no padrão antigo se não existir.
+const CTX=ESCOLA.contexto||{};
+
+const LINGUAGENS_CONHECIDAS=['Palavras de afirmação','Tempo de qualidade','Presentes / Mimos','Atos de serviço','Presença / Acolhimento'];
+
+// Extrai o valor principal de um campo de resultado.
+//
+// Cuidado necessário aqui: a v1 gravava empates concatenados com " / ", mas
+// um dos nomes de linguagem É "Presentes / Mimos". Cortar no primeiro " / "
+// transformava essa linguagem em "Presentes", que não batia com nenhuma cor
+// nem com nenhum filtro. Por isso os nomes conhecidos são checados antes.
+function principal(texto,conhecidas){
+  const t=String(texto||'').trim();
+  if(!t)return '';
+  if(conhecidas){
+    if(conhecidas.includes(t))return t;
+    const achado=conhecidas.find(c=>t.startsWith(c));
+    if(achado)return achado;
+  }
+  return t.split(' / ')[0].trim();
+}
+
+const ling1=d=>principal(d.linguagem,LINGUAGENS_CONHECIDAS);
+const temp1=d=>principal(d.temperamento);
+const enea1=d=>principal(d.eneagrama);
+const disc1=d=>String(d.disc||'').trim();
+const versao1=d=>String(d.versao||'v1').trim();
 let VIEW='table';
 
 function aplicarBrandingDash(){
@@ -263,9 +295,9 @@ async function carregarDados(){
 }
 
 function renderCharts(){
-  const conta=campo=>{
+  const conta=extrair=>{
     const c={};
-    FILTRADOS.forEach(d=>{const v=(d[campo]||'').split(' / ')[0].trim();if(v)c[v]=(c[v]||0)+1;});
+    FILTRADOS.forEach(d=>{const v=extrair(d);if(v)c[v]=(c[v]||0)+1;});
     return Object.entries(c).sort((a,b)=>b[1]-a[1]);
   };
   const desenha=(id,entradas)=>{
@@ -277,9 +309,11 @@ function renderCharts(){
       return `<div class="bar-row"><div class="bar-label" title="${nome}">${nome}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%;background:${cor}"></div></div><div class="bar-num">${n}</div></div>`;
     }).join('');
   };
-  desenha('chart-ling',conta('linguagem'));
-  desenha('chart-temp',conta('temperamento'));
-  desenha('chart-setor',conta('setor'));
+  desenha('chart-ling',conta(ling1));
+  desenha('chart-temp',conta(temp1));
+  desenha('chart-setor',conta(d=>String(d.setor||'').trim()));
+  desenha('chart-enea',conta(enea1));
+  desenha('chart-disc',conta(disc1));
 }
 
 // Escuta novos dados vindos do formulário (mesma aba)
@@ -293,29 +327,35 @@ window.addEventListener('storage',e=>{
 });
 
 function atualizarMetricas(){
-  if(!DADOS.length){['m-total','m-setores','m-ling','m-temp','m-enea'].forEach(id=>document.getElementById(id).textContent='—');return;}
+  const ids=['m-total','m-setores','m-ling','m-temp','m-enea','m-disc'];
+  if(!DADOS.length){ids.forEach(id=>document.getElementById(id).textContent='—');return;}
+
+  // Rótulos seguem o vocabulário da organização (Setor, Categoria...).
+  const termoGrupo=CTX.termoGrupo||'Setores';
+  document.getElementById('m-setores-lbl').textContent=termoGrupo;
+
+  const maisComum=extrair=>{
+    const c={};
+    DADOS.forEach(d=>{const v=extrair(d);if(v)c[v]=(c[v]||0)+1;});
+    const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+    return top?top[0]:'—';
+  };
+
   document.getElementById('m-total').textContent=DADOS.length;
-  document.getElementById('m-setores').textContent=[...new Set(DADOS.map(d=>d.setor))].length;
-  // Linguagem mais comum
-  const lc={};DADOS.forEach(d=>{const l=d.linguagem?.split(' / ')[0]||'';lc[l]=(lc[l]||0)+1;});
-  const lmax=Object.entries(lc).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('m-ling').textContent=lmax?lmax[0].replace('Palavras de afirmação','Palavras afirm.').split(' ')[0]:'—';
-  // Temperamento dominante
-  const tc={};DADOS.forEach(d=>{const t=d.temperamento?.split(' / ')[0]||'';tc[t]=(tc[t]||0)+1;});
-  const tmax=Object.entries(tc).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('m-temp').textContent=tmax?tmax[0]:'—';
-  // Eneagrama top
-  const ec={};DADOS.forEach(d=>{const e=d.eneagrama?.split(' / ')[0]||'';ec[e]=(ec[e]||0)+1;});
-  const emax=Object.entries(ec).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('m-enea').textContent=emax?emax[0]:'—';
+  document.getElementById('m-setores').textContent=[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].length;
+  document.getElementById('m-ling').textContent=maisComum(ling1).split(' ')[0];
+  document.getElementById('m-temp').textContent=maisComum(temp1);
+  document.getElementById('m-enea').textContent=maisComum(enea1).replace('Tipo ','T');
+  document.getElementById('m-disc').textContent=maisComum(disc1).split(' ')[0];
 }
 
 function atualizarFiltros(){
   const setores=[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].sort();
-  const lings=[...new Set(DADOS.map(d=>d.linguagem?.split(' / ')[0]).filter(Boolean))].sort();
-  const temps=[...new Set(DADOS.map(d=>d.temperamento?.split(' / ')[0]).filter(Boolean))].sort();
+  const lings=[...new Set(DADOS.map(ling1).filter(Boolean))].sort();
+  const temps=[...new Set(DADOS.map(temp1).filter(Boolean))].sort();
+  const versoes=[...new Set(DADOS.map(versao1).filter(Boolean))].sort();
   const sel=(id,opts)=>{const el=document.getElementById(id);const cur=el.value;el.innerHTML='<option value="">'+el.options[0].text+'</option>'+opts.map(o=>`<option value="${o}">${o}</option>`).join('');el.value=cur;};
-  sel('filtro-setor',setores);sel('filtro-ling',lings);sel('filtro-temp',temps);
+  sel('filtro-setor',setores);sel('filtro-ling',lings);sel('filtro-temp',temps);sel('filtro-versao',versoes);
 }
 
 function filtrar(){
@@ -323,11 +363,13 @@ function filtrar(){
   const setor=document.getElementById('filtro-setor').value;
   const ling=document.getElementById('filtro-ling').value;
   const temp=document.getElementById('filtro-temp').value;
+  const versao=document.getElementById('filtro-versao').value;
   FILTRADOS=DADOS.filter(d=>{
     if(busca&&!d.nome?.toLowerCase().includes(busca))return false;
     if(setor&&d.setor!==setor)return false;
     if(ling&&!d.linguagem?.includes(ling))return false;
     if(temp&&!d.temperamento?.includes(temp))return false;
+    if(versao&&versao1(d)!==versao)return false;
     return true;
   });
   renderCharts();renderTabela();renderCards();
@@ -345,17 +387,27 @@ const LING_COLORS={'Palavras de afirmação':{bg:'#E6F1FB',c:'#0C447C'},'Tempo d
 
 function renderTabela(){
   const tb=document.getElementById('tabela-body');
-  if(!FILTRADOS.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">Nenhum resultado encontrado</div></td></tr>';return;}
+  if(!FILTRADOS.length){tb.innerHTML='<tr><td colspan="9"><div class="empty">Nenhum resultado encontrado</div></td></tr>';return;}
   tb.innerHTML=FILTRADOS.map((d,i)=>{
-    const lp=d.linguagem?.split(' / ')[0]||'';
-    const lc=LING_COLORS[lp]||{bg:'#F1EFE8',c:'#444441'};
+    const lc=LING_COLORS[ling1(d)]||{bg:'#F1EFE8',c:'#444441'};
+    const v=versao1(d);
+    // v1 é o instrumento antigo, com a escala desbalanceada e o eneagrama
+    // limitado a dois tipos. Fica visível para não ser lido como comparável.
+    const vBadge=v==='v1'
+      ? '<span class="badge" style="background:#FAECE7;color:#993C1D" title="Instrumento antigo: escala desbalanceada e eneagrama incompleto. Não comparável com a v2.">v1</span>'
+      : `<span class="badge" style="background:#E1F5EE;color:#085041">${v}</span>`;
+    const alerta=d.qualidade&&d.qualidade!=='OK'
+      ? ` <span class="badge" style="background:#FAEEDA;color:#633806" title="${d.alertas||''}">⚠ revisar</span>`
+      : '';
     return `<tr>
-      <td><strong>${d.nome||'—'}</strong><br><span style="font-size:11px;color:var(--text3)">${d.email||''}</span></td>
+      <td><strong>${d.nome||'—'}</strong>${alerta}<br><span style="font-size:11px;color:var(--text3)">${d.email||''}</span></td>
       <td><span class="badge" style="background:#F1EFE8;color:#444441">${d.setor||'—'}</span></td>
       <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${d.linguagem||'—'}</span></td>
       <td>${d.temperamento||'—'}</td>
-      <td>${d.eneagrama||'—'}</td>
+      <td>${d.eneagrama||'—'}${d.eneagrama_asa?`<br><span style="font-size:11px;color:var(--text3)">asa ${d.eneagrama_asa}</span>`:''}</td>
+      <td>${d.disc||'—'}</td>
       <td style="max-width:200px;font-size:12px;color:var(--text2)">${d.como_comunicar||'—'}</td>
+      <td>${vBadge}</td>
       <td style="font-size:11px;color:var(--text3);white-space:nowrap">${d.data||'—'}</td>
     </tr>`;
   }).join('');
@@ -367,8 +419,8 @@ function renderCards(){
   c.innerHTML=FILTRADOS.map((d,i)=>{
     const cor=CORES[i%CORES.length];
     const ini=(d.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
-    const lp=d.linguagem?.split(' / ')[0]||'';
-    const lc=LING_COLORS[lp]||{bg:'#F1EFE8',c:'#444441'};
+    const lc=LING_COLORS[ling1(d)]||{bg:'#F1EFE8',c:'#444441'};
+    const v=versao1(d);
     return `<div class="pcard">
       <div class="pcard-header" style="background:${cor.bg}">
         <div class="pcard-avatar" style="background:${cor.dot};color:#fff">${ini}</div>
@@ -377,8 +429,10 @@ function renderCards(){
       <div class="pcard-body">
         <div class="pcard-tags" style="margin-top:12px">
           <span class="badge" style="background:${lc.bg};color:${lc.c}">💬 ${d.linguagem||'—'}</span>
-          <span class="badge" style="background:#F1EFE8;color:#444441">🧠 ${d.temperamento?.split(' / ')[0]||'—'}</span>
-          <span class="badge" style="background:#EEEDFE;color:#3C3489">🔑 ${d.eneagrama?.split(' / ')[0]||'—'}</span>
+          <span class="badge" style="background:#F1EFE8;color:#444441">🧠 ${temp1(d)||'—'}</span>
+          <span class="badge" style="background:#EEEDFE;color:#3C3489">🔑 ${enea1(d)||'—'}</span>
+          ${d.disc?`<span class="badge" style="background:#E6F1FB;color:#0C447C">📊 ${d.disc}</span>`:''}
+          <span class="badge" style="background:${v==='v1'?'#FAECE7':'#E1F5EE'};color:${v==='v1'?'#993C1D':'#085041'}">${v}</span>
         </div>
         ${d.como_comunicar?`<div class="pcard-tip">${d.como_comunicar}</div>`:''}
       </div>
@@ -388,8 +442,8 @@ function renderCards(){
 
 function exportarCSV(){
   if(!FILTRADOS.length)return;
-  const cols=['Nome','E-mail','Setor','Linguagem','Temperamento','Eneagrama','Como comunicar','Como motivar','Evitar atrito','Data'];
-  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,d.linguagem,d.temperamento,d.eneagrama,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Asa','Centro','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data'];
+  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_asa,d.eneagrama_centro,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
   const csv=[cols.join(','),...rows].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Perfis_${new Date().toISOString().slice(0,10)}.csv`;a.click();
