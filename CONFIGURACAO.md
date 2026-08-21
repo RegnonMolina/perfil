@@ -37,26 +37,33 @@ Essas cores e textos se aplicam automaticamente a **tudo**: teste, tela de resul
 
 ### 1.2 Card de clima no topo das páginas
 
-O `clima.js` insere um cartãozinho com a temperatura, a condição do tempo e a mínima/máxima do dia no topo do questionário e do dashboard. Os dados vêm da [Open-Meteo](https://open-meteo.com), que é **gratuita e não exige cadastro nem chave de API**.
+O `clima.js` insere um cartãozinho com a temperatura e a condição do tempo no topo do questionário e do dashboard. Os dados vêm da [Open-Meteo](https://open-meteo.com), que é **gratuita e não exige cadastro nem chave de API**.
 
-Para ajustar, edite o bloco `clima` do `config.js`:
+Por padrão o card usa a **localização atual do dispositivo** de quem está acessando (o navegador pede permissão na primeira vez). Se a permissão for negada, ignorada ou indisponível, ele cai sozinho para a cidade definida no `config.js` — o card sempre aparece.
+
+Cada pessoa pode ajustar o card pelo botão **⚙** dentro dele: fonte da localização (dispositivo ou cidade fixa), qual cidade e a unidade (°C ou °F). Essa escolha vale só para o navegador dela; o padrão de todo mundo é o do `config.js`:
 
 ```js
 clima: {
-  exibir: true,          // false esconde o card em todas as páginas
-  cidade: "Campinas",    // cidade do colégio
-  latitude: null,        // opcional: preencha lat/lon para dispensar a busca pelo nome
-  longitude: null
+  exibir: true,             // false esconde o card em todas as páginas
+  fonte: "dispositivo",     // "dispositivo" = posição atual de quem acessa; "cidade" = a cidade abaixo
+  cidade: "Ribeirão Preto", // usada quando fonte é "cidade" e quando o dispositivo não informa a posição
+  latitude: null,           // opcional: preencha lat/lon para dispensar a busca pelo nome
+  longitude: null,
+  unidade: "C",             // "C" (Celsius) ou "F" (Fahrenheit)
+  mostrarConfiguracoes: true // false esconde o botão ⚙ do card
 }
 ```
 
 Detalhes de funcionamento:
 
-- As coordenadas da cidade são descobertas uma vez e guardadas no navegador por 30 dias; o tempo é reconsultado a cada 15 minutos (o dashboard, que costuma ficar aberto, se atualiza sozinho nesse intervalo).
+- **Localização do dispositivo** exige HTTPS (o GitHub Pages já é) e permissão. Se ninguém responder ao aviso do navegador, o card espera 9 segundos e segue com a cidade configurada — se a autorização vier depois, a próxima atualização já usa a posição real.
+- **Dentro de um App da Web do Apps Script** (`HtmlService`), a página roda num iframe do Google que costuma bloquear a geolocalização. Nesse caso o card simplesmente usa a cidade do `config.js`.
+- O nome do lugar, quando a posição vem do dispositivo, é obtido no serviço gratuito [BigDataCloud](https://www.bigdatacloud.com) (sem cadastro). Se ele não responder, o card mostra "Sua localização" e o resto continua igual.
+- **Cache**: posição do dispositivo por 10 minutos, coordenadas de cidade e nome do lugar por 30 dias, tempo por 15 minutos. O dashboard, que costuma ficar aberto, se atualiza sozinho a cada 15 minutos.
 - Se houver duas cidades com o mesmo nome e o resultado vier errado, preencha `latitude` e `longitude` — assim a busca por nome é ignorada.
-- Se a internet ou a API falhar, o card simplesmente não aparece; nada mais na página é afetado.
-- O card não é impresso no PDF do resultado.
-- Nenhum dado dos colaboradores sai da página: a consulta leva apenas as coordenadas da cidade.
+- Se a internet ou a API falhar, o card não aparece; nada mais na página é afetado. O card também não sai na impressão/PDF do resultado.
+- Nenhum dado dos colaboradores sai da página: as consultas levam apenas coordenadas.
 
 **Usar em outras páginas/apps.** Basta incluir as duas linhas abaixo no `<head>` e, opcionalmente, um `<div id="clima-topo"></div>` onde o card deve ficar (sem esse `div`, ele entra no topo do `<body>`):
 
@@ -65,10 +72,10 @@ Detalhes de funcionamento:
 <script src="clima.js" defer></script>
 ```
 
-Em um app hospedado em outro lugar — inclusive um App da Web do Apps Script feito com `HtmlService` — aponte para a versão publicada no GitHub Pages e defina a cidade antes:
+Em um app hospedado em outro lugar — inclusive um App da Web do Apps Script feito com `HtmlService` — aponte para a versão publicada no GitHub Pages e defina os padrões antes:
 
 ```html
-<script>window.CONFIG_ESCOLA = { clima: { cidade: "São Paulo" } };</script>
+<script>window.CONFIG_ESCOLA = { clima: { fonte: "dispositivo", cidade: "Ribeirão Preto" } };</script>
 <script src="https://SEU_USUARIO.github.io/NOME_DO_REPOSITORIO/clima.js" defer></script>
 ```
 
@@ -150,6 +157,8 @@ Pronto: o teste dele terá a cara do colégio dele, salvando na planilha dele, s
 **Posso mudar as perguntas?** As perguntas do instrumento ficam em `index.html` (constantes `PERGUNTAS_LINGUAGEM`, `AFIRMACOES_TEMP` e `BLOCOS_ENEAGRAMA`). Recomendamos não alterar, para manter a validade do teste e a comparabilidade entre resultados.
 
 **O card de clima tem custo ou precisa de chave?** Não. Ele usa a API pública da Open-Meteo, sem cadastro e sem chave. Para desligar, coloque `exibir: false` no bloco `clima` do `config.js`.
+
+**Por que o card mostra a cidade do `config.js` em vez de onde estou?** A localização do dispositivo depende de permissão do navegador e de HTTPS, e é bloqueada dentro do iframe do Apps Script. Nesses casos o card usa a cidade configurada. Pelo botão ⚙ dá para fixar outra cidade a qualquer momento.
 
 **Quanto custa?** GitHub Pages, Google Sheets e Apps Script são gratuitos. O único custo é a API da IA: ~US$ 0,03 por teste (100 testes ≈ R$ 17). Sem a chave configurada, tudo funciona normalmente — apenas sem os cards de análise da IA e sem e-mails com análise.
 
