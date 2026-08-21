@@ -180,3 +180,84 @@ test("Nenhum envio novo escreve na aba do instrumento antigo", () => {
   assert.ok(!v1 || v1.linhas.length <= 1, "o histórico da v1 não pode receber linha nova");
   assert.strictEqual(a.__abas.get("Respostas v2").linhas.length, 3);
 });
+
+// ============================================================
+// SANEAMENTO DE SAÍDA
+// ============================================================
+//
+// O que a pessoa digita acaba em dois lugares perigosos: o corpo HTML do
+// e-mail, que sai da conta da organização, e as células da planilha.
+// Estes testes vieram de uma revisão do PR #2, que apontou a lacuna.
+
+test("Marcação no nome não entra como marcação no e-mail", () => {
+  const a = criarAmbiente();
+  const html = a.montarEmailHtml({
+    nome: '<img src=x onerror="alert(1)">',
+    setor: "<b>Coordenação</b>",
+    linguagem: "Atos de serviço",
+    contexto: {}
+  }, null);
+
+  // O que importa é que nenhuma TAG nova exista: os sinais < e > precisam ter
+  // virado entidades. A sequência "onerror=" sobrevive como texto dentro do
+  // conteúdo escapado, e isso é inofensivo — verificar a ausência dela seria
+  // testar a coisa errada.
+  assert.ok(!html.includes("<img"), "a marcação do nome vazou como tag para o e-mail");
+  assert.ok(!html.includes("<b>Coordenação</b>"), "a marcação do setor vazou como tag");
+  assert.ok(html.includes("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;"),
+    "o nome deveria aparecer inteiramente escapado");
+});
+
+test("Marcação vinda da análise da IA também é escapada", () => {
+  const a = criarAmbiente();
+  const html = a.montarEmailHtml({ nome: "Ana", contexto: {} },
+    { quem_e: '</p><script>alert(1)</script><p>' });
+  assert.ok(!html.includes("<script>"), "script vazou pela análise");
+});
+
+test("Cor inválida não escapa do atributo style", () => {
+  const a = criarAmbiente();
+  const html = a.montarEmailHtml({
+    nome: "Ana",
+    cor: '#fff" onload="alert(1)',
+    contexto: {}
+  }, null);
+  assert.ok(!html.includes("onload="), "a cor permitiu sair do atributo");
+  assert.ok(html.includes("#1f4788"), "cor inválida deveria cair no padrão");
+});
+
+test("Só logo https e sem aspas é aceita", () => {
+  const a = criarAmbiente();
+  assert.strictEqual(a.urlLogoValida("https://exemplo.com/logo.png"), "https://exemplo.com/logo.png");
+  for (const ruim of [
+    'https://x.com/a.png" onerror="alert(1)',
+    "javascript:alert(1)",
+    "http://exemplo.com/logo.png",
+    "data:image/svg+xml;base64,PHN2Zz4=",
+    "https://exemplo.com/" + "a".repeat(500)
+  ]) {
+    assert.strictEqual(a.urlLogoValida(ruim), "", `deveria recusar: ${ruim.slice(0, 40)}`);
+  }
+});
+
+test("Resposta que começa com = não vira fórmula na planilha", () => {
+  // O Google Sheets interpreta =, +, - e @ no início de uma célula como
+  // fórmula. Um nome como =HYPERLINK(...) viraria link ativo na planilha do
+  // gestor, e também no CSV exportado, aberto no Excel.
+  const a = criarAmbiente();
+  post(a, envioValido({ nome: '=HYPERLINK("http://mau.example","clique")', email: "z@exemplo.com" }));
+
+  const aba = a.__abas.get("Respostas v2");
+  const cabecalho = aba.linhas[0];
+  const nome = aba.linhas[1][cabecalho.indexOf("Nome")];
+
+  assert.ok(String(nome).startsWith("'"), "a célula deveria começar com apóstrofo para não virar fórmula");
+  assert.ok(String(nome).includes("HYPERLINK"), "o conteúdo original deve ser preservado");
+});
+
+test("Texto comum não é alterado ao ir para a planilha", () => {
+  const a = criarAmbiente();
+  assert.strictEqual(a.textoParaPlanilha("Maria da Silva"), "Maria da Silva");
+  assert.strictEqual(a.textoParaPlanilha("Coordenação"), "Coordenação");
+  assert.strictEqual(a.textoParaPlanilha(""), "");
+});

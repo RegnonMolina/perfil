@@ -153,6 +153,21 @@
             font-size: 14px;
         }
 
+        /* A regra acima é para campos de texto. Rádios e caixas de seleção
+           também são <input> e, dentro de um .form-group, herdavam largura de
+           100% e 12px de padding — o círculo virava um bloco gigante e o texto
+           da alternativa ficava espremido na lateral. */
+        .form-group input[type="radio"],
+        .form-group input[type="checkbox"] {
+            width: auto;
+            padding: 0;
+            border: none;
+            flex: 0 0 auto;
+            /* Sem isto o flex estica o círculo na vertical quando o texto da
+               alternativa ocupa mais de uma linha, e ele vira uma elipse. */
+            align-self: flex-start;
+        }
+
         .opcoes {
             display: flex;
             flex-direction: column;

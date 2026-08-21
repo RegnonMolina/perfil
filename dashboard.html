@@ -215,6 +215,14 @@ let FILTRADOS=[];
 // Vocabulário da organização (config.js). Cai no padrão antigo se não existir.
 const CTX=ESCOLA.contexto||{};
 
+// Todo texto vindo da planilha passa por aqui antes de virar HTML: qualquer
+// pessoa pode responder o formulário, então nada que venha de lá é confiável.
+function esc(v){
+  return String(v===null||v===undefined?'':v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 const LINGUAGENS_CONHECIDAS=['Palavras de afirmação','Tempo de qualidade','Presentes / Mimos','Atos de serviço','Presença / Acolhimento'];
 
 // Extrai o valor principal de um campo de resultado.
@@ -309,7 +317,7 @@ async function carregarDados(){
     const resp=await fetch(CFG.sheetUrl+'?action=read&token='+encodeURIComponent(CFG.token));
     const data=await resp.json();
     if(data && data.ok===false){
-      avisoDash('O servidor recusou a leitura',(data.erro||'Token inválido.'));
+      avisoDash('O servidor recusou a leitura',esc(data.erro||'Token inválido.'));
       DADOS=[];FILTRADOS=[];
       atualizarMetricas();renderCharts();
       return;
@@ -341,7 +349,7 @@ function renderCharts(){
     const max=entradas[0][1];
     el.innerHTML=entradas.map(([nome,n],i)=>{
       const cor=CORES[i%CORES.length].dot;
-      return `<div class="bar-row"><div class="bar-label" title="${nome}">${nome}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%;background:${cor}"></div></div><div class="bar-num">${n}</div></div>`;
+      return `<div class="bar-row"><div class="bar-label" title="${esc(nome)}">${esc(nome)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%;background:${cor}"></div></div><div class="bar-num">${n}</div></div>`;
     }).join('');
   };
   desenha('chart-ling',conta(ling1));
@@ -389,7 +397,7 @@ function atualizarFiltros(){
   const lings=[...new Set(DADOS.map(ling1).filter(Boolean))].sort();
   const temps=[...new Set(DADOS.map(temp1).filter(Boolean))].sort();
   const versoes=[...new Set(DADOS.map(versao1).filter(Boolean))].sort();
-  const sel=(id,opts)=>{const el=document.getElementById(id);const cur=el.value;el.innerHTML='<option value="">'+el.options[0].text+'</option>'+opts.map(o=>`<option value="${o}">${o}</option>`).join('');el.value=cur;};
+  const sel=(id,opts)=>{const el=document.getElementById(id);const cur=el.value;el.innerHTML='<option value="">'+el.options[0].text+'</option>'+opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');el.value=cur;};
   sel('filtro-setor',setores);sel('filtro-ling',lings);sel('filtro-temp',temps);sel('filtro-versao',versoes);
 }
 
@@ -430,20 +438,20 @@ function renderTabela(){
     // limitado a dois tipos. Fica visível para não ser lido como comparável.
     const vBadge=v==='v1'
       ? '<span class="badge" style="background:#FAECE7;color:#993C1D" title="Instrumento antigo: escala desbalanceada e eneagrama incompleto. Não comparável com a v2.">v1</span>'
-      : `<span class="badge" style="background:#E1F5EE;color:#085041">${v}</span>`;
+      : `<span class="badge" style="background:#E1F5EE;color:#085041">${esc(v)}</span>`;
     const alerta=d.qualidade&&d.qualidade!=='OK'
-      ? ` <span class="badge" style="background:#FAEEDA;color:#633806" title="${d.alertas||''}">⚠ revisar</span>`
+      ? ` <span class="badge" style="background:#FAEEDA;color:#633806" title="${esc(d.alertas)}">⚠ revisar</span>`
       : '';
     return `<tr>
-      <td><strong>${d.nome||'—'}</strong>${alerta}<br><span style="font-size:11px;color:var(--text3)">${d.email||''}</span></td>
-      <td><span class="badge" style="background:#F1EFE8;color:#444441">${d.setor||'—'}</span></td>
-      <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${d.linguagem||'—'}</span></td>
-      <td>${d.temperamento||'—'}</td>
-      <td>${d.eneagrama||'—'}${d.eneagrama_asa?`<br><span style="font-size:11px;color:var(--text3)">asa ${d.eneagrama_asa}</span>`:''}</td>
-      <td>${d.disc||'—'}</td>
-      <td style="max-width:200px;font-size:12px;color:var(--text2)">${d.como_comunicar||'—'}</td>
+      <td><strong>${esc(d.nome)||'—'}</strong>${alerta}<br><span style="font-size:11px;color:var(--text3)">${esc(d.email)}</span></td>
+      <td><span class="badge" style="background:#F1EFE8;color:#444441">${esc(d.setor)||'—'}</span></td>
+      <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${esc(d.linguagem)||'—'}</span></td>
+      <td>${esc(d.temperamento)||'—'}</td>
+      <td>${esc(d.eneagrama)||'—'}${d.eneagrama_asa?`<br><span style="font-size:11px;color:var(--text3)">asa ${esc(d.eneagrama_asa)}</span>`:''}</td>
+      <td>${esc(d.disc)||'—'}</td>
+      <td style="max-width:200px;font-size:12px;color:var(--text2)">${esc(d.como_comunicar)||'—'}</td>
       <td>${vBadge}</td>
-      <td style="font-size:11px;color:var(--text3);white-space:nowrap">${d.data||'—'}</td>
+      <td style="font-size:11px;color:var(--text3);white-space:nowrap">${esc(d.data)||'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -459,17 +467,17 @@ function renderCards(){
     return `<div class="pcard">
       <div class="pcard-header" style="background:${cor.bg}">
         <div class="pcard-avatar" style="background:${cor.dot};color:#fff">${ini}</div>
-        <div><div class="pcard-name" style="color:${cor.text}">${d.nome||'—'}</div><div class="pcard-role">${d.setor||'—'}</div></div>
+        <div><div class="pcard-name" style="color:${cor.text}">${esc(d.nome)||'—'}</div><div class="pcard-role">${esc(d.setor)||'—'}</div></div>
       </div>
       <div class="pcard-body">
         <div class="pcard-tags" style="margin-top:12px">
-          <span class="badge" style="background:${lc.bg};color:${lc.c}">💬 ${d.linguagem||'—'}</span>
-          <span class="badge" style="background:#F1EFE8;color:#444441">🧠 ${temp1(d)||'—'}</span>
-          <span class="badge" style="background:#EEEDFE;color:#3C3489">🔑 ${enea1(d)||'—'}</span>
-          ${d.disc?`<span class="badge" style="background:#E6F1FB;color:#0C447C">📊 ${d.disc}</span>`:''}
-          <span class="badge" style="background:${v==='v1'?'#FAECE7':'#E1F5EE'};color:${v==='v1'?'#993C1D':'#085041'}">${v}</span>
+          <span class="badge" style="background:${lc.bg};color:${lc.c}">💬 ${esc(d.linguagem)||'—'}</span>
+          <span class="badge" style="background:#F1EFE8;color:#444441">🧠 ${esc(temp1(d))||'—'}</span>
+          <span class="badge" style="background:#EEEDFE;color:#3C3489">🔑 ${esc(enea1(d))||'—'}</span>
+          ${d.disc?`<span class="badge" style="background:#E6F1FB;color:#0C447C">📊 ${esc(d.disc)}</span>`:''}
+          <span class="badge" style="background:${v==='v1'?'#FAECE7':'#E1F5EE'};color:${v==='v1'?'#993C1D':'#085041'}">${esc(v)}</span>
         </div>
-        ${d.como_comunicar?`<div class="pcard-tip">${d.como_comunicar}</div>`:''}
+        ${d.como_comunicar?`<div class="pcard-tip">${esc(d.como_comunicar)}</div>`:''}
       </div>
     </div>`;
   }).join('');

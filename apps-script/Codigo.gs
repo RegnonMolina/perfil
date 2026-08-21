@@ -276,6 +276,47 @@ function obterAbaV2() {
   return aba;
 }
 
+// ===== SANEAMENTO DE SAÍDA =====
+//
+// Tudo o que vem do formulário é digitado por qualquer pessoa da internet, e
+// esses valores acabam em dois lugares perigosos: o corpo HTML do e-mail que
+// sai da conta da organização, e as células da planilha. Cada destino precisa
+// de um tratamento diferente.
+
+// Escapa texto para uso dentro de HTML. Sem isto, um nome com marcação entra
+// como marcação no e-mail — que é enviado pela conta do colégio, com a
+// credibilidade dele.
+function escaparHtml(valor) {
+  return String(valor === null || valor === undefined ? "" : valor)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// A cor entra num atributo style. Só hexadecimal de 6 dígitos passa; qualquer
+// outra coisa vira a cor padrão, em vez de escapar do atributo.
+function corValida(valor) {
+  return /^#[0-9A-Fa-f]{6}$/.test(String(valor || "")) ? String(valor) : "#1f4788";
+}
+
+// A logo entra num src="...". Precisa ser https e não pode conter aspas nem
+// sinais que permitam sair do atributo. Na dúvida, o e-mail sai sem logo.
+function urlLogoValida(valor) {
+  var url = String(valor || "").trim();
+  if (!url || url.length > 400) return "";
+  return /^https:\/\/[^\s"'<>\\]+$/.test(url) ? url : "";
+}
+
+// Impede injeção de fórmula na planilha: uma resposta que começa com =, +, -
+// ou @ seria interpretada como fórmula pelo Google Sheets ao ser aberta, e
+// também por Excel ao abrir o CSV exportado. O apóstrofo força texto.
+function textoParaPlanilha(valor) {
+  var texto = String(valor === null || valor === undefined ? "" : valor);
+  return /^[=+\-@\t\r]/.test(texto) ? "'" + texto : texto;
+}
+
 // Transforma um objeto de scores em texto legível na planilha.
 // Exemplo: { A: 6, B: 3 }  =>  "A: 6 | B: 3"
 function formatarScores(objeto) {
@@ -287,42 +328,44 @@ function formatarScores(objeto) {
 
 function salvarNaPlanilha(dados, analise) {
   var a = analise || {};
+  var t = textoParaPlanilha; // atalho: toda célula de texto passa por aqui
+
   obterAbaV2().appendRow([
     Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm"),
     dados.versao_instrumento || "v2.0",
-    dados.nome || "",
-    dados.email || "",
-    dados.setor || "",
+    t(dados.nome),
+    t(dados.email),
+    t(dados.setor),
 
-    dados.linguagem || "",
-    dados.linguagem_secundaria || "",
+    t(dados.linguagem),
+    t(dados.linguagem_secundaria),
     formatarScores(dados.distribuicao_linguagem),
 
-    dados.temperamento || "",
-    dados.temperamento_secundario || "",
+    t(dados.temperamento),
+    t(dados.temperamento_secundario),
     formatarScores(dados.percentual_temperamento),
 
-    dados.eneagrama || "",
-    dados.eneagrama_asa || "",
-    dados.eneagrama_centro || "",
+    t(dados.eneagrama),
+    t(dados.eneagrama_asa),
+    t(dados.eneagrama_centro),
     formatarScores(dados.scores_eneagrama),
 
-    dados.disc || "",
-    dados.disc_dominante || "",
-    dados.disc_secundario || "",
+    t(dados.disc),
+    t(dados.disc_dominante),
+    t(dados.disc_secundario),
     formatarScores(dados.scores_disc),
 
-    dados.qualidade_status || "",
-    dados.qualidade_alertas || "",
+    t(dados.qualidade_status),
+    t(dados.qualidade_alertas),
     dados.duracao_segundos || "",
-    dados.consentimento_em || "",
+    t(dados.consentimento_em),
 
-    a.quem_e || "",
-    a.pontos_fortes || "",
-    a.pontos_desenvolver || "",
-    a.como_comunicar || "",
-    a.como_motivar || "",
-    a.evitar_atrito || ""
+    t(a.quem_e),
+    t(a.pontos_fortes),
+    t(a.pontos_desenvolver),
+    t(a.como_comunicar),
+    t(a.como_motivar),
+    t(a.evitar_atrito)
   ]);
 }
 
@@ -589,22 +632,27 @@ function enviarEmails(dados, analise) {
 
 function montarEmailHtml(dados, analise) {
   var a = analise || {};
-  var cor = dados.cor || "#1f4788";
+  var esc = escaparHtml;
+
+  // Nada que venha do formulário entra na mensagem como marcação: o e-mail sai
+  // da conta da organização e carrega a credibilidade dela.
+  var cor = corValida(dados.cor);
   var ctx = obterContexto(dados);
-  var organizacao = dados.organizacao || dados.escola || "";
-  var logo = dados.logo_url
-    ? '<img src="' + dados.logo_url + '" alt="Logo" style="max-height:48px;max-width:180px;margin-bottom:8px">'
+  var organizacao = esc(dados.organizacao || dados.escola || "");
+  var urlLogo = urlLogoValida(dados.logo_url);
+  var logo = urlLogo
+    ? '<img src="' + esc(urlLogo) + '" alt="Logo" style="max-height:48px;max-width:180px;margin-bottom:8px">'
     : "";
 
   var secao = function (titulo, texto) {
     if (!texto) return "";
-    return '<h3 style="color:' + cor + ';font-size:15px;margin:18px 0 4px">' + titulo + "</h3>" +
-      '<p style="font-size:13px;line-height:1.6;margin:0">' + texto + "</p>";
+    return '<h3 style="color:' + cor + ';font-size:15px;margin:18px 0 4px">' + esc(titulo) + "</h3>" +
+      '<p style="font-size:13px;line-height:1.6;margin:0">' + esc(texto) + "</p>";
   };
 
   var linha = function (rotulo, valor) {
     if (!valor) return "";
-    return "<strong>" + rotulo + ":</strong> " + valor + "<br>";
+    return "<strong>" + esc(rotulo) + ":</strong> " + esc(valor) + "<br>";
   };
 
   // Monta "valor principal (complemento)" só quando o valor principal existe.
@@ -618,7 +666,7 @@ function montarEmailHtml(dados, analise) {
   var alerta = (dados.qualidade_status && dados.qualidade_status !== "OK")
     ? '<p style="background:#fff8e1;border-left:4px solid #f9a825;padding:10px;font-size:12px;' +
       'color:#7a5c00;margin:0 0 14px">O preenchimento levantou alertas de qualidade (' +
-      dados.qualidade_alertas + '). Leia o resultado com essa ressalva.</p>'
+      escaparHtml(dados.qualidade_alertas) + '). Leia o resultado com essa ressalva.</p>'
     : "";
 
   return '<div style="font-family:Segoe UI,Tahoma,sans-serif;max-width:640px;margin:0 auto;color:#222">' +
@@ -649,7 +697,7 @@ function montarEmailHtml(dados, analise) {
     secao("Como Motivar", a.como_motivar) +
     secao("Evitar Atrito", a.evitar_atrito) +
     '<p style="font-size:10px;color:#888;margin-top:24px;border-top:1px solid #ddd;padding-top:10px;line-height:1.6">' +
-    "Instrumento de autoconhecimento e desenvolvimento (" + (dados.versao_instrumento || "v2.0") + "). " +
+    "Instrumento de autoconhecimento e desenvolvimento (" + esc(dados.versao_instrumento || "v2.0") + "). " +
     "Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional." +
     "</p>" +
     "</div></div>";
