@@ -35,5 +35,13 @@ window.CONFIG_ESCOLA = {
   emailGestor: "",
 
   // Texto pequeno exibido no rodapé das páginas (deixe "" para ocultar)
-  rodape: ""
+  rodape: "",
+
+  // Card de clima exibido no topo das páginas (dados da API gratuita Open-Meteo)
+  clima: {
+    exibir: true,          // false esconde o card em todas as páginas
+    cidade: "São Paulo",   // cidade do colégio, ex.: "Campinas" ou "Belo Horizonte"
+    latitude: null,        // opcional: preencha lat/lon para dispensar a busca pelo nome
+    longitude: null
+  }
 };
