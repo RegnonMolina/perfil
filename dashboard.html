@@ -110,7 +110,8 @@ tr:hover td{background:#F8FAFC}
     </div>
     <div>
       <div class="field"><label>Cor institucional</label><input type="color" id="cfg-cor" style="width:100%;height:38px;padding:3px;border:1px solid var(--border);border-radius:var(--r)"></div>
-      <div class="field"><label>Senha do gestor (para proteger o dashboard)</label><input type="password" id="cfg-senha" placeholder="Deixe em branco para sem senha"></div>
+      <div class="field"><label>Token do gestor <span style="font-weight:400;color:var(--text3)">— obrigatório para carregar os dados</span></label><input type="password" id="cfg-token" placeholder="Valor da propriedade TOKEN_GESTOR do Apps Script"></div>
+      <div class="field"><label>Trava de tela <span style="font-weight:400;color:var(--text3)">— opcional, só evita olhares por cima do ombro neste navegador</span></label><input type="password" id="cfg-senha" placeholder="Deixe em branco para não usar"></div>
       <div class="field"><label>Modo de exibição padrão</label>
         <select id="cfg-view" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit">
           <option value="table">Tabela</option>
@@ -197,6 +198,10 @@ let CFG={
   sheetUrl:ESCOLA.urlAppsScript||'',
   logoUrl:ESCOLA.logoUrl||'',
   cor:ESCOLA.corPrimaria||'#185FA5',
+  // Token do gestor: NUNCA vem do config.js (que é público neste site estático).
+  // Ele vive nas Propriedades do Script, é digitado aqui uma vez e fica só
+  // neste navegador. É ele que autoriza a leitura dos dados no Apps Script.
+  token:'',
   senha:'',
   view:'table'
 };
@@ -252,6 +257,7 @@ function carregarCFG(){
   document.getElementById('cfg-sheet-url').value=CFG.sheetUrl||'';
   document.getElementById('cfg-logo').value=CFG.logoUrl||'';
   document.getElementById('cfg-cor').value=CFG.cor;
+  document.getElementById('cfg-token').value=CFG.token||'';
   document.getElementById('cfg-senha').value=CFG.senha||'';
   document.getElementById('cfg-view').value=CFG.view||'table';
 }
@@ -261,6 +267,7 @@ function salvarConfigDash(){
   CFG.sheetUrl=document.getElementById('cfg-sheet-url').value.trim();
   CFG.logoUrl=document.getElementById('cfg-logo').value.trim();
   CFG.cor=document.getElementById('cfg-cor').value;
+  CFG.token=document.getElementById('cfg-token').value;
   CFG.senha=document.getElementById('cfg-senha').value;
   CFG.view=document.getElementById('cfg-view').value;
   localStorage.setItem('dashCFG',JSON.stringify(CFG));
@@ -274,17 +281,41 @@ function toggleConfig(){
   box.style.display=box.style.display==='none'?'block':'none';
 }
 
+// Mostra um aviso no lugar da tabela quando não há como carregar os dados.
+function avisoDash(titulo,detalhe){
+  const html=`<div class="empty" style="padding:60px 20px;text-align:center">
+    <strong style="display:block;font-size:14px;color:var(--text);margin-bottom:6px">${titulo}</strong>
+    <span style="font-size:13px;color:var(--text2);line-height:1.6">${detalhe}</span></div>`;
+  document.getElementById('tabela-body').innerHTML=`<tr><td colspan="9">${html}</td></tr>`;
+  document.getElementById('cards-container').innerHTML=html;
+}
+
 async function carregarDados(){
-  if(!CFG.sheetUrl){return;}
+  if(!CFG.sheetUrl){
+    avisoDash('Falta configurar a URL do Apps Script','Clique em <strong>⚙ Configurar</strong> e cole a URL do App da Web.');
+    return;
+  }
+  if(!CFG.token){
+    avisoDash('Falta o token do gestor',
+      'Os dados são pessoais e o servidor só os entrega mediante token. Clique em <strong>⚙ Configurar</strong> e cole o valor da propriedade <code>TOKEN_GESTOR</code> definida no Apps Script.');
+    return;
+  }
   try{
-    // Lê da planilha via Apps Script
-    const resp=await fetch(CFG.sheetUrl+'?action=read');
+    // Lê da planilha via Apps Script, autenticando com o token do gestor.
+    const resp=await fetch(CFG.sheetUrl+'?action=read&token='+encodeURIComponent(CFG.token));
     const data=await resp.json();
-    if(data.rows) DADOS=data.rows;
-    else DADOS=[];
+    if(data && data.ok===false){
+      avisoDash('O servidor recusou a leitura',(data.erro||'Token inválido.'));
+      DADOS=[];FILTRADOS=[];
+      atualizarMetricas();renderCharts();
+      return;
+    }
+    DADOS=(data && data.rows)?data.rows:[];
   }catch(e){
-    // Fallback: tenta ler do localStorage (dados salvos localmente)
-    try{DADOS=JSON.parse(localStorage.getItem('dashDados')||'[]');}catch(e2){DADOS=[];}
+    avisoDash('Não foi possível falar com o servidor','Confira a URL do Apps Script e sua conexão, e clique em <strong>↻ Atualizar</strong>.');
+    DADOS=[];FILTRADOS=[];
+    atualizarMetricas();renderCharts();
+    return;
   }
   FILTRADOS=[...DADOS];
   atualizarMetricas();
@@ -449,12 +480,14 @@ function exportarCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Perfis_${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
 
-// Proteção por senha (validação no navegador — dificulta o acesso casual,
-// mas não substitui uma autenticação de verdade; não exponha dados sensíveis)
+// Trava de tela: OPCIONAL e apenas local. Evita que alguém veja o painel numa
+// máquina já aberta — não protege os dados, porque a verificação acontece no
+// navegador. Quem protege os dados é o TOKEN_GESTOR exigido pelo Apps Script
+// em carregarDados(): sem ele, o servidor não entrega nada.
 function verificarSenha(){
   if(!CFG.senha)return true;
   if(sessionStorage.getItem('dashAuth')===CFG.senha)return true;
-  const s=prompt('Digite a senha do gestor para acessar o dashboard:');
+  const s=prompt('Digite a trava de tela para abrir o dashboard:');
   if(s===CFG.senha){sessionStorage.setItem('dashAuth',s);return true;}
   document.querySelector('.shell').innerHTML='<div class="empty" style="padding:80px 20px"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Acesso restrito. Recarregue a página para tentar novamente.</div>';
   return false;

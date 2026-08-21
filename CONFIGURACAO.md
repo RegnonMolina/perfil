@@ -84,16 +84,81 @@ Essas cores e textos se aplicam automaticamente a **tudo**: teste, tela de resul
 
 1. Crie uma planilha no Google Sheets (ou use a existente).
 2. Na planilha: **Extensões → Apps Script** → apague o código e cole todo o conteúdo de `apps-script/Codigo.gs` → salve.
-3. **Chave da IA**: crie uma chave em <https://console.anthropic.com> (menu API Keys). É paga por uso — cerca de **US$ 0,03 (~R$ 0,17) por teste respondido**. No Apps Script: **Configurações do projeto (engrenagem) → Propriedades do script → Adicionar**:
-   - `ANTHROPIC_API_KEY` = sua chave (`sk-ant-...`)
-   - `EMAIL_GESTOR` = e-mail padrão do gestor (opcional)
+3. **Propriedades do script**: em **Configurações do projeto (engrenagem) → Propriedades do script → Adicionar**:
+
+   | Propriedade | Obrigatória? | Para que serve |
+   |---|---|---|
+   | `TOKEN_GESTOR` | **Sim** | Senha que autoriza o dashboard a ler os dados. Sem ela, **a leitura fica bloqueada**. |
+   | `ANTHROPIC_API_KEY` | Não | Chave da IA (`sk-ant-...`), de <https://console.anthropic.com>. Paga por uso, cerca de **US$ 0,03 (~R$ 0,17) por teste**. Sem ela o teste funciona, só não gera a análise escrita. |
+   | `EMAIL_GESTOR` | Não | E-mail que recebe cópia de todos os resultados. |
+   | `LIMITE_ENVIOS_DIA` | Não | Teto diário de envios (padrão 200). |
+   | `LIMITE_EMAILS_DIA` | Não | Teto diário de e-mails (padrão 150). |
+
+   Para o `TOKEN_GESTOR`, use um valor longo e aleatório — 20 caracteres ou mais.
+   Um jeito rápido de gerar: no navegador, aperte F12, cole
+   `crypto.randomUUID()` no console e use o resultado.
+
 4. **Implantar → Nova implantação → App da Web**:
    - Executar como: **você**
    - Quem pode acessar: **Qualquer pessoa**
 5. Copie a **URL do App da Web** e cole no campo `urlAppsScript` do `config.js`.
 
-> 🔒 A chave da API fica guardada **só no Apps Script** — nunca aparece no site público.
+> 🔒 A chave da API e o token ficam guardados **só no Apps Script** — nunca aparecem no site público.
 > Na primeira execução o Google pedirá autorização para acessar a planilha e enviar e-mails — autorize.
+
+### 1.2.1 Proteção dos dados
+
+Os resultados são dados pessoais: nome, e-mail e um perfil comportamental.
+O que protege cada coisa:
+
+| O quê | Como está protegido | Alcance real |
+|---|---|---|
+| **Ler os resultados** (`?action=read`) | Exige o `TOKEN_GESTOR`, que vive só nas Propriedades do Script | **Protegido.** Sem o token, o servidor não devolve nada. Se a propriedade não estiver configurada, a leitura é recusada — falha fechada. |
+| **Enviar respostas** (o formulário) | Consentimento obrigatório, campo-armadilha, teto diário de envios, intervalo mínimo por e-mail e teto diário de e-mails | **Limitado, não impedido.** O formulário é público por natureza. As travas seguram robôs simples e limitam custo, cota de e-mail e volume — não impedem alguém determinado de inserir linhas. |
+| **Abrir o dashboard** | Trava de tela opcional, verificada no navegador | **Conveniência apenas.** Serve contra olhares por cima do ombro. Quem realmente protege os dados é o token. |
+
+O token é digitado **uma vez** no dashboard (⚙ Configurar → Token do gestor) e
+fica guardado só naquele navegador. **Nunca coloque o token no `config.js`**: esse
+arquivo faz parte do site público e qualquer pessoa consegue lê-lo.
+
+Se o token vazar (alguém compartilhou por engano, um computador foi perdido),
+troque o valor da propriedade `TOKEN_GESTOR` no Apps Script: todos os dashboards
+param de carregar até que o novo valor seja digitado.
+
+> **Proteção mais forte, se você tiver Google Workspace:** implante o app como
+> *"Executar como: usuário que acessa"* com acesso restrito ao domínio. Aí a
+> leitura passa a exigir login Google da instituição, em vez de um token
+> compartilhado. O custo é que o formulário deixa de aceitar quem está fora do
+> domínio — o que não serve para o grupo de networking, mas pode servir para o
+> colégio.
+
+### 1.2.2 Privacidade e LGPD
+
+Antes de começar o teste, a pessoa lê um aviso e precisa marcar o aceite. O
+texto é montado a partir do bloco `privacidade` do `config.js`:
+
+```js
+privacidade: {
+  controlador: "Colégio Mundo do Saber",
+  finalidade: "conhecer melhor o perfil de cada pessoa da equipe e apoiar o desenvolvimento profissional",
+  quemAcessa: "a própria pessoa e a coordenação responsável",
+  retencao: "enquanto durar o vínculo com a instituição, ou até que a pessoa peça a exclusão",
+  contato: "regnon@colegiomundodosaber.com.br",
+  urlPolitica: ""
+}
+```
+
+O aceite é exigido **no servidor**, e não só na tela: o Apps Script recusa
+qualquer envio sem `consentimento: true`, então alterar a página no navegador
+não contorna a regra. A data e a hora do aceite ficam gravadas na planilha, na
+coluna **Consentimento**.
+
+Ao receber um pedido de exclusão pelo canal informado, apague a linha da pessoa
+na aba `Respostas v2` (e na `Respostas`, se houver registro antigo).
+
+> Os textos são informativos e devem ser preenchidos com dados reais da sua
+> organização. Não são peça jurídica pronta — se houver dúvida sobre a base
+> legal aplicável, vale passar por quem cuida do jurídico antes de publicar.
 
 ### 1.3 Publicar o site
 
@@ -114,7 +179,40 @@ No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `h
 
 ---
 
+## Ordem de atualização (importante)
+
+O site e o Apps Script são duas metades da mesma coisa e precisam estar na
+mesma versão. **Atualize sempre o Apps Script primeiro, o site depois.**
+
+Se o site subir para a v2 com o Apps Script ainda na v1, o formulário envia
+campos que o backend antigo não conhece: DISC, asa, centro e o controle de
+qualidade são descartados e a resposta vai para a aba errada — sem erro
+nenhum aparecer.
+
+Para que isso não dependa de ninguém lembrar, existem duas travas automáticas:
+
+- **No formulário:** ao abrir a página, ele pergunta a versão ao servidor
+  (`?action=versao`). Se as versões não baterem, aparece um aviso vermelho e o
+  botão de avançar é desabilitado — a pessoa é impedida de responder 75 itens
+  para depois perder o resultado. A conferência é refeita no envio.
+- **No fluxo de publicação:** depois do `clasp deploy`, o GitHub Actions
+  consulta o endereço público e confere se a versão no ar é a mesma do código.
+  Se não for, o fluxo falha em vermelho em vez de dar por publicado.
+
+Ao mudar o formato dos dados, suba o `VERSAO_BACKEND` no `apps-script/Codigo.gs`
+junto com a `VERSAO` do `instrumento.js`.
+
+---
+
 ## Publicação automática do Apps Script (opcional)
+
+> Enquanto o segredo `CLASPRC_JSON` não existir, este fluxo **falha e o backend
+> não é publicado** — o Apps Script continua com o que foi colado à mão no
+> editor. Nesse caso, atualize o backend manualmente: **Extensões → Apps
+> Script**, cole o conteúdo de `apps-script/Codigo.gs`, e então
+> **Implantar → Gerenciar implantações → editar a implantação existente → Nova
+> versão** (editar a existente preserva a URL; criar uma nova geraria outro
+> endereço e o `config.js` deixaria de apontar para o lugar certo).
 
 Com esta automação, **toda alteração na pasta `apps-script/` que entrar na branch `main` é publicada sozinha** no seu projeto Apps Script — sem copiar e colar. Ela usa o GitHub Actions (arquivo `.github/workflows/deploy-apps-script.yml`) e a ferramenta oficial `clasp` do Google.
 

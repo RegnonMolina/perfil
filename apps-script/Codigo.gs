@@ -33,6 +33,12 @@
  */
 
 // Aba do instrumento v1 — preservada apenas para leitura do histórico.
+// Versão deste backend. O formulário confere este número antes de enviar:
+// se o site já estiver na v2 e o Apps Script ainda estiver na v1, o envio é
+// bloqueado com uma mensagem clara, em vez de gravar dados incompletos na aba
+// errada. Ao alterar o formato dos dados, suba esta versão junto.
+var VERSAO_BACKEND = "v2.0";
+
 var NOME_ABA = "Respostas";
 
 // Aba do instrumento v2 — onde as respostas novas são gravadas.
@@ -52,10 +58,110 @@ var CABECALHO_V2 = [
   "Temperamento", "Temperamento secundário", "Percentual temperamento",
   "Eneagrama", "Asa", "Centro", "Scores eneagrama",
   "DISC", "DISC dominante", "DISC secundário", "Scores DISC",
-  "Qualidade", "Alertas", "Duração (s)",
+  "Qualidade", "Alertas", "Duração (s)", "Consentimento",
   "Quem é", "Pontos fortes", "Pontos a desenvolver",
   "Como comunicar", "Como motivar", "Evitar atrito"
 ];
+
+// ===== SEGURANÇA E LIMITES =====
+//
+// O QUE ESTAS TRAVAS FAZEM — E O QUE NÃO FAZEM
+//
+// LEITURA (?action=read): protegida de verdade. Exige o TOKEN_GESTOR, que vive
+// só nas Propriedades do Script e é digitado pelo gestor no dashboard. Se a
+// propriedade não estiver configurada, a leitura é RECUSADA — falha fechada, e
+// não aberta. Antes disso, qualquer pessoa com a URL baixava a base inteira.
+//
+// ESCRITA (doPost): limitada, não impedida. O formulário é público por
+// natureza — qualquer segredo colocado no site estático seria visível no
+// código-fonte da página, o que seria encenação, não segurança. O que dá para
+// fazer, e é o que está aqui, é limitar o estrago: campo-armadilha para robôs
+// simples, teto diário de envios, intervalo mínimo entre envios do mesmo
+// e-mail e teto diário de e-mails. Isso protege a cota do Google e o custo da
+// API da Anthropic, e impede que a conta vire relé de spam em escala. Um
+// atacante determinado ainda consegue inserir linhas.
+//
+// Para proteção real na escrita seria preciso exigir login (implantar o app
+// como "executar como usuário que acessa", com acesso restrito ao domínio) —
+// o que fecharia o formulário para quem não tem conta na organização.
+
+var LIMITE_ENVIOS_DIA_PADRAO = 200;
+var LIMITE_EMAILS_DIA_PADRAO = 150;
+var INTERVALO_MINIMO_SEGUNDOS = 120;
+
+function propriedade(nome, padrao) {
+  var valor = PropertiesService.getScriptProperties().getProperty(nome);
+  return (valor === null || valor === "") ? padrao : valor;
+}
+
+// Comparação de tempo constante: percorre a string inteira mesmo quando já
+// encontrou diferença, para não revelar o token caractere a caractere.
+function comparacaoSegura(a, b) {
+  a = String(a || "");
+  b = String(b || "");
+  if (a.length !== b.length) return false;
+  var diferenca = 0;
+  for (var i = 0; i < a.length; i++) {
+    diferenca |= (a.charCodeAt(i) ^ b.charCodeAt(i));
+  }
+  return diferenca === 0;
+}
+
+function chaveDoDia(prefixo) {
+  var hoje = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
+  return prefixo + "_" + hoje;
+}
+
+// Incrementa um contador diário e diz se ainda está dentro do teto.
+// O bloqueio evita que dois envios simultâneos leiam o mesmo valor.
+function dentroDoLimiteDiario(prefixo, limite) {
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(5000);
+  } catch (erro) {
+    return true; // Sob disputa, prefere deixar passar a derrubar um envio legítimo.
+  }
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var chave = chaveDoDia(prefixo);
+    var atual = Number(props.getProperty(chave) || 0);
+    if (atual >= limite) return false;
+    props.setProperty(chave, String(atual + 1));
+    return true;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Intervalo mínimo entre envios do mesmo e-mail. O e-mail nunca é guardado em
+// claro na cache: só o resumo criptográfico dele.
+function envioRepetido(email) {
+  var cache = CacheService.getScriptCache();
+  var digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(email).toLowerCase());
+  var chave = "envio_" + digest.map(function (b) {
+    return ("0" + (b & 0xFF).toString(16)).slice(-2);
+  }).join("").substring(0, 32);
+
+  if (cache.get(chave)) return true;
+  cache.put(chave, "1", INTERVALO_MINIMO_SEGUNDOS);
+  return false;
+}
+
+// Validação do que chega. Devolve a mensagem de erro, ou "" se estiver tudo certo.
+function validarEnvio(dados) {
+  if (!dados.nome || String(dados.nome).trim().length < 2) {
+    return "Informe o nome completo.";
+  }
+  if (!dados.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(dados.email).trim())) {
+    return "Informe um e-mail válido.";
+  }
+  // Consentimento é exigido no servidor, e não só na tela: sem ele, o dado
+  // pessoal não pode ser tratado, e uma tela alterada não contorna a regra.
+  if (dados.consentimento !== true) {
+    return "É necessário aceitar o aviso de privacidade para enviar as respostas.";
+  }
+  return "";
+}
 
 // ===== ENTRADAS HTTP =====
 
@@ -67,12 +173,41 @@ function doPost(e) {
       return respostaJson({ ok: false, erro: "Ação desconhecida" });
     }
 
+    // Campo-armadilha: invisível para pessoas, preenchido por robôs que
+    // completam tudo. Responde ok para não ensinar ao robô o que o denunciou,
+    // mas não grava nada.
+    if (dados.confirmacao) {
+      return respostaJson({ ok: true, versao: VERSAO_BACKEND });
+    }
+
+    var erro = validarEnvio(dados);
+    if (erro) {
+      return respostaJson({ ok: false, erro: erro });
+    }
+
+    if (envioRepetido(dados.email)) {
+      return respostaJson({
+        ok: false,
+        erro: "Já recebemos um envio deste e-mail há poucos minutos. Se foi engano, aguarde alguns instantes."
+      });
+    }
+
+    // O teto diário é conferido ANTES da chamada à IA, que é a parte que custa.
+    var limiteEnvios = Number(propriedade("LIMITE_ENVIOS_DIA", LIMITE_ENVIOS_DIA_PADRAO));
+    if (!dentroDoLimiteDiario("envios", limiteEnvios)) {
+      console.error("Teto diário de envios atingido (" + limiteEnvios + ").");
+      return respostaJson({
+        ok: false,
+        erro: "O limite de envios de hoje foi atingido. Avise a coordenação e tente novamente amanhã."
+      });
+    }
+
     var analise = gerarAnaliseIA(dados); // null se a chave da API não estiver configurada
 
     salvarNaPlanilha(dados, analise);
     enviarEmails(dados, analise);
 
-    return respostaJson({ ok: true, analise: analise });
+    return respostaJson({ ok: true, analise: analise, versao: VERSAO_BACKEND });
   } catch (erro) {
     return respostaJson({ ok: false, erro: String(erro) });
   }
@@ -81,11 +216,34 @@ function doPost(e) {
 function doGet(e) {
   var action = (e && e.parameter && e.parameter.action) || "";
 
-  if (action === "read") {
-    return respostaJson({ rows: lerRespostas() });
+  // Pública de propósito: é assim que o formulário confere, antes de enviar,
+  // se o backend já está na mesma versão do site. Não revela nenhum dado.
+  if (action === "versao") {
+    return respostaJson({ ok: true, servico: "Perfil Comportamental", versao: VERSAO_BACKEND });
   }
 
-  return respostaJson({ ok: true, servico: "Perfil Comportamental" });
+  if (action === "read") {
+    var token = propriedade("TOKEN_GESTOR", "");
+
+    // Falha FECHADA: sem token configurado, ninguém lê. O contrário
+    // transformaria um esquecimento de configuração em base aberta.
+    if (!token) {
+      return respostaJson({
+        ok: false,
+        erro: "Leitura bloqueada: a propriedade TOKEN_GESTOR não está configurada no Apps Script. " +
+              "Veja CONFIGURACAO.md, seção 'Proteção dos dados'."
+      });
+    }
+
+    var enviado = (e && e.parameter && e.parameter.token) || "";
+    if (!comparacaoSegura(enviado, token)) {
+      return respostaJson({ ok: false, erro: "Token do gestor inválido ou ausente." });
+    }
+
+    return respostaJson({ ok: true, rows: lerRespostas(), versao: VERSAO_BACKEND });
+  }
+
+  return respostaJson({ ok: true, servico: "Perfil Comportamental", versao: VERSAO_BACKEND });
 }
 
 // ===== PLANILHA =====
@@ -157,6 +315,7 @@ function salvarNaPlanilha(dados, analise) {
     dados.qualidade_status || "",
     dados.qualidade_alertas || "",
     dados.duracao_segundos || "",
+    dados.consentimento_em || "",
 
     a.quem_e || "",
     a.pontos_fortes || "",
@@ -236,12 +395,13 @@ function lerRespostasV2() {
       qualidade: linha[19],
       alertas: linha[20],
       duracao: linha[21],
-      quem_e: linha[22],
-      pontos_fortes: linha[23],
-      pontos_desenvolver: linha[24],
-      como_comunicar: linha[25],
-      como_motivar: linha[26],
-      evitar_atrito: linha[27]
+      consentimento_em: linha[22],
+      quem_e: linha[23],
+      pontos_fortes: linha[24],
+      pontos_desenvolver: linha[25],
+      como_comunicar: linha[26],
+      como_motivar: linha[27],
+      evitar_atrito: linha[28]
     };
   }).reverse(); // mais recentes primeiro
 }
@@ -386,6 +546,15 @@ function gerarAnaliseIA(dados) {
 // ===== E-MAIL =====
 
 function enviarEmails(dados, analise) {
+  // Teto diário de e-mails: protege a cota do Google e impede que a conta da
+  // organização seja usada para disparar mensagens em massa. Se o teto for
+  // atingido, as respostas continuam sendo gravadas — só o e-mail não sai.
+  var limiteEmails = Number(propriedade("LIMITE_EMAILS_DIA", LIMITE_EMAILS_DIA_PADRAO));
+  if (!dentroDoLimiteDiario("emails", limiteEmails)) {
+    console.error("Teto diário de e-mails atingido (" + limiteEmails + "). Resposta gravada sem envio.");
+    return;
+  }
+
   var corpoHtml = montarEmailHtml(dados, analise);
   var assunto = "Perfil Comportamental — " + dados.nome;
 

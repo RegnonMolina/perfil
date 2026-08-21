@@ -551,12 +551,102 @@
 
         @media (max-width: 600px) {
             .disc-linha {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr auto auto;
+                gap: 6px;
+                padding: 8px;
             }
-            .disc-linha .disc-btn {
-                width: 100%;
+            .disc-btn {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+            .disc-palavra {
+                font-size: 13px;
             }
         }
+
+        /* ===== Aviso de privacidade e consentimento ===== */
+        .privacidade {
+            border: 1px solid #e2e2e2;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            background: #fafafa;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #444;
+        }
+
+        .privacidade h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--cor-primaria);
+            margin-bottom: 8px;
+        }
+
+        .privacidade ul {
+            margin: 8px 0 0 18px;
+        }
+
+        .privacidade li {
+            margin-bottom: 5px;
+        }
+
+        .consentimento {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 12px 14px;
+            border: 2px solid #e2e2e2;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .consentimento:hover {
+            border-color: var(--cor-secundaria);
+        }
+
+        .consentimento.marcado {
+            border-color: var(--cor-secundaria);
+            background: var(--cor-secundaria-suave);
+        }
+
+        .consentimento input {
+            margin-top: 3px;
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+        }
+
+        .consentimento label {
+            font-size: 13px;
+            line-height: 1.6;
+            cursor: pointer;
+        }
+
+        /* Campo-armadilha: invisível para pessoas, preenchido por robôs.
+           Fica fora da tela em vez de display:none, que alguns robôs ignoram. */
+        .armadilha {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .bloqueio-versao {
+            background: #ffebee;
+            border-left: 4px solid #c62828;
+            border-radius: 8px;
+            padding: 13px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #8c1d1d;
+        }
+
     </style>
 </head>
 <body>
@@ -576,6 +666,8 @@
             <div class="progresso">
                 <div class="progresso-barra" id="progressoBarra"></div>
             </div>
+
+            <div class="bloqueio-versao" id="bloqueio-versao" style="display:none"></div>
 
             <div class="retomar" id="retomar" style="display:none">
                 Encontramos um teste seu em andamento neste navegador.
@@ -606,6 +698,18 @@
                         <option value="">Selecione...</option>
                     </select>
                 </div>
+                <div class="armadilha" aria-hidden="true">
+                    <label>Não preencha este campo</label>
+                    <input type="text" id="confirmacao" tabindex="-1" autocomplete="off">
+                </div>
+
+                <div class="privacidade" id="aviso-privacidade"></div>
+
+                <div class="consentimento" id="caixa-consentimento" onclick="cliqueNaCaixaDeConsentimento(event)">
+                    <input type="checkbox" id="consentimento" onchange="alternarConsentimento()">
+                    <label for="consentimento" id="texto-consentimento"></label>
+                </div>
+
                 <div class="botoes">
                     <button class="btn btn-primario" onclick="irParaTela(2)">Próximo →</button>
                 </div>
@@ -791,6 +895,8 @@
             respostas_eneagrama: [],    // { item, valor }
             respostas_disc: [],         // { bloco, mais, menos }
             resposta_atencao: null,
+            consentimento: false,
+            consentimento_em: "",
             inicio: Date.now(),
             perfil: null,
             analise_ia: {}
@@ -809,6 +915,14 @@
             rodape: "",
             // Vocabulário da organização. Fica aqui como padrão para o caso de
             // um config.js antigo, sem o bloco "contexto", continuar em uso.
+            privacidade: {
+                controlador: "",
+                finalidade: "apoiar o desenvolvimento profissional e a comunicação da equipe",
+                quemAcessa: "a própria pessoa e a coordenação responsável",
+                retencao: "enquanto durar o vínculo, ou até que a pessoa peça a exclusão",
+                contato: "",
+                urlPolitica: ""
+            },
             contexto: {
                 tipoOrganizacao: "uma escola",
                 termoPessoa: "colaborador",
@@ -835,6 +949,11 @@
                 ...BRANDING_PADRAO.contexto,
                 ...((window.CONFIG_ESCOLA || {}).contexto || {}),
                 ...(overrides.contexto || {})
+            };
+            branding.privacidade = {
+                ...BRANDING_PADRAO.privacidade,
+                ...((window.CONFIG_ESCOLA || {}).privacidade || {}),
+                ...(overrides.privacidade || {})
             };
         }
 
@@ -882,6 +1001,107 @@
             if (selecionado) select.value = selecionado;
         }
 
+        // Monta o aviso de privacidade a partir do config.js da organização.
+        function aplicarPrivacidade() {
+            const p = branding.privacidade || {};
+            const ctx = branding.contexto || {};
+            const controlador = p.controlador || branding.nome;
+
+            const politica = p.urlPolitica
+                ? ` Política completa: <a href="${escaparHtml(p.urlPolitica)}" target="_blank" rel="noopener">${escaparHtml(p.urlPolitica)}</a>.`
+                : "";
+
+            document.getElementById("aviso-privacidade").innerHTML = `
+                <h3>Antes de começar: como seus dados são usados</h3>
+                <p>Este questionário coleta seu nome, e-mail e respostas para gerar um perfil comportamental.</p>
+                <ul>
+                    <li><strong>Quem é responsável:</strong> ${escaparHtml(controlador)}.</li>
+                    <li><strong>Para quê:</strong> ${escaparHtml(p.finalidade || "")}.</li>
+                    <li><strong>Quem vê o resultado:</strong> ${escaparHtml(p.quemAcessa || "")}.</li>
+                    <li><strong>Por quanto tempo:</strong> ${escaparHtml(p.retencao || "")}.</li>
+                    <li><strong>Seus direitos:</strong> você pode pedir acesso, correção ou exclusão dos seus dados a qualquer momento${p.contato ? ", pelo e-mail " + escaparHtml(p.contato) : ""}.</li>
+                </ul>
+                <p style="margin-top:8px">Este é um instrumento de autoconhecimento e desenvolvimento.
+                <strong>Não é usado para seleção, promoção ou avaliação de desempenho</strong>, não constitui
+                diagnóstico clínico e não substitui avaliação profissional.${politica}</p>
+            `;
+
+            document.getElementById("texto-consentimento").innerHTML =
+                `Li o aviso acima e concordo que ${escaparHtml(controlador)} trate meus dados para essa finalidade.`;
+        }
+
+        // Clique na área ao redor da caixa.
+        //
+        // Só trata o clique na própria div: a caixinha e o rótulo já alternam
+        // sozinhos, porque o <label for> faz isso nativamente. Sem esta guarda,
+        // o clique no rótulo alternava duas vezes — uma pelo navegador e outra
+        // por este código — e o resultado era nada acontecer.
+        function cliqueNaCaixaDeConsentimento(evento) {
+            if (evento.target.id !== "caixa-consentimento") return;
+            const caixa = document.getElementById("consentimento");
+            caixa.checked = !caixa.checked;
+            alternarConsentimento();
+        }
+
+        // Chamada pelo onchange da caixa, que dispara em todos os caminhos
+        // nativos: clique na caixinha, clique no rótulo e barra de espaço.
+        function alternarConsentimento() {
+            const caixa = document.getElementById("consentimento");
+
+            dadosFormulario.consentimento = caixa.checked;
+            dadosFormulario.consentimento_em = caixa.checked
+                ? new Date().toLocaleString("pt-BR")
+                : "";
+            document.getElementById("caixa-consentimento").classList.toggle("marcado", caixa.checked);
+            salvarRascunho();
+        }
+
+        // Confere se o Apps Script já está na mesma versão deste site.
+        //
+        // Sem isto, um site atualizado enviando para um backend antigo grava
+        // dados incompletos na aba errada, em silêncio. Aqui o problema aparece
+        // antes de a pessoa responder 75 itens.
+        function versaoPrincipal(v) {
+            return String(v || "").split(".")[0];
+        }
+
+        function bloquearPorVersao(mensagem) {
+            const el = document.getElementById("bloqueio-versao");
+            el.innerHTML = mensagem;
+            el.style.display = "block";
+            document.querySelectorAll(".btn-primario").forEach(function (b) {
+                b.disabled = true;
+                b.style.opacity = ".5";
+                b.style.cursor = "not-allowed";
+            });
+        }
+
+        function conferirVersaoDoServidor() {
+            if (!branding.urlAppsScript) return;
+            fetch(branding.urlAppsScript + "?action=versao")
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (!d || !d.versao) {
+                        bloquearPorVersao(
+                            "<strong>Sistema em manutenção.</strong> O servidor respondeu, mas não informou a versão. " +
+                            "Avise a coordenação antes de responder — as respostas podem não ser gravadas corretamente."
+                        );
+                        return;
+                    }
+                    if (versaoPrincipal(d.versao) !== versaoPrincipal(INST.VERSAO)) {
+                        bloquearPorVersao(
+                            "<strong>Sistema em atualização.</strong> Este questionário está na versão " +
+                            escaparHtml(INST.VERSAO) + ", mas o servidor ainda está na " + escaparHtml(d.versao) + ". " +
+                            "Responder agora gravaria um resultado incompleto. Avise a coordenação e tente mais tarde."
+                        );
+                    }
+                })
+                .catch(function () {
+                    // Sem rede não dá para concluir nada: não bloqueia aqui.
+                    // A conferência é refeita no envio, que é o momento crítico.
+                });
+        }
+
         function escaparHtml(texto) {
             return String(texto)
                 .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -892,9 +1112,11 @@
         document.addEventListener("DOMContentLoaded", function () {
             carregarBranding();
             aplicarBranding();
+            aplicarPrivacidade();
             renderizarTudo();
             verificarRascunho();
             atualizarProgresso();
+            conferirVersaoDoServidor();
         });
 
         // ===== RENDERIZAÇÃO =====
@@ -1110,6 +1332,12 @@
             document.getElementById("email").value = dadosFormulario.email || "";
             document.getElementById("setor").value = dadosFormulario.setor || "";
 
+            // O consentimento é restaurado com a data original do aceite.
+            if (dadosFormulario.consentimento) {
+                document.getElementById("consentimento").checked = true;
+                document.getElementById("caixa-consentimento").classList.add("marcado");
+            }
+
             restaurarSelecoes();
             document.getElementById("retomar").style.display = "none";
             mostrarMensagem("Respostas anteriores restauradas.", "sucesso");
@@ -1167,6 +1395,11 @@
             }
             if (!document.getElementById("setor").value) {
                 mostrarMensagem("Por favor, selecione uma opção.", "erro");
+                return false;
+            }
+            if (!document.getElementById("consentimento").checked) {
+                mostrarMensagem("Para continuar, é preciso aceitar o aviso de privacidade.", "erro");
+                document.getElementById("caixa-consentimento").scrollIntoView({ behavior: "smooth", block: "center" });
                 return false;
             }
             dadosFormulario.nome = document.getElementById("nome").value;
@@ -1255,6 +1488,13 @@
                 email: dadosFormulario.email,
                 setor: dadosFormulario.setor,
 
+                // Consentimento (o Apps Script recusa o envio sem ele)
+                consentimento: dadosFormulario.consentimento === true,
+                consentimento_em: dadosFormulario.consentimento_em || "",
+
+                // Campo-armadilha: só um robô preencheria isto.
+                confirmacao: (document.getElementById("confirmacao") || {}).value || "",
+
                 // Módulo 1
                 linguagem: perfil.linguagem.principalNome,
                 linguagem_secundaria: perfil.linguagem.secundariaNome,
@@ -1307,8 +1547,18 @@
                 if (data && data.ok) {
                     // Só descarta o rascunho depois da confirmação de que salvou.
                     descartarRascunho();
+                    // Confere no envio se o servidor está na versão esperada.
+                    if (data.versao && versaoPrincipal(data.versao) !== versaoPrincipal(INST.VERSAO)) {
+                        dadosFormulario.falhaEnvio = true;
+                        dadosFormulario.erroEnvio =
+                            "O servidor está na versão " + data.versao + " e este questionário na " +
+                            INST.VERSAO + ". Parte do seu resultado pode não ter sido gravada.";
+                    }
                 } else {
                     dadosFormulario.falhaEnvio = true;
+                    // A mensagem do servidor é mostrada à pessoa: recusa por
+                    // limite ou por consentimento precisa ser compreensível.
+                    dadosFormulario.erroEnvio = (data && data.erro) || "";
                 }
                 exibirResultado();
             })
@@ -1380,6 +1630,7 @@
                         Não conseguimos confirmar o envio das suas respostas ao servidor. O resultado abaixo foi
                         calculado neste navegador e suas respostas continuam salvas aqui — avise
                         ${escaparHtml(ctx.termoLider || "o gestor")} para que o envio seja refeito.
+                        ${dadosFormulario.erroEnvio ? "<br><br><strong>Motivo:</strong> " + escaparHtml(dadosFormulario.erroEnvio) : ""}
                     </div>`;
             }
 

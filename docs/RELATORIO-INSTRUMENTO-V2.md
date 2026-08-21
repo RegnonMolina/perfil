@@ -230,7 +230,10 @@ renderizar o dashboard com linhas v1 e v2 convivendo.
 
 ## 7. Pendências e achados fora do escopo
 
-Nenhum destes foi alterado — todos aguardam decisão.
+> **Atualização (21/08/2026):** os itens 1 a 4 desta lista foram resolvidos numa
+> segunda rodada. Veja `RELATORIO-SEGURANCA-LGPD.md`. Os demais seguem abertos.
+
+Nenhum destes foi alterado nesta rodada — todos aguardavam decisão.
 
 1. **A base de dados continua pública.** `doGet ?action=read` devolve todas as linhas
    (nome, e-mail, agrupamento e análise completa) sem autenticação, e a URL está no

@@ -80,5 +80,36 @@ window.CONFIG_ESCOLA = {
       "Segurança",
       "Externo (Consultor, Amigo, Parente)"
     ]
+  },
+
+  // ----------------------------------------------------------
+  //  PRIVACIDADE (LGPD)
+  // ----------------------------------------------------------
+  //
+  // O texto abaixo monta o aviso que a pessoa lê e aceita ANTES de começar o
+  // teste. O aceite é obrigatório: o Apps Script recusa qualquer envio sem ele.
+  //
+  // Preencha com dados reais da sua organização — este é um texto informativo,
+  // não uma peça jurídica pronta. Se houver dúvida sobre a base legal aplicável
+  // ao seu caso, vale passar por quem cuida do jurídico antes de publicar.
+  privacidade: {
+    // Quem é responsável pelos dados (o "controlador", na linguagem da LGPD).
+    controlador: "Colégio Mundo do Saber",
+
+    // Para que os dados são usados. Seja específico e honesto.
+    finalidade: "conhecer melhor o perfil de cada pessoa da equipe e apoiar o " +
+      "desenvolvimento profissional e a comunicação no dia a dia",
+
+    // Quem vê o resultado além da própria pessoa.
+    quemAcessa: "a própria pessoa e a coordenação responsável",
+
+    // Por quanto tempo os dados ficam guardados.
+    retencao: "enquanto durar o vínculo com a instituição, ou até que a pessoa peça a exclusão",
+
+    // Canal para dúvidas, correção ou exclusão dos dados.
+    contato: "regnon@colegiomundodosaber.com.br",
+
+    // Link opcional para uma política de privacidade completa. "" para ocultar.
+    urlPolitica: ""
   }
 };
