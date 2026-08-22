@@ -52,7 +52,7 @@ test("A consulta de versão é pública e não devolve nenhum dado pessoal", () 
   post(a, envioValido());
   const r = get(a, { action: "versao" });
   assert.strictEqual(r.ok, true);
-  assert.strictEqual(r.versao, "v2.0");
+  assert.strictEqual(r.versao, "v2.1");
   assert.ok(!JSON.stringify(r).includes("maria@"), "a consulta de versão não pode expor dados");
   assert.strictEqual(r.rows, undefined);
 });
@@ -164,7 +164,7 @@ test("O teto diário de e-mails para o envio mas preserva a resposta", () => {
 test("A resposta do envio informa a versão do backend", () => {
   // É o que permite ao site detectar um backend desatualizado.
   const a = criarAmbiente();
-  assert.strictEqual(post(a, envioValido()).versao, "v2.0");
+  assert.strictEqual(post(a, envioValido()).versao, "v2.1");
 });
 
 // ============================================================

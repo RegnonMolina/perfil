@@ -37,7 +37,7 @@
 // se o site já estiver na v2 e o Apps Script ainda estiver na v1, o envio é
 // bloqueado com uma mensagem clara, em vez de gravar dados incompletos na aba
 // errada. Ao alterar o formato dos dados, suba esta versão junto.
-var VERSAO_BACKEND = "v2.0";
+var VERSAO_BACKEND = "v2.1";
 
 var NOME_ABA = "Respostas";
 
@@ -56,7 +56,7 @@ var CABECALHO_V2 = [
   "Data", "Versão", "Nome", "E-mail", "Grupo",
   "Linguagem", "Linguagem secundária", "Distribuição linguagem",
   "Temperamento", "Temperamento secundário", "Percentual temperamento",
-  "Eneagrama", "Asa", "Centro", "Scores eneagrama",
+  "Eneagrama", "Eneagrama 2º lugar", "Centro", "Fichas escolhidas", "Scores eneagrama",
   "DISC", "DISC dominante", "DISC secundário", "Scores DISC",
   "Qualidade", "Alertas", "Duração (s)", "Consentimento",
   "Quem é", "Pontos fortes", "Pontos a desenvolver",
@@ -346,8 +346,9 @@ function salvarNaPlanilha(dados, analise) {
     formatarScores(dados.percentual_temperamento),
 
     t(dados.eneagrama),
-    t(dados.eneagrama_asa),
+    t(dados.eneagrama_segundo),
     t(dados.eneagrama_centro),
+    t(dados.eneagrama_fichas),
     formatarScores(dados.scores_eneagrama),
 
     t(dados.disc),
@@ -392,8 +393,9 @@ function lerRespostasV1() {
       temperamento: linha[5],
       temperamento_secundario: "",
       eneagrama: linha[6],
-      eneagrama_asa: "",
+      eneagrama_segundo: "",
       eneagrama_centro: "",
+      eneagrama_fichas: "",
       disc: "",
       disc_dominante: "",
       disc_secundario: "",
@@ -428,23 +430,24 @@ function lerRespostasV2() {
       temperamento_secundario: linha[9],
       percentual_temperamento: linha[10],
       eneagrama: linha[11],
-      eneagrama_asa: linha[12],
+      eneagrama_segundo: linha[12],
       eneagrama_centro: linha[13],
-      scores_eneagrama: linha[14],
-      disc: linha[15],
-      disc_dominante: linha[16],
-      disc_secundario: linha[17],
-      scores_disc: linha[18],
-      qualidade: linha[19],
-      alertas: linha[20],
-      duracao: linha[21],
-      consentimento_em: linha[22],
-      quem_e: linha[23],
-      pontos_fortes: linha[24],
-      pontos_desenvolver: linha[25],
-      como_comunicar: linha[26],
-      como_motivar: linha[27],
-      evitar_atrito: linha[28]
+      eneagrama_fichas: linha[14],
+      scores_eneagrama: linha[15],
+      disc: linha[16],
+      disc_dominante: linha[17],
+      disc_secundario: linha[18],
+      scores_disc: linha[19],
+      qualidade: linha[20],
+      alertas: linha[21],
+      duracao: linha[22],
+      consentimento_em: linha[23],
+      quem_e: linha[24],
+      pontos_fortes: linha[25],
+      pontos_desenvolver: linha[26],
+      como_comunicar: linha[27],
+      como_motivar: linha[28],
+      evitar_atrito: linha[29]
     };
   }).reverse(); // mais recentes primeiro
 }
@@ -506,9 +509,9 @@ function gerarAnaliseIA(dados) {
     ", Fleumático=" + (t.fleumatico || 0) + "\n" +
 
     "- Eneagrama: " + dados.eneagrama +
-    (dados.eneagrama_asa ? ", com asa em " + dados.eneagrama_asa : "") +
+    (dados.eneagrama_segundo ? " (segundo lugar: " + dados.eneagrama_segundo + ")" : "") +
     (dados.eneagrama_centro ? ", centro de inteligência " + dados.eneagrama_centro : "") +
-    " — pontuação por tipo: " + formatarScores(en) + "\n" +
+    " — escolhas por tipo, de 0 a 10, somando 20: " + formatarScores(en) + "\n" +
 
     "- DISC: " + (dados.disc || "não informado") +
     (dados.disc_dominante ? " — fator dominante " + dados.disc_dominante : "") +
@@ -525,6 +528,9 @@ function gerarAnaliseIA(dados) {
     "exemplos concretos de " + ctx.descricaoAmbiente + ".\n" +
     "- Não use rótulos determinísticos ('você é assim e pronto'). Fale em " +
     "tendências e preferências.\n" +
+    "- No eneagrama, trabalhe com o primeiro e o segundo lugar. NÃO mencione " +
+    "asa: o instrumento usado não mede isso, e o segundo colocado não é " +
+    "necessariamente um tipo vizinho.\n" +
     "- Não sugira decisões de contratação, promoção ou desligamento: este é um " +
     "instrumento de desenvolvimento, não de seleção." +
 
@@ -684,8 +690,8 @@ function montarEmailHtml(dados, analise) {
     linha("Temperamento", composto(dados.temperamento,
       dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "")) +
     linha("Eneagrama", composto(dados.eneagrama,
-      (dados.eneagrama_asa ? " — asa " + dados.eneagrama_asa : "") +
-      (dados.eneagrama_centro ? ", centro " + dados.eneagrama_centro : ""))) +
+      (dados.eneagrama_segundo ? " (2º lugar: " + dados.eneagrama_segundo + ")" : "") +
+      (dados.eneagrama_centro ? " — centro " + dados.eneagrama_centro : ""))) +
     linha("DISC", composto(dados.disc,
       (dados.disc_dominante ? " — dominante " + dados.disc_dominante : "") +
       (dados.disc_secundario ? ", secundário " + dados.disc_secundario : ""))) +

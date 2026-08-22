@@ -232,6 +232,12 @@ renderizar o dashboard com linhas v1 e v2 convivendo.
 
 > **Atualização (21/08/2026):** os itens 1 a 4 desta lista foram resolvidos numa
 > segunda rodada. Veja `RELATORIO-SEGURANCA-LGPD.md`. Os demais seguem abertos.
+>
+> **Atualização (22/08/2026):** o módulo de eneagrama descrito no PROBLEMA 5 foi
+> substituído pela reconstrução fiel do instrumento da instituição — e o
+> diagnóstico daquele problema ficou incompleto: o defeito não era só o
+> contradomínio limitado a dois tipos, era **rótulo trocado** em 8 dos 10 blocos.
+> Veja `RELATORIO-ENEAGRAMA-V21.md`.
 
 Nenhum destes foi alterado nesta rodada — todos aguardavam decisão.
 

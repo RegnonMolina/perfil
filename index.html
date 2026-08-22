@@ -668,6 +668,80 @@
             color: #8c1d1d;
         }
 
+
+        /* ===== Eneagrama: fatores com 9 alternativas, escolhendo 2 ===== */
+        .fator {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .fator-cabeca {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .fator-cabeca h4 { color: #333; }
+
+        .fator-contagem {
+            font-size: 12px;
+            color: #777;
+            white-space: nowrap;
+        }
+
+        .fator-contagem.completo {
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .ficha-opcao {
+            display: grid;
+            grid-template-columns: 34px 1fr;
+            gap: 10px;
+            align-items: start;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ficha-opcao:hover {
+            border-color: var(--cor-secundaria);
+            background: #f9f9f9;
+        }
+
+        .ficha-opcao.selecionada {
+            background: var(--cor-secundaria-suave);
+            border-color: var(--cor-secundaria);
+        }
+
+        .ficha-numero {
+            font-size: 11px;
+            color: #888;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 0;
+            text-align: center;
+            margin-top: 1px;
+        }
+
+        .ficha-opcao.selecionada .ficha-numero {
+            color: var(--cor-primaria);
+            border-color: var(--cor-secundaria);
+        }
+
     </style>
 </head>
 <body>
@@ -779,35 +853,78 @@
                 </div>
             </div>
 
-            <!-- TELA 5: Eneagrama, itens 1 a 14 -->
+            <!-- TELA 5: Eneagrama, fatores 1 e 2 -->
             <div class="tela" id="tela5">
-                <h2>4. Eneagrama (1/2)</h2>
+                <h2>4. Eneagrama (1/5)</h2>
                 <div class="modulo-intro">
-                    Mesma escala de <strong>1 a 5</strong>. Responda pensando no seu padrão da maior parte do tempo,
-                    e não em um dia específico.
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
                 </div>
-                <div id="eneagrama-1"></div>
+                <div id="eneagrama-0"></div>
                 <div class="botoes">
                     <button class="btn btn-secundario" onclick="irParaTela(4)">← Anterior</button>
                     <button class="btn btn-primario" onclick="irParaTela(6)">Próximo →</button>
                 </div>
             </div>
 
-            <!-- TELA 6: Eneagrama, itens 15 a 27 + item de atenção -->
+            <!-- TELA 6: Eneagrama, fatores 3 e 4 -->
             <div class="tela" id="tela6">
-                <h2>4. Eneagrama (2/2)</h2>
+                <h2>4. Eneagrama (2/5)</h2>
                 <div class="modulo-intro">
-                    Últimas afirmações deste bloco, na mesma escala de <strong>1 a 5</strong>.
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
                 </div>
-                <div id="eneagrama-2"></div>
+                <div id="eneagrama-1"></div>
                 <div class="botoes">
                     <button class="btn btn-secundario" onclick="irParaTela(5)">← Anterior</button>
                     <button class="btn btn-primario" onclick="irParaTela(7)">Próximo →</button>
                 </div>
             </div>
 
-            <!-- TELA 7: DISC -->
+            <!-- TELA 7: Eneagrama, fatores 5 e 6 -->
             <div class="tela" id="tela7">
+                <h2>4. Eneagrama (3/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-2"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(6)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(8)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 8: Eneagrama, fatores 7 e 8 -->
+            <div class="tela" id="tela8">
+                <h2>4. Eneagrama (4/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-3"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(7)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(9)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 9: Eneagrama, fatores 9 e 10 -->
+            <div class="tela" id="tela9">
+                <h2>4. Eneagrama (5/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-4"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(8)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(10)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 10: DISC -->
+            <div class="tela" id="tela10">
                 <h2>5. DISC</h2>
                 <div class="modulo-intro">
                     Em cada bloco de 4 palavras, marque <strong>MAIS</strong> na que mais tem a ver com você e
@@ -815,13 +932,13 @@
                 </div>
                 <div id="blocos-disc"></div>
                 <div class="botoes">
-                    <button class="btn btn-secundario" onclick="irParaTela(6)">← Anterior</button>
+                    <button class="btn btn-secundario" onclick="irParaTela(9)">← Anterior</button>
                     <button class="btn btn-primario" onclick="enviarFormulario()">Enviar →</button>
                 </div>
             </div>
 
-            <!-- TELA 8: Carregamento -->
-            <div class="tela" id="tela8">
+            <!-- TELA 11: Carregamento -->
+            <div class="tela" id="tela11">
                 <div class="loading">
                     <div class="spinner"></div>
                     <h3>Processando seu perfil...</h3>
@@ -829,8 +946,8 @@
                 </div>
             </div>
 
-            <!-- TELA 9: Resultado -->
-            <div class="tela" id="tela9">
+            <!-- TELA 12: Resultado -->
+            <div class="tela" id="tela12">
                 <h2>Seu Perfil Comportamental</h2>
                 <div id="resultado-conteudo"></div>
                 <div class="botoes">
@@ -905,7 +1022,9 @@
         // Módulos: Linguagens de Valorização, Temperamento, Eneagrama e DISC.
 
         const INST = window.INSTRUMENTO;
-        const TOTAL_TELAS = 9;
+        const TOTAL_TELAS = 12;
+        // Telas 5 a 9 são o eneagrama, dois fatores em cada.
+        const TELA_PRIMEIRO_FATOR = 5;
         const CHAVE_RASCUNHO = "perfilRascunho";
 
         let dadosFormulario = {
@@ -1084,8 +1203,11 @@
         // Sem isto, um site atualizado enviando para um backend antigo grava
         // dados incompletos na aba errada, em silêncio. Aqui o problema aparece
         // antes de a pessoa responder 75 itens.
+        // Comparação da versão INTEIRA, não só do número maior: o formato dos
+        // dados muda também entre versões menores (v2.0 -> v2.1 trocou o
+        // eneagrama por completo), e gravar com o backend antigo perderia campos.
         function versaoPrincipal(v) {
-            return String(v || "").split(".")[0];
+            return String(v || "").trim();
         }
 
         function bloquearPorVersao(mensagem) {
@@ -1147,8 +1269,7 @@
             renderizarLinguagem("perguntas-ling-1", 0, 10);
             renderizarLinguagem("perguntas-ling-2", 10, 20);
             renderizarTemperamento();
-            renderizarEneagrama("eneagrama-1", 0, 14, false);
-            renderizarEneagrama("eneagrama-2", 14, 27, true);
+            for (var i = 0; i < 5; i++) renderizarEneagrama(i);
             renderizarDisc();
         }
 
@@ -1181,21 +1302,38 @@
             INST.ITENS_TEMPERAMENTO.forEach(function (item) {
                 html += blocoEscalaHtml("temp", item.id, item.id + ". " + escaparHtml(item.texto), "selecionarTemperamento", false);
             });
+            // O item de atenção vive aqui: é o único módulo com escala de concordância.
+            var at = INST.ITEM_ATENCAO;
+            html += blocoEscalaHtml("atencao", at.id, escaparHtml(at.texto), "selecionarAtencao", true);
             document.getElementById("perguntas-temp").innerHTML = html;
         }
 
-        // Módulo 3 — escala de 1 a 5. O último bloco recebe o item de atenção,
-        // que não pontua: serve só para identificar resposta automática.
-        function renderizarEneagrama(containerId, de, ate, incluirAtencao) {
-            let html = "";
-            INST.ITENS_ENEAGRAMA.slice(de, ate).forEach(function (item) {
-                html += blocoEscalaHtml("enea", item.id, item.id + ". " + escaparHtml(item.texto), "selecionarEneagrama", false);
+        // Módulo 3 — os 10 fatores do eneagrama, dois por tela.
+        // Em cada fator a pessoa escolhe DUAS das nove alternativas.
+        function renderizarEneagrama(tela) {
+            var html = "";
+            INST.BLOCOS_ENEAGRAMA.slice(tela * 2, tela * 2 + 2).forEach(function (bloco, pos) {
+                var f = tela * 2 + pos;
+                var opcoes = bloco.opcoes.map(function (o) {
+                    return `
+                        <button type="button" class="ficha-opcao" id="ficha-${o.ficha}"
+                            onclick="selecionarFicha(${f}, ${o.ficha})">
+                            <span class="ficha-numero">${o.ficha}</span>
+                            <span>${escaparHtml(o.texto)}</span>
+                        </button>`;
+                }).join("");
+
+                html += `
+                    <div class="fator">
+                        <div class="fator-cabeca">
+                            <h4>${f + 1}. ${escaparHtml(bloco.fator)}</h4>
+                            <span class="fator-contagem" id="contagem-fator-${f}">0 de 2</span>
+                        </div>
+                        ${opcoes}
+                    </div>
+                `;
             });
-            if (incluirAtencao) {
-                const at = INST.ITEM_ATENCAO;
-                html += blocoEscalaHtml("atencao", at.id, escaparHtml(at.texto), "selecionarAtencao", true);
-            }
-            document.getElementById(containerId).innerHTML = html;
+            document.getElementById("eneagrama-" + tela).innerHTML = html;
         }
 
         function blocoEscalaHtml(prefixo, id, rotulo, funcao, destacado) {
@@ -1262,9 +1400,42 @@
             marcarEscala("temp", itemId, valor);
         }
 
-        function selecionarEneagrama(itemId, valor) {
-            guardarResposta(dadosFormulario.respostas_eneagrama, "item", itemId, { item: itemId, valor: valor });
-            marcarEscala("enea", itemId, valor);
+        // Escolha de duas fichas por fator. Clicar numa já marcada desmarca;
+        // clicar numa terceira libera a mais antiga, para nunca travar a pessoa.
+        function selecionarFicha(fator, ficha) {
+            var registro = dadosFormulario.respostas_eneagrama.filter(function (r) { return r.fator === fator; })[0];
+            if (!registro) {
+                registro = { fator: fator, fichas: [] };
+                dadosFormulario.respostas_eneagrama.push(registro);
+            }
+
+            var pos = registro.fichas.indexOf(ficha);
+            if (pos !== -1) {
+                registro.fichas.splice(pos, 1);
+            } else {
+                registro.fichas.push(ficha);
+                if (registro.fichas.length > INST.ESCOLHAS_POR_FATOR) registro.fichas.shift();
+            }
+
+            salvarRascunho();
+            marcarFator(fator);
+        }
+
+        function marcarFator(fator) {
+            var registro = dadosFormulario.respostas_eneagrama.filter(function (r) { return r.fator === fator; })[0] || { fichas: [] };
+            var bloco = INST.BLOCOS_ENEAGRAMA[fator];
+            if (!bloco) return;
+
+            bloco.opcoes.forEach(function (o) {
+                var el = document.getElementById("ficha-" + o.ficha);
+                if (el) el.classList.toggle("selecionada", registro.fichas.indexOf(o.ficha) !== -1);
+            });
+
+            var contagem = document.getElementById("contagem-fator-" + fator);
+            if (contagem) {
+                contagem.textContent = registro.fichas.length + " de " + INST.ESCOLHAS_POR_FATOR;
+                contagem.classList.toggle("completo", registro.fichas.length === INST.ESCOLHAS_POR_FATOR);
+            }
         }
 
         function selecionarAtencao(itemId, valor) {
@@ -1380,7 +1551,7 @@
                 if (el) el.classList.add("selecionada");
             });
             (dadosFormulario.respostas_temperamento || []).forEach(function (r) { marcarEscala("temp", r.item, r.valor); });
-            (dadosFormulario.respostas_eneagrama || []).forEach(function (r) { marcarEscala("enea", r.item, r.valor); });
+            (dadosFormulario.respostas_eneagrama || []).forEach(function (r) { marcarFator(r.fator); });
             if (dadosFormulario.resposta_atencao) marcarEscala("atencao", INST.ITEM_ATENCAO.id, dadosFormulario.resposta_atencao);
             (dadosFormulario.respostas_disc || []).forEach(function (r) { marcarDisc(r.bloco); });
         }
@@ -1391,8 +1562,8 @@
             if (n === 3 && !validarLinguagem(1, 10)) return;
             if (n === 4 && !validarLinguagem(11, 20)) return;
             if (n === 5 && !validarTemperamento()) return;
-            if (n === 6 && !validarEneagrama(1, 14)) return;
-            if (n === 7 && !validarEneagrama(15, 27)) return;
+            // Ao sair de cada tela do eneagrama, confere os dois fatores dela.
+            if (n >= 6 && n <= 10 && !validarTelaEneagrama(n - 1 - TELA_PRIMEIRO_FATOR)) return;
 
             document.querySelectorAll(".tela").forEach(function (t) { t.classList.remove("ativa"); });
             document.getElementById("tela" + n).classList.add("ativa");
@@ -1449,21 +1620,29 @@
                 mostrarMensagem("Faltam " + faltam + " afirmação(ões) nesta tela.", "erro");
                 return false;
             }
+            if (dadosFormulario.resposta_atencao === null) {
+                mostrarMensagem("Falta responder a última afirmação desta tela.", "erro");
+                return false;
+            }
             return true;
         }
 
-        function validarEneagrama(de, ate) {
-            const respondidas = dadosFormulario.respostas_eneagrama.filter(function (r) {
-                return r.item >= de && r.item <= ate;
-            }).length;
-            const total = ate - de + 1;
-            if (respondidas < total) {
-                mostrarMensagem("Faltam " + (total - respondidas) + " afirmação(ões) nesta tela.", "erro");
-                return false;
-            }
-            // O item de atenção fica na segunda tela do eneagrama.
-            if (ate === 27 && dadosFormulario.resposta_atencao === null) {
-                mostrarMensagem("Falta responder a última afirmação desta tela.", "erro");
+        // Cada tela do eneagrama traz dois fatores; ambos precisam de duas escolhas.
+        function validarTelaEneagrama(tela) {
+            const fatores = [tela * 2, tela * 2 + 1].filter(function (f) {
+                return f < INST.BLOCOS_ENEAGRAMA.length;
+            });
+
+            const incompletos = fatores.filter(function (f) {
+                const r = dadosFormulario.respostas_eneagrama.filter(function (x) { return x.fator === f; })[0];
+                return !r || r.fichas.length !== INST.ESCOLHAS_POR_FATOR;
+            });
+
+            if (incompletos.length) {
+                const nome = INST.BLOCOS_ENEAGRAMA[incompletos[0]].fator;
+                mostrarMensagem("Escolha duas afirmativas em " + nome + ".", "erro");
+                const alvo = document.getElementById("contagem-fator-" + incompletos[0]);
+                if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "center" });
                 return false;
             }
             return true;
@@ -1496,8 +1675,12 @@
         // ===== ENVIO =====
         function enviarFormulario() {
             if (!validarDisc()) return;
+            // Rede de segurança: os 10 fatores precisam somar 20 escolhas.
+            for (var tela = 0; tela < 5; tela++) {
+                if (!validarTelaEneagrama(tela)) { irParaTela(TELA_PRIMEIRO_FATOR + tela); return; }
+            }
 
-            irParaTela(8);
+            irParaTela(11);
 
             const perfil = calcularPerfil();
             dadosFormulario.perfil = perfil;
@@ -1530,10 +1713,10 @@
                 percentual_temperamento: perfil.temperamento.percentual,
 
                 // Módulo 3
-                eneagrama: perfil.eneagrama.principalNome,
-                eneagrama_notacao: perfil.eneagrama.notacao,
-                eneagrama_asa: perfil.eneagrama.asaNome,
+                eneagrama: perfil.eneagrama.primeiroNome,
+                eneagrama_segundo: perfil.eneagrama.segundoNome,
                 eneagrama_centro: perfil.eneagrama.centro,
+                eneagrama_fichas: perfil.eneagrama.fichas.join(", "),
                 scores_eneagrama: perfil.eneagrama.bruto,
 
                 // Módulo 4
@@ -1625,8 +1808,13 @@
         }
 
         function paresEneagrama(perfil) {
-            return Object.keys(INST.TIPOS_ENEAGRAMA).map(function (t) {
-                return { nome: INST.TIPOS_ENEAGRAMA[t].nome, valor: perfil.bruto[t] || 0 };
+            // Ordena do mais escolhido para o menos, que é como a folha é lida.
+            return perfil.ordem.map(function (t) {
+                return {
+                    nome: INST.TIPOS_ENEAGRAMA[t].nome,
+                    valor: perfil.bruto[t] || 0,
+                    rotulo: (perfil.bruto[t] || 0) + "/10"
+                };
             });
         }
 
@@ -1686,8 +1874,10 @@
 
                 <div class="resultado-card">
                     <h3>Eneagrama</h3>
-                    <p><strong>${escaparHtml(perfil.eneagrama.principalNome)}</strong> · asa ${escaparHtml(String(perfil.eneagrama.asa))} (${escaparHtml(perfil.eneagrama.notacao)}) · centro ${escaparHtml(perfil.eneagrama.centro)}</p>
+                    <p><strong>${escaparHtml(perfil.eneagrama.primeiroNome)}</strong> · centro ${escaparHtml(perfil.eneagrama.centro)}</p>
+                    <p style="font-size:13px">Segundo lugar: ${escaparHtml(perfil.eneagrama.segundoNome)}${perfil.eneagrama.empate ? " · <strong>houve empate no primeiro lugar</strong>: leia os dois e veja qual você reconhece." : ""}</p>
                     ${miniBarrasHtml(paresEneagrama(perfil.eneagrama))}
+                    <p style="font-size:12px;color:#666;margin-top:8px">Suas fichas: ${escaparHtml(perfil.eneagrama.fichas.join(", "))} — ${perfil.eneagrama.total} de 20 escolhas.</p>
                 </div>
 
                 <div class="resultado-card">
@@ -1732,14 +1922,14 @@
                     setor: dadosFormulario.setor,
                     linguagem: perfil.linguagem.principalNome,
                     temperamento: perfil.temperamento.principalNome,
-                    eneagrama: perfil.eneagrama.principalNome,
+                    eneagrama: perfil.eneagrama.primeiroNome,
                     disc: perfil.disc.perfil,
                     versao: perfil.versao,
                     como_comunicar: ia.como_comunicar || ""
                 }));
             } catch (e) {}
 
-            irParaTela(9);
+            irParaTela(12);
         }
 
         function baixarPDF() {
@@ -1785,7 +1975,7 @@
                 <div class="dados"><strong>Nome:</strong> ${escaparHtml(dadosFormulario.nome)}<br><strong>E-mail:</strong> ${escaparHtml(dadosFormulario.email)}<br><strong>${escaparHtml((branding.contexto || {}).termoGrupo || "Setor")}:</strong> ${escaparHtml(dadosFormulario.setor)}</div>
                 <h2>Linguagem de Valorização</h2><p><strong>${escaparHtml(perfil.linguagem.principalNome)}</strong>${perfil.linguagem.secundariaNome ? " (secundária: " + escaparHtml(perfil.linguagem.secundariaNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaLing)}</span></p>
                 <h2>Temperamento</h2><p><strong>${escaparHtml(perfil.temperamento.principalNome)}</strong>${perfil.temperamento.secundarioNome ? " (secundário: " + escaparHtml(perfil.temperamento.secundarioNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaTemp)}</span></p>
-                <h2>Eneagrama</h2><p><strong>${escaparHtml(perfil.eneagrama.principalNome)}</strong> — asa ${perfil.eneagrama.asa} (${escaparHtml(perfil.eneagrama.notacao)}), centro ${escaparHtml(perfil.eneagrama.centro)}<br><span class="detalhe">${escaparHtml(listaEnea)}</span></p>
+                <h2>Eneagrama</h2><p><strong>${escaparHtml(perfil.eneagrama.primeiroNome)}</strong> — centro ${escaparHtml(perfil.eneagrama.centro)}<br>Segundo lugar: ${escaparHtml(perfil.eneagrama.segundoNome)}<br><span class="detalhe">${escaparHtml(listaEnea)}</span></p>
                 <h2>DISC</h2><p><strong>${escaparHtml(perfil.disc.perfil)}</strong> — dominante ${escaparHtml(perfil.disc.dominanteNome)}${perfil.disc.secundarioNome ? ", secundário " + escaparHtml(perfil.disc.secundarioNome) : ""}<br><span class="detalhe">${escaparHtml(listaDisc)}</span></p>
                 ${secoesIA}
                 <p class="rodape-aviso">Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional.</p>

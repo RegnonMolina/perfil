@@ -53,7 +53,7 @@ test("obterContexto tem padrão seguro quando o POST vem sem contexto", () => {
 
 test("O cabeçalho da v2 cobre os quatro módulos e o controle de qualidade", () => {
   const h = contexto.CABECALHO_V2;
-  ["Versão", "Linguagem", "Temperamento", "Eneagrama", "Asa", "Centro", "DISC", "Qualidade", "Alertas"]
+  ["Versão", "Linguagem", "Temperamento", "Eneagrama", "Eneagrama 2º lugar", "Centro", "Fichas escolhidas", "DISC", "Qualidade", "Alertas"]
     .forEach((coluna) => assert.ok(h.includes(coluna), `falta a coluna "${coluna}" no cabeçalho da v2`));
 });
 
@@ -74,8 +74,9 @@ test("O e-mail traz os quatro módulos e o aviso de uso", () => {
     temperamento: "Melancólico",
     temperamento_secundario: "Fleumático",
     eneagrama: "Tipo 1 — Perfeccionista",
-    eneagrama_asa: "Tipo 9 — Pacificador",
+    eneagrama_segundo: "Tipo 9 — Pacificador",
     eneagrama_centro: "Instintivo",
+    eneagrama_fichas: "1, 2, 10, 11",
     disc: "CS — Guardião",
     disc_dominante: "Conformidade",
     disc_secundario: "Estabilidade",
@@ -90,7 +91,7 @@ test("O e-mail traz os quatro módulos e o aviso de uso", () => {
     evitar_atrito: "Evite mudanças de última hora."
   });
 
-  ["Atos de serviço", "Melancólico", "Tipo 1", "CS — Guardião", "asa", "centro", "Instintivo"]
+  ["Atos de serviço", "Melancólico", "Tipo 1", "CS — Guardião", "2º lugar", "centro", "Instintivo"]
     .forEach((t) => assert.ok(html.includes(t), `o e-mail não menciona "${t}"`));
   assert.ok(html.includes("Não é ferramenta de seleção"), "falta o aviso de uso no rodapé do e-mail");
   assert.ok(html.includes("v2.0"), "falta a versão do instrumento no e-mail");

@@ -22,13 +22,28 @@ São quatro módulos, 75 itens pontuados, cerca de 12 minutos:
 
 | Módulo | Itens | Formato | O que devolve |
 |---|---|---|---|
-| Linguagens de Valorização | 20 | Pares de escolha forçada | Principal, secundária e distribuição nas 5 linguagens |
-| Temperamento | 16 | Escala 1 a 5 | Principal, secundário e percentual nos 4 temperamentos |
-| Eneagrama | 27 | Escala 1 a 5 | Tipo (1 a 9), asa e centro de inteligência |
+| Linguagens de Valorização | 20 pares | Escolha forçada entre duas | Principal, secundária e distribuição nas 5 linguagens |
+| Temperamento | 16 afirmações | Escala 1 a 5 | Principal, secundário e percentual nos 4 temperamentos |
+| Eneagrama | 10 fatores | Escolher 2 de 9 alternativas | 1º e 2º lugar entre os 9 tipos, centro de inteligência |
 | DISC | 12 blocos | Tétrade MAIS/MENOS | Score dos 4 fatores, dominante, secundário e combinação |
 
-Mais um item de atenção, que não pontua e serve para identificar quem respondeu
-no automático.
+São 58 decisões ao todo, cerca de 12 minutos. Mais um item de atenção, que não
+pontua e serve para identificar quem respondeu no automático.
+
+### Sobre o módulo de Eneagrama
+
+Ele é a reconstrução fiel do instrumento já usado na instituição (o documento
+`TESTE_ENEAGRAMA`): **10 fatores, 9 alternativas em cada, 90 fichas**, escolhendo
+duas por fator — 20 escolhas no total, como manda a folha de tabulação original.
+
+A numeração das fichas (1 a 90) bate com a grade impressa nessa folha, então um
+resultado gerado aqui pode ser conferido contra um preenchido no papel. Os textos
+das alternativas não foram reescritos.
+
+O resultado traz **primeiro e segundo lugar**, e trata empate como empate — a
+própria folha prevê "primeiro lugar (ou empatado em)". Não há cálculo de asa, de
+propósito: o instrumento não mede isso, e o segundo colocado não é necessariamente
+um tipo vizinho.
 
 > ⚠️ As perguntas são **iguais para todas as organizações**, de propósito: mudar o
 > texto dos itens por cliente tornaria os resultados incomparáveis entre si. O que
@@ -41,8 +56,9 @@ no automático.
 
 Rode `npm test` antes de publicar. Os testes verificam, entre outras coisas, que
 todas as linguagens têm as mesmas chances de pontuar, que nenhum item está
-duplicado, que os nove tipos do eneagrama são todos alcançáveis e que o DISC
-continua balanceado. São exatamente as falhas que existiam na versão anterior.
+duplicado, que os nove tipos do eneagrama são todos alcançáveis, que as 90 fichas
+seguem a numeração da folha original e que o DISC continua balanceado. São
+exatamente as falhas que existiam na versão anterior.
 
 ---
 

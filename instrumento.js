@@ -32,7 +32,7 @@
 var INSTRUMENTO = (function () {
   "use strict";
 
-  var VERSAO = "v2.0";
+  var VERSAO = "v2.1";
 
   // ============================================================
   // MÓDULO 1 — LINGUAGENS DE VALORIZAÇÃO
@@ -135,15 +135,27 @@ var INSTRUMENTO = (function () {
     { id: 15, fator: "melancol",   texto: "Prefiro analisar com calma a arriscar uma decisão precipitada." },
     { id: 16, fator: "fleumatico", texto: "Tenho paciência para ouvir e mediar quando há desentendimento." }
   ];
-
   // ============================================================
   // MÓDULO 3 — ENEAGRAMA
   // ============================================================
   //
-  // 27 afirmações em escala 1 a 5, 3 por tipo, cobrindo os nove tipos.
-  // Substitui o bloco da v1, que só conseguia devolver Tipo 1 ou Tipo 2.
-  // Além do tipo principal, são calculados a asa (tipo vizinho mais pontuado)
-  // e o centro de inteligência.
+  // Reconstrução fiel do instrumento em uso na instituição (TESTE_ENEAGRAMA):
+  // 10 fatores, 9 alternativas em cada um, 90 fichas no total. Em cada fator a
+  // pessoa escolhe as DUAS afirmativas que mais têm a ver com ela — 20 escolhas
+  // no fim, como manda a folha de tabulação original.
+  //
+  // As alternativas estão na ordem dos tipos (1 a 9) e a numeração das fichas
+  // (1 a 90) bate com a grade impressa na folha, o que permite conferir um
+  // resultado digital contra um preenchido no papel. Nenhum texto foi reescrito.
+  //
+  // O QUE ESTAVA ERRADO ANTES
+  // A v1 mantinha apenas 2 das 9 alternativas de cada fator e, em 8 dos 10
+  // blocos, as duas exibidas NÃO eram as dos tipos que o código contava — em
+  // dois deles as frases estavam até sob o título de outro fator. Por isso o
+  // resultado só conseguia sair Tipo 1 ou Tipo 2, e contando escolhas erradas.
+  //
+  // Escolher 2 entre 9 é escolha forçada: elimina de saída o viés de quem
+  // concorda com tudo, que é o problema de qualquer escala de concordância.
 
   var TIPOS_ENEAGRAMA = {
     1: { nome: "Tipo 1 — Perfeccionista", centro: "Instintivo" },
@@ -157,43 +169,131 @@ var INSTRUMENTO = (function () {
     9: { nome: "Tipo 9 — Pacificador",    centro: "Instintivo" }
   };
 
-  var ITENS_ENEAGRAMA = [
-    { id: 1,  tipo: 1, texto: "Percebo rapidamente o que está errado e sinto necessidade de corrigir." },
-    { id: 2,  tipo: 2, texto: "Percebo o que as pessoas precisam antes de elas pedirem." },
-    { id: 3,  tipo: 3, texto: "Meço bastante o meu valor pelo que consigo realizar." },
-    { id: 4,  tipo: 4, texto: "Sinto que sou diferente das outras pessoas de um jeito difícil de explicar." },
-    { id: 5,  tipo: 5, texto: "Preciso de tempo sozinho para recarregar depois de muita convivência." },
-    { id: 6,  tipo: 6, texto: "Antecipo o que pode dar errado antes mesmo de começar." },
-    { id: 7,  tipo: 7, texto: "Fico entusiasmado com ideias novas e costumo ter várias em andamento." },
-    { id: 8,  tipo: 8, texto: "Assumo a frente quando percebo que ninguém está conduzindo." },
-    { id: 9,  tipo: 9, texto: "Costumo enxergar o ponto de vista de todos os lados." },
-    { id: 10, tipo: 1, texto: "Tenho um padrão interno de certo e errado que procuro seguir sempre." },
-    { id: 11, tipo: 2, texto: "Tenho dificuldade de dizer não quando alguém precisa de mim." },
-    { id: 12, tipo: 3, texto: "Adapto a forma como me apresento para causar boa impressão." },
-    { id: 13, tipo: 4, texto: "Minhas emoções são intensas e influenciam bastante o meu dia." },
-    { id: 14, tipo: 5, texto: "Prefiro observar e entender bem antes de me envolver." },
-    { id: 15, tipo: 6, texto: "Confio nas pessoas aos poucos, depois de vê-las na prática." },
-    { id: 16, tipo: 7, texto: "Evito situações que me deixem preso ou sem alternativas." },
-    { id: 17, tipo: 8, texto: "Não tenho medo de confronto quando considero necessário." },
-    { id: 18, tipo: 9, texto: "Adio decisões difíceis na esperança de que se resolvam sozinhas." },
-    { id: 19, tipo: 1, texto: "Fico incomodado quando as regras combinadas não são respeitadas." },
-    { id: 20, tipo: 2, texto: "Sinto-me bem sendo a pessoa com quem os outros podem contar." },
-    { id: 21, tipo: 3, texto: "Tenho dificuldade de parar enquanto ainda há uma meta em aberto." },
-    { id: 22, tipo: 4, texto: "Valorizo mais o que é autêntico do que o que é padronizado." },
-    { id: 23, tipo: 5, texto: "Guardo minhas opiniões até ter certeza de que domino o assunto." },
-    { id: 24, tipo: 6, texto: "Sinto-me mais seguro quando há regras claras e um plano definido." },
-    { id: 25, tipo: 7, texto: "Prefiro olhar para o lado bom a ficar remoendo um problema." },
-    { id: 26, tipo: 8, texto: "Protejo quem está do meu lado, mesmo que isso me custe caro." },
-    { id: 27, tipo: 9, texto: "Abro mão da minha vontade para manter a paz." }
+  // Quantas alternativas a pessoa escolhe em cada fator.
+  var ESCOLHAS_POR_FATOR = 2;
+
+  var BLOCOS_ENEAGRAMA = [
+    { fator: "MUNDO IDEAL", opcoes: [
+      { tipo: 1, ficha:  1, texto: "Mundo ético, moral e de respeito às regras" },
+      { tipo: 2, ficha:  2, texto: "Mundo de solidariedade e apoio" },
+      { tipo: 3, ficha:  3, texto: "Mundo de desafios e oportunidades" },
+      { tipo: 4, ficha:  4, texto: "Mundo espiritualizado e criativo" },
+      { tipo: 5, ficha:  5, texto: "Mundo de respeito à privacidade e à individualidade" },
+      { tipo: 6, ficha:  6, texto: "Mundo seguro e ordeiro" },
+      { tipo: 7, ficha:  7, texto: "Mundo de liberdade e despreocupações" },
+      { tipo: 8, ficha:  8, texto: "Mundo de justiça e à prova de mediocridade" },
+      { tipo: 9, ficha:  9, texto: "Mundo estável e tranquilo" }
+    ] },
+    { fator: "RELACIONAMENTO PROFISSIONAL", opcoes: [
+      { tipo: 1, ficha: 10, texto: "Responsável. Dedicado. Autodisciplinado. Exigente." },
+      { tipo: 2, ficha: 11, texto: "Solidário. Conselheiro. Prestativo. Estimulador." },
+      { tipo: 3, ficha: 12, texto: "Competente. Entusiasmado. Autoconfiante. Realizador." },
+      { tipo: 4, ficha: 13, texto: "Espirituoso. Criativo. Empático. Diferenciado." },
+      { tipo: 5, ficha: 14, texto: "Analítico. Metódico. Equilibrado. Discreto." },
+      { tipo: 6, ficha: 15, texto: "Precavido. Educado. Questionador. Busca segurança." },
+      { tipo: 7, ficha: 16, texto: "Persuasivo. Descontraído. Jovial. Interesses variados." },
+      { tipo: 8, ficha: 17, texto: "Franco. Entusiasmado. Protetor. Batalhador." },
+      { tipo: 9, ficha: 18, texto: "Sereno. Descomplicado. Resignado. Mediador." }
+    ] },
+    { fator: "AUTO-IMAGEM", opcoes: [
+      { tipo: 1, ficha: 19, texto: "Pessoa correta e exigente consigo mesma." },
+      { tipo: 2, ficha: 20, texto: "Pessoa compreensiva e útil aos demais." },
+      { tipo: 3, ficha: 21, texto: "Pessoa sempre em busca de desafios e realizações." },
+      { tipo: 4, ficha: 22, texto: "Pessoa que pensa e age de forma diferenciada." },
+      { tipo: 5, ficha: 23, texto: "Pessoa discreta, capaz de controlar seus sentimentos." },
+      { tipo: 6, ficha: 24, texto: "Pessoa cumpridora do dever e controladora da situação." },
+      { tipo: 7, ficha: 25, texto: "Pessoa idealista, de bem com o mundo e consigo mesma." },
+      { tipo: 8, ficha: 26, texto: "Pessoa disposta a lutar por suas ideias e princípios." },
+      { tipo: 9, ficha: 27, texto: "Pessoa mediadora e tranquila." }
+    ] },
+    { fator: "PARTICIPAÇÃO E INFLUÊNCIA", opcoes: [
+      { tipo: 1, ficha: 28, texto: "Fazer o que é certo e dentro das regras." },
+      { tipo: 2, ficha: 29, texto: "Proteger e ajudar a quem precisa." },
+      { tipo: 3, ficha: 30, texto: "Motivar as pessoas a “fazer acontecer”." },
+      { tipo: 4, ficha: 31, texto: "Apresentar propostas e alternativas que fujam da “mesmice”." },
+      { tipo: 5, ficha: 32, texto: "Evitar discussões e exposição excessiva." },
+      { tipo: 6, ficha: 33, texto: "Propor questionamentos que previnem futuros problemas." },
+      { tipo: 7, ficha: 34, texto: "Participar de forma agradável e intensa." },
+      { tipo: 8, ficha: 35, texto: "Vencer as dificuldades e injustiças." },
+      { tipo: 9, ficha: 36, texto: "Conviver em harmonia e paz." }
+    ] },
+    { fator: "GRUPOS", opcoes: [
+      { tipo: 1, ficha: 37, texto: "Grupos reformistas e éticos, em geral associados às grandes causas." },
+      { tipo: 2, ficha: 38, texto: "Grupos de solidariedade e valorização da vida." },
+      { tipo: 3, ficha: 39, texto: "Grupos carismáticos. Partidos políticos. Associados de classe." },
+      { tipo: 4, ficha: 40, texto: "Grupos artísticos. Movimentos de vanguarda." },
+      { tipo: 5, ficha: 41, texto: "Grupos de estudos (Filosofia, Ciências, Autoconhecimento etc.)" },
+      { tipo: 6, ficha: 42, texto: "Grupos com organização militar. Escoteiros. Defesa Civil." },
+      { tipo: 7, ficha: 43, texto: "Grupos sociais e recreativos. Movimentos associativos." },
+      { tipo: 8, ficha: 44, texto: "Grupos de defesa dos direitos das pessoas. Trabalho voluntário." },
+      { tipo: 9, ficha: 45, texto: "Grupos pacifistas e ligados à natureza." }
+    ] },
+    { fator: "SENSIBILIDADE", opcoes: [
+      { tipo: 1, ficha: 46, texto: "Anima os outros a fazerem o que é correto." },
+      { tipo: 2, ficha: 47, texto: "Ajuda as pessoas a acreditarem no seu próprio valor." },
+      { tipo: 3, ficha: 48, texto: "Cria atmosfera de “vamos conseguir”." },
+      { tipo: 4, ficha: 49, texto: "Incentiva a criatividade e a emoção." },
+      { tipo: 5, ficha: 50, texto: "Analisa metodicamente os fatos e as impressões." },
+      { tipo: 6, ficha: 51, texto: "Coloca todos os fatores sob controle." },
+      { tipo: 7, ficha: 52, texto: "Focaliza o lado bom da vida e da liberdade." },
+      { tipo: 8, ficha: 53, texto: "Reage às situações injustas ou escusas." },
+      { tipo: 9, ficha: 54, texto: "Aceita as pessoas sem preconceitos." }
+    ] },
+    { fator: "CONDUTA", opcoes: [
+      { tipo: 1, ficha: 55, texto: "Servir de exemplo." },
+      { tipo: 2, ficha: 56, texto: "Ser solidário." },
+      { tipo: 3, ficha: 57, texto: "Causar boa impressão." },
+      { tipo: 4, ficha: 58, texto: "Valorizar o diferente." },
+      { tipo: 5, ficha: 59, texto: "Saber ouvir." },
+      { tipo: 6, ficha: 60, texto: "Tornar realidade." },
+      { tipo: 7, ficha: 61, texto: "Transmitir otimismo." },
+      { tipo: 8, ficha: 62, texto: "Ser autêntico e lutador." },
+      { tipo: 9, ficha: 63, texto: "Manter o equilíbrio." }
+    ] },
+    { fator: "SUCESSO PESSOAL", opcoes: [
+      { tipo: 1, ficha: 64, texto: "Dedicar-se às causas nobres e às reformas." },
+      { tipo: 2, ficha: 65, texto: "Obter a aprovação e o apoio de todos." },
+      { tipo: 3, ficha: 66, texto: "Alcançar resultados e ser vencedor." },
+      { tipo: 4, ficha: 67, texto: "Ser valorizado pela sua criatividade." },
+      { tipo: 5, ficha: 68, texto: "Buscar saber sempre mais." },
+      { tipo: 6, ficha: 69, texto: "Cumprir o dever." },
+      { tipo: 7, ficha: 70, texto: "Ser feliz." },
+      { tipo: 8, ficha: 71, texto: "Liderar / controlar situações." },
+      { tipo: 9, ficha: 72, texto: "Mediar conflitos." }
+    ] },
+    { fator: "BUSCA PESSOAL", opcoes: [
+      { tipo: 1, ficha: 73, texto: "Ficar do lado do bem e da razão." },
+      { tipo: 2, ficha: 74, texto: "Ajudar as demais pessoas." },
+      { tipo: 3, ficha: 75, texto: "Destacar-se dos demais." },
+      { tipo: 4, ficha: 76, texto: "Alcançar a diferenciação." },
+      { tipo: 5, ficha: 77, texto: "Aprender cada vez mais." },
+      { tipo: 6, ficha: 78, texto: "Previr problemas." },
+      { tipo: 7, ficha: 79, texto: "Manter o otimismo." },
+      { tipo: 8, ficha: 80, texto: "Defender aquilo em que acredita." },
+      { tipo: 9, ficha: 81, texto: "Ser reconhecido como mediador." }
+    ] },
+    { fator: "IMAGEM PÚBLICA", opcoes: [
+      { tipo: 1, ficha: 82, texto: "Organizado. Responsável. Perfeccionista." },
+      { tipo: 2, ficha: 83, texto: "Colaborador. Compreensivo. Desprendido." },
+      { tipo: 3, ficha: 84, texto: "Eficiente. Determinado. Desprendido." },
+      { tipo: 4, ficha: 85, texto: "Original. Emotivo. Alguém especial." },
+      { tipo: 5, ficha: 86, texto: "Atencioso. Reservado. Estudioso." },
+      { tipo: 6, ficha: 87, texto: "Confiável. Ordeiro. Não-conformista." },
+      { tipo: 7, ficha: 88, texto: "Alegre. Otimista. Imaginativo." },
+      { tipo: 8, ficha: 89, texto: "Franco. Destemido. Justo." },
+      { tipo: 9, ficha: 90, texto: "Pacifista. Generoso. Fácil relacionamento." }
+    ] }
   ];
 
   // Item de atenção — não entra em nenhuma pontuação. Serve apenas para
-  // identificar quem respondeu no automático (ver calcularQualidade).
+  // identificar quem respondeu no automático. Fica no módulo de temperamento,
+  // que é o único com escala de concordância.
   var ITEM_ATENCAO = {
     id: 99,
     texto: "Para confirmar que você está lendo com atenção, marque a nota 1 nesta afirmação.",
     valorEsperado: 1
   };
+
 
   // ============================================================
   // MÓDULO 4 — DISC
@@ -371,54 +471,65 @@ var INSTRUMENTO = (function () {
   // PONTUAÇÃO — MÓDULO 3: ENEAGRAMA
   // ============================================================
   //
-  // respostas: [{ item: 1, valor: 1..5 }, ...]
+  // respostas: [{ fator: 0, fichas: [5, 6] }, ...]  — duas fichas por fator.
   //
-  // Devolve tipo principal, asa (vizinho mais pontuado no círculo, onde 9 e 1
-  // são vizinhos) e centro de inteligência.
-  // Desempate: maior soma do centro correspondente; persistindo, reporta ambos.
+  // A pontuação é a contagem simples de escolhas por tipo, de 0 a 10, somando
+  // 20 no total — exatamente a tabulação da folha original. Ela devolve o
+  // primeiro e o segundo lugar, e trata empate como empate: a própria folha
+  // prevê "primeiro lugar (ou empatado em)".
+  //
+  // Não há cálculo de asa aqui, de propósito: o instrumento não mede isso, e
+  // o segundo colocado não é necessariamente um tipo vizinho. Inventar uma asa
+  // seria dar ao resultado uma precisão que o dado não tem.
   function pontuarEneagrama(respostas) {
     var bruto = {};
     for (var t = 1; t <= 9; t++) bruto[t] = 0;
 
+    var tipoDaFicha = {};
+    BLOCOS_ENEAGRAMA.forEach(function (bloco) {
+      bloco.opcoes.forEach(function (o) { tipoDaFicha[o.ficha] = o.tipo; });
+    });
+
+    var total = 0;
+    var escolhidas = [];
     (respostas || []).forEach(function (r) {
-      var item = ITENS_ENEAGRAMA.filter(function (i) { return i.id === r.item; })[0];
-      if (!item) return;
-      bruto[item.tipo] += Number(r.valor) || 0;
-    });
-
-    var centros = { Instintivo: 0, Emocional: 0, Mental: 0 };
-    Object.keys(bruto).forEach(function (tipo) {
-      centros[TIPOS_ENEAGRAMA[tipo].centro] += bruto[tipo];
-    });
-
-    var topo = chavesNoTopo(bruto);
-    if (topo.length > 1) {
-      // Desempate pelo centro de inteligência mais forte.
-      var porCentro = {};
-      topo.forEach(function (tipo) {
-        porCentro[tipo] = centros[TIPOS_ENEAGRAMA[tipo].centro];
+      (r.fichas || []).forEach(function (f) {
+        var tipo = tipoDaFicha[f];
+        if (!tipo) return;
+        bruto[tipo] += 1;
+        total += 1;
+        escolhidas.push(f);
       });
-      topo = chavesNoTopo(porCentro);
-    }
+    });
 
-    var principal = Number(topo[0]);
-    var anterior = principal === 1 ? 9 : principal - 1;
-    var posterior = principal === 9 ? 1 : principal + 1;
-    var asa = bruto[anterior] >= bruto[posterior] ? anterior : posterior;
+    var ordem = Object.keys(bruto).map(Number).sort(function (a, b) {
+      return bruto[b] - bruto[a] || a - b;
+    });
+
+    var maior = bruto[ordem[0]];
+    var primeiro = ordem.filter(function (t) { return bruto[t] === maior; });
+    var resto = ordem.filter(function (t) { return primeiro.indexOf(t) === -1; });
+    var segundoValor = resto.length ? bruto[resto[0]] : 0;
+    var segundo = resto.filter(function (t) { return bruto[t] === segundoValor; });
+
+    var nomes = function (lista) {
+      return lista.map(function (t) { return TIPOS_ENEAGRAMA[t].nome; }).join(" e ");
+    };
 
     return {
       bruto: bruto,
       percentual: percentualizar(bruto),
-      centros: centros,
-      principal: principal,
-      principalNome: TIPOS_ENEAGRAMA[principal].nome,
-      asa: asa,
-      asaNome: TIPOS_ENEAGRAMA[asa].nome,
-      // Notação usual: tipo com asa, por exemplo "1a9".
-      notacao: principal + "a" + asa,
-      centro: TIPOS_ENEAGRAMA[principal].centro,
-      empate: topo.length > 1,
-      empatados: topo.map(Number)
+      ordem: ordem,
+      total: total,
+      fichas: escolhidas.sort(function (a, b) { return a - b; }),
+      primeiro: primeiro,
+      primeiroNome: nomes(primeiro),
+      segundo: segundo,
+      segundoNome: nomes(segundo),
+      centro: TIPOS_ENEAGRAMA[primeiro[0]].centro,
+      empate: primeiro.length > 1,
+      // Fecha em 20 quando os 10 fatores receberam 2 escolhas cada.
+      completo: total === BLOCOS_ENEAGRAMA.length * ESCOLHAS_POR_FATOR
     };
   }
 
@@ -489,14 +600,14 @@ var INSTRUMENTO = (function () {
   // }
   function calcularQualidade(entrada) {
     var e = entrada || {};
-    var likert = []
-      .concat((e.temperamento || []).map(function (r) { return Number(r.valor); }))
-      .concat((e.eneagrama || []).map(function (r) { return Number(r.valor); }));
+    // Só o temperamento usa escala de concordância agora — o eneagrama passou
+    // a ser escolha forçada, onde "marcar tudo igual" não existe.
+    var likert = (e.temperamento || []).map(function (r) { return Number(r.valor); });
 
     // Straight-lining: a mesma nota em todas as afirmações de escala.
     var monotona = likert.length > 0 && likert.every(function (v) { return v === likert[0]; });
 
-    // Tempo mínimo plausível para 76 itens, com folga (4 minutos).
+    // Tempo mínimo plausível para o questionário inteiro, com folga.
     var TEMPO_MINIMO_SEGUNDOS = 240;
     var rapidoDemais = typeof e.segundos === "number" && e.segundos > 0 && e.segundos < TEMPO_MINIMO_SEGUNDOS;
 
@@ -550,7 +661,8 @@ var INSTRUMENTO = (function () {
     COMBINACOES_DISC: COMBINACOES_DISC,
     ITENS_LINGUAGEM: ITENS_LINGUAGEM,
     ITENS_TEMPERAMENTO: ITENS_TEMPERAMENTO,
-    ITENS_ENEAGRAMA: ITENS_ENEAGRAMA,
+    BLOCOS_ENEAGRAMA: BLOCOS_ENEAGRAMA,
+    ESCOLHAS_POR_FATOR: ESCOLHAS_POR_FATOR,
     ITEM_ATENCAO: ITEM_ATENCAO,
     BLOCOS_DISC: BLOCOS_DISC,
     pontuarLinguagem: pontuarLinguagem,

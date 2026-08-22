@@ -142,44 +142,134 @@ test("Temperamento: identifica principal e secundário", () => {
 // ============================================================
 // MÓDULO 3 — ENEAGRAMA
 // ============================================================
+//
+// O eneagrama passou a ser a reconstrução fiel do instrumento da instituição:
+// 10 fatores x 9 alternativas, escolhendo 2 por fator. Estes testes travam a
+// integridade do banco e o comportamento da tabulação.
 
-test("Eneagrama: cobre os 9 tipos com 3 afirmações cada", () => {
-  const porTipo = {};
-  I.ITENS_ENEAGRAMA.forEach((i) => { porTipo[i.tipo] = (porTipo[i.tipo] || 0) + 1; });
-  for (let t = 1; t <= 9; t++) {
-    assert.strictEqual(porTipo[t], 3, `tipo ${t} tem ${porTipo[t] || 0} afirmações em vez de 3`);
+test("Eneagrama: 10 fatores com 9 alternativas cada, uma por tipo", () => {
+  assert.strictEqual(I.BLOCOS_ENEAGRAMA.length, 10);
+  I.BLOCOS_ENEAGRAMA.forEach((bloco) => {
+    assert.strictEqual(bloco.opcoes.length, 9, `${bloco.fator} não tem 9 alternativas`);
+    const tipos = bloco.opcoes.map((o) => o.tipo);
+    assert.deepStrictEqual(tipos, [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      `${bloco.fator}: as alternativas precisam estar na ordem dos tipos 1 a 9`);
+  });
+});
+
+test("Eneagrama: as 90 fichas são numeradas de 1 a 90, sem repetição", () => {
+  // A numeração precisa bater com a grade de tabulação da folha original,
+  // senão não dá para conferir um resultado digital contra um de papel.
+  const fichas = I.BLOCOS_ENEAGRAMA.flatMap((b) => b.opcoes.map((o) => o.ficha));
+  assert.strictEqual(fichas.length, 90);
+  assert.strictEqual(new Set(fichas).size, 90, "há ficha repetida");
+  assert.deepStrictEqual(fichas.slice().sort((a, b) => a - b),
+    Array.from({ length: 90 }, (_, i) => i + 1));
+});
+
+test("Eneagrama: a numeração segue a grade da folha (fator × 9 + tipo)", () => {
+  I.BLOCOS_ENEAGRAMA.forEach((bloco, b) => {
+    bloco.opcoes.forEach((o) => {
+      assert.strictEqual(o.ficha, b * 9 + o.tipo,
+        `${bloco.fator}, tipo ${o.tipo}: ficha ${o.ficha} fora da grade`);
+    });
+  });
+});
+
+test("Eneagrama: nenhum texto de alternativa se repete", () => {
+  const textos = I.BLOCOS_ENEAGRAMA.flatMap((b) => b.opcoes.map((o) => o.texto));
+  assert.strictEqual(new Set(textos).size, textos.length, "há alternativa repetida no banco");
+});
+
+test("Eneagrama: TODOS os nove tipos são alcançáveis", () => {
+  // Este era o defeito da v1: só os tipos 1 e 2 podiam sair — e ainda assim
+  // contando as escolhas de outros tipos.
+  for (let alvo = 1; alvo <= 9; alvo++) {
+    const vizinho = alvo === 9 ? 1 : alvo + 1;
+    const respostas = I.BLOCOS_ENEAGRAMA.map((bloco, f) => ({
+      fator: f,
+      fichas: [
+        bloco.opcoes.find((o) => o.tipo === alvo).ficha,
+        bloco.opcoes.find((o) => o.tipo === (f < 6 ? vizinho : (alvo === 1 ? 9 : alvo - 1))).ficha
+      ]
+    }));
+    const r = I.pontuarEneagrama(respostas);
+    assert.deepStrictEqual(r.primeiro, [alvo], `o tipo ${alvo} não é alcançável`);
+    assert.strictEqual(r.bruto[alvo], 10, `o tipo ${alvo} deveria somar 10`);
   }
 });
 
-test("Eneagrama: TODOS os 9 tipos são alcançáveis", () => {
-  // Este é o PROBLEMA 5: na v1 o contradomínio era apenas {Tipo 1, Tipo 2}.
-  // Aqui provamos que, para cada tipo, existe um padrão de resposta que o elege.
-  for (let alvo = 1; alvo <= 9; alvo++) {
-    const respostas = I.ITENS_ENEAGRAMA.map((i) => ({ item: i.id, valor: i.tipo === alvo ? 5 : 1 }));
-    const r = I.pontuarEneagrama(respostas);
-    assert.strictEqual(r.principal, alvo, `o tipo ${alvo} não é alcançável (veio ${r.principal})`);
-  }
+test("Eneagrama: a tabulação fecha em 20 escolhas", () => {
+  const respostas = I.BLOCOS_ENEAGRAMA.map((bloco, f) => ({
+    fator: f, fichas: [bloco.opcoes[0].ficha, bloco.opcoes[1].ficha]
+  }));
+  const r = I.pontuarEneagrama(respostas);
+  assert.strictEqual(r.total, 20);
+  assert.strictEqual(r.completo, true);
+  const soma = Object.values(r.bruto).reduce((s, v) => s + v, 0);
+  assert.strictEqual(soma, 20, "a soma dos nove tipos precisa fechar em 20");
 });
 
-test("Eneagrama: a asa é sempre um tipo vizinho no círculo", () => {
-  for (let alvo = 1; alvo <= 9; alvo++) {
-    const respostas = I.ITENS_ENEAGRAMA.map((i) => ({ item: i.id, valor: i.tipo === alvo ? 5 : 1 }));
-    const r = I.pontuarEneagrama(respostas);
-    const anterior = alvo === 1 ? 9 : alvo - 1;
-    const posterior = alvo === 9 ? 1 : alvo + 1;
-    assert.ok([anterior, posterior].includes(r.asa), `asa ${r.asa} não é vizinha do tipo ${alvo}`);
-  }
+test("Eneagrama: preenchimento parcial é sinalizado como incompleto", () => {
+  const r = I.pontuarEneagrama([{ fator: 0, fichas: [1, 2] }]);
+  assert.strictEqual(r.total, 2);
+  assert.strictEqual(r.completo, false);
 });
 
-test("Eneagrama: o centro informado corresponde ao tipo principal", () => {
-  const centrosEsperados = {
-    1: "Instintivo", 2: "Emocional", 3: "Emocional", 4: "Emocional", 5: "Mental",
-    6: "Mental", 7: "Mental", 8: "Instintivo", 9: "Instintivo"
-  };
+test("Eneagrama: empate no topo é reportado como empate", () => {
+  // A folha original prevê isso com todas as letras: "primeiro lugar (ou empatado em)".
+  const respostas = I.BLOCOS_ENEAGRAMA.map((bloco, f) => ({
+    fator: f,
+    fichas: [bloco.opcoes.find((o) => o.tipo === 5).ficha, bloco.opcoes.find((o) => o.tipo === 9).ficha]
+  }));
+  const r = I.pontuarEneagrama(respostas);
+  assert.strictEqual(r.empate, true);
+  assert.deepStrictEqual(r.primeiro.sort(), [5, 9]);
+  assert.match(r.primeiroNome, / e /);
+});
+
+test("Eneagrama: identifica o segundo lugar", () => {
+  const respostas = I.BLOCOS_ENEAGRAMA.map((bloco, f) => ({
+    fator: f,
+    fichas: [
+      bloco.opcoes.find((o) => o.tipo === 5).ficha,
+      bloco.opcoes.find((o) => o.tipo === (f < 6 ? 6 : 4)).ficha
+    ]
+  }));
+  const r = I.pontuarEneagrama(respostas);
+  assert.deepStrictEqual(r.primeiro, [5]);
+  assert.deepStrictEqual(r.segundo, [6]);
+  assert.strictEqual(r.bruto[5], 10);
+  assert.strictEqual(r.bruto[6], 6);
+  assert.strictEqual(r.centro, "Mental");
+});
+
+test("Eneagrama: devolve as fichas escolhidas, para conferir com a folha de papel", () => {
+  const r = I.pontuarEneagrama([
+    { fator: 0, fichas: [5, 6] },
+    { fator: 4, fichas: [41, 43] }
+  ]);
+  assert.deepStrictEqual(r.fichas, [5, 6, 41, 43]);
+});
+
+test("Eneagrama: o centro informado corresponde ao primeiro colocado", () => {
+  const centros = { 1:"Instintivo",2:"Emocional",3:"Emocional",4:"Emocional",5:"Mental",
+                    6:"Mental",7:"Mental",8:"Instintivo",9:"Instintivo" };
   for (let alvo = 1; alvo <= 9; alvo++) {
-    const respostas = I.ITENS_ENEAGRAMA.map((i) => ({ item: i.id, valor: i.tipo === alvo ? 5 : 1 }));
+    // Dois acompanhantes DISTINTOS, cinco fatores cada, para nenhum deles
+    // alcançar os 10 pontos do alvo e criar empate.
+    const companheiro1 = (alvo % 9) + 1;
+    const companheiro2 = (companheiro1 % 9) + 1;
+    const respostas = I.BLOCOS_ENEAGRAMA.map((bloco, f) => ({
+      fator: f,
+      fichas: [
+        bloco.opcoes.find((o) => o.tipo === alvo).ficha,
+        bloco.opcoes.find((o) => o.tipo === (f < 5 ? companheiro1 : companheiro2)).ficha
+      ]
+    }));
     const r = I.pontuarEneagrama(respostas);
-    assert.strictEqual(r.centro, centrosEsperados[alvo]);
+    assert.deepStrictEqual(r.primeiro, [alvo], `esperado ${alvo} sozinho em primeiro`);
+    assert.strictEqual(r.centro, centros[alvo]);
   }
 });
 
@@ -261,7 +351,6 @@ test("DISC: a combinação dominante/secundário recebe um nome", () => {
 test("Qualidade: resposta cuidadosa é aprovada", () => {
   const q = I.calcularQualidade({
     temperamento: I.ITENS_TEMPERAMENTO.map((i, n) => ({ item: i.id, valor: (n % 5) + 1 })),
-    eneagrama: I.ITENS_ENEAGRAMA.map((i, n) => ({ item: i.id, valor: (n % 5) + 1 })),
     respostaAtencao: 1,
     segundos: 700
   });
@@ -272,7 +361,6 @@ test("Qualidade: resposta cuidadosa é aprovada", () => {
 test("Qualidade: detecta a mesma nota em todas as afirmações", () => {
   const q = I.calcularQualidade({
     temperamento: I.ITENS_TEMPERAMENTO.map((i) => ({ item: i.id, valor: 4 })),
-    eneagrama: I.ITENS_ENEAGRAMA.map((i) => ({ item: i.id, valor: 4 })),
     respostaAtencao: 1,
     segundos: 700
   });
@@ -283,7 +371,6 @@ test("Qualidade: detecta a mesma nota em todas as afirmações", () => {
 test("Qualidade: detecta preenchimento rápido demais e falha no item de atenção", () => {
   const q = I.calcularQualidade({
     temperamento: I.ITENS_TEMPERAMENTO.map((i, n) => ({ item: i.id, valor: (n % 5) + 1 })),
-    eneagrama: I.ITENS_ENEAGRAMA.map((i, n) => ({ item: i.id, valor: (n % 5) + 1 })),
     respostaAtencao: 5,
     segundos: 90
   });
@@ -296,28 +383,33 @@ test("Qualidade: detecta preenchimento rápido demais e falha no item de atenç�
 // TAMANHO DO INSTRUMENTO
 // ============================================================
 
-test("O instrumento tem 75 itens pontuados", () => {
-  const total =
-    I.ITENS_LINGUAGEM.length +
-    I.ITENS_TEMPERAMENTO.length +
-    I.ITENS_ENEAGRAMA.length +
-    I.BLOCOS_DISC.length;
-  assert.strictEqual(total, 75, `o instrumento está com ${total} itens`);
+test("O instrumento tem 58 decisões, distribuídas entre os quatro módulos", () => {
+  assert.strictEqual(I.ITENS_LINGUAGEM.length, 20, "linguagens: 20 pares");
+  assert.strictEqual(I.ITENS_TEMPERAMENTO.length, 16, "temperamento: 16 afirmações");
+  assert.strictEqual(I.BLOCOS_ENEAGRAMA.length, 10, "eneagrama: 10 fatores");
+  assert.strictEqual(I.BLOCOS_DISC.length, 12, "DISC: 12 blocos");
+
+  const decisoes = I.ITENS_LINGUAGEM.length + I.ITENS_TEMPERAMENTO.length +
+    I.BLOCOS_ENEAGRAMA.length + I.BLOCOS_DISC.length;
+  assert.strictEqual(decisoes, 58, `o instrumento está com ${decisoes} decisões`);
 });
 
 test("Cálculo completo devolve os quatro módulos e a versão", () => {
   const perfil = I.calcularPerfilCompleto({
     linguagem: I.ITENS_LINGUAGEM.map((i) => ({ item: i.id, letra: i.a.letra })),
     temperamento: I.ITENS_TEMPERAMENTO.map((i, n) => ({ item: i.id, valor: (n % 5) + 1 })),
-    eneagrama: I.ITENS_ENEAGRAMA.map((i, n) => ({ item: i.id, valor: (n % 5) + 1 })),
+    eneagrama: I.BLOCOS_ENEAGRAMA.map((b, f) => ({
+      fator: f, fichas: [b.opcoes[4].ficha, b.opcoes[f < 6 ? 5 : 3].ficha]
+    })),
     disc: I.BLOCOS_DISC.map((b) => ({ bloco: b.id, mais: "I", menos: "C" })),
     respostaAtencao: 1,
     segundos: 600
   });
-  assert.strictEqual(perfil.versao, "v2.0");
+  assert.strictEqual(perfil.versao, "v2.1");
   assert.ok(perfil.linguagem.principalNome);
   assert.ok(perfil.temperamento.principalNome);
-  assert.ok(perfil.eneagrama.principalNome);
+  assert.ok(perfil.eneagrama.primeiroNome);
+  assert.strictEqual(perfil.eneagrama.total, 20);
   assert.strictEqual(perfil.disc.dominante, "I");
   assert.strictEqual(perfil.qualidade.status, "OK");
 });

@@ -447,7 +447,7 @@ function renderTabela(){
       <td><span class="badge" style="background:#F1EFE8;color:#444441">${esc(d.setor)||'—'}</span></td>
       <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${esc(d.linguagem)||'—'}</span></td>
       <td>${esc(d.temperamento)||'—'}</td>
-      <td>${esc(d.eneagrama)||'—'}${d.eneagrama_asa?`<br><span style="font-size:11px;color:var(--text3)">asa ${esc(d.eneagrama_asa)}</span>`:''}</td>
+      <td>${esc(d.eneagrama)||'—'}${d.eneagrama_segundo?`<br><span style="font-size:11px;color:var(--text3)">2º: ${esc(d.eneagrama_segundo)}</span>`:''}</td>
       <td>${esc(d.disc)||'—'}</td>
       <td style="max-width:200px;font-size:12px;color:var(--text2)">${esc(d.como_comunicar)||'—'}</td>
       <td>${vBadge}</td>
@@ -485,8 +485,8 @@ function renderCards(){
 
 function exportarCSV(){
   if(!FILTRADOS.length)return;
-  const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Asa','Centro','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data'];
-  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_asa,d.eneagrama_centro,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
+  const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Eneagrama 2º lugar','Centro','Fichas escolhidas','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data'];
+  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_segundo,d.eneagrama_centro,d.eneagrama_fichas,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
   const csv=[cols.join(','),...rows].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Perfis_${new Date().toISOString().slice(0,10)}.csv`;a.click();
