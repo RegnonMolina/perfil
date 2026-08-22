@@ -571,19 +571,26 @@ var INSTRUMENTO = (function () {
     var secundario = ordem.filter(function (f) { return f !== dominante; })[0] || null;
     var combinacao = secundario ? (COMBINACOES_DISC[dominante + secundario] || "") : "";
 
+    // Os quatro fatores empatados significam que não há dominante — dizer isso
+    // é mais honesto do que eleger um pela ordem das chaves.
+    var equilibrado = Object.keys(score).every(function (f) { return score[f] === score.D; });
+
     return {
       mais: mais,
       menos: menos,
       score: score,
       intensidade: intensidade,
-      dominante: dominante,
-      dominanteNome: FATORES_DISC[dominante],
-      secundario: secundario,
-      secundarioNome: secundario ? FATORES_DISC[secundario] : "",
-      combinacao: combinacao,
+      dominante: equilibrado ? null : dominante,
+      dominanteNome: equilibrado ? "" : FATORES_DISC[dominante],
+      secundario: equilibrado ? null : secundario,
+      secundarioNome: (equilibrado || !secundario) ? "" : FATORES_DISC[secundario],
+      combinacao: equilibrado ? "" : combinacao,
       // Exemplo: "DC — Estrategista"
-      perfil: secundario ? (dominante + secundario + (combinacao ? " — " + combinacao : "")) : dominante,
-      empate: topo.length > 1
+      perfil: equilibrado
+        ? "Perfil equilibrado — sem fator dominante"
+        : (secundario ? (dominante + secundario + (combinacao ? " — " + combinacao : "")) : dominante),
+      empate: topo.length > 1,
+      equilibrado: equilibrado
     };
   }
 

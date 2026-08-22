@@ -1882,7 +1882,7 @@
 
                 <div class="resultado-card">
                     <h3>DISC</h3>
-                    <p><strong>${escaparHtml(perfil.disc.perfil)}</strong> · dominante: ${escaparHtml(perfil.disc.dominanteNome)}${perfil.disc.secundarioNome ? " · secundário: " + escaparHtml(perfil.disc.secundarioNome) : ""}</p>
+                    <p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " · dominante: " + escaparHtml(perfil.disc.dominanteNome) : ""}${perfil.disc.secundarioNome ? " · secundário: " + escaparHtml(perfil.disc.secundarioNome) : ""}</p>
                     ${miniBarrasHtml(paresDisc(perfil.disc))}
                 </div>
             `;
@@ -1976,7 +1976,7 @@
                 <h2>Linguagem de Valorização</h2><p><strong>${escaparHtml(perfil.linguagem.principalNome)}</strong>${perfil.linguagem.secundariaNome ? " (secundária: " + escaparHtml(perfil.linguagem.secundariaNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaLing)}</span></p>
                 <h2>Temperamento</h2><p><strong>${escaparHtml(perfil.temperamento.principalNome)}</strong>${perfil.temperamento.secundarioNome ? " (secundário: " + escaparHtml(perfil.temperamento.secundarioNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaTemp)}</span></p>
                 <h2>Eneagrama</h2><p><strong>${escaparHtml(perfil.eneagrama.primeiroNome)}</strong> — centro ${escaparHtml(perfil.eneagrama.centro)}<br>Segundo lugar: ${escaparHtml(perfil.eneagrama.segundoNome)}<br><span class="detalhe">${escaparHtml(listaEnea)}</span></p>
-                <h2>DISC</h2><p><strong>${escaparHtml(perfil.disc.perfil)}</strong> — dominante ${escaparHtml(perfil.disc.dominanteNome)}${perfil.disc.secundarioNome ? ", secundário " + escaparHtml(perfil.disc.secundarioNome) : ""}<br><span class="detalhe">${escaparHtml(listaDisc)}</span></p>
+                <h2>DISC</h2><p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " — dominante " + escaparHtml(perfil.disc.dominanteNome) : ""}${perfil.disc.secundarioNome ? ", secundário " + escaparHtml(perfil.disc.secundarioNome) : ""}<br><span class="detalhe">${escaparHtml(listaDisc)}</span></p>
                 ${secoesIA}
                 <p class="rodape-aviso">Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional.</p>
                 </body></html>`);

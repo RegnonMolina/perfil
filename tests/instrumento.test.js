@@ -454,3 +454,27 @@ test("Empate geral no temperamento é reportado como perfil equilibrado", () => 
   assert.strictEqual(r.equilibrado, true);
   assert.strictEqual(r.principalNome, "Perfil equilibrado — sem temperamento dominante");
 });
+
+test("DISC: os quatro fatores empatados são reportados como perfil equilibrado", () => {
+  // Descoberto ao olhar a tela de resultado: com os quatro scores em zero, o
+  // módulo elegia "DI — Impulsionador" pela ordem das chaves — o mesmo excesso
+  // de confiança já corrigido nos outros módulos.
+  const respostas = I.BLOCOS_DISC.map((b, i) => ({
+    bloco: b.id,
+    mais: ["D", "I", "S", "C"][i % 4],
+    menos: ["I", "S", "C", "D"][i % 4]
+  }));
+  const r = I.pontuarDisc(respostas);
+  Object.values(r.score).forEach((v) => assert.strictEqual(v, 0));
+  assert.strictEqual(r.equilibrado, true);
+  assert.strictEqual(r.perfil, "Perfil equilibrado — sem fator dominante");
+  assert.strictEqual(r.dominanteNome, "", "sem dominante não se anuncia um dominante");
+  assert.strictEqual(r.secundarioNome, "");
+});
+
+test("DISC: com dominante claro, nada muda", () => {
+  const r = I.pontuarDisc(I.BLOCOS_DISC.map((b) => ({ bloco: b.id, mais: "D", menos: "S" })));
+  assert.strictEqual(r.equilibrado, false);
+  assert.strictEqual(r.dominante, "D");
+  assert.match(r.perfil, /^DI|^DC|^DS/);
+});
