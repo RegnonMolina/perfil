@@ -6,6 +6,12 @@
 #
 # O ID da implantação abaixo é o mesmo da URL pública do App da Web
 # (script.google.com/macros/s/<ID>/exec) — publicar nele mantém a URL.
+#
+# POR QUE ESTE FLUXO CONFERE TANTA COISA
+# O site e o backend precisam estar na mesma versão. Se o site subir para a v2
+# e o Apps Script continuar na v1, as respostas são gravadas incompletas e na
+# aba errada, em silêncio. Por isso aqui: confere-se o ID antes de publicar e
+# a versão publicada depois, e o fluxo falha alto em qualquer divergência.
 
 name: Publicar Apps Script
 
@@ -15,6 +21,7 @@ on:
     paths:
       - "apps-script/**"
       - ".clasp.json"
+      - "config.js"
   workflow_dispatch: {}
 
 env:
@@ -32,15 +39,36 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Instalar clasp
-        run: npm install -g @google/clasp@2.4.2
-
       - name: Verificar credencial
         run: |
           if [ -z "${{ secrets.CLASPRC_JSON }}" ]; then
-            echo "::error::Segredo CLASPRC_JSON não configurado. Veja CONFIGURACAO.md, seção 'Publicação automática'."
+            echo "::error title=Segredo ausente::O segredo CLASPRC_JSON não está configurado, então o backend NÃO foi publicado. Enquanto isso, o Apps Script continua na versão antiga. Veja CONFIGURACAO.md, seção 'Publicação automática', ou publique manualmente pelo editor do Apps Script."
             exit 1
           fi
+
+      - name: Conferir se a implantação bate com o config.js
+        run: |
+          # Um ID divergente publicaria numa URL que o site não usa: o deploy
+          # "passaria" e mesmo assim o backend em produção seguiria antigo.
+          if ! grep -q "$DEPLOYMENT_ID" config.js; then
+            echo "::error title=Implantação divergente::O DEPLOYMENT_ID deste fluxo não aparece na urlAppsScript do config.js. Publicar assim atualizaria uma implantação que o site não usa. Alinhe os dois antes de seguir."
+            exit 1
+          fi
+          echo "ID da implantação confere com o config.js."
+
+      - name: Descobrir a versão declarada no código
+        id: versao
+        run: |
+          VERSAO=$(grep -oP 'var VERSAO_BACKEND = "\K[^"]+' apps-script/Codigo.gs)
+          if [ -z "$VERSAO" ]; then
+            echo "::error title=Versão não encontrada::Não foi possível ler VERSAO_BACKEND de apps-script/Codigo.gs."
+            exit 1
+          fi
+          echo "versao=$VERSAO" >> "$GITHUB_OUTPUT"
+          echo "Versão a publicar: $VERSAO"
+
+      - name: Instalar clasp
+        run: npm install -g @google/clasp@2.4.2
 
       - name: Autenticar
         run: echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
@@ -50,3 +78,24 @@ jobs:
 
       - name: Publicar nova versão na implantação existente (URL preservada)
         run: clasp deploy --deploymentId "$DEPLOYMENT_ID" --description "Publicação automática via GitHub Actions ($GITHUB_SHA)"
+
+      - name: Conferir a versão que ficou no ar
+        run: |
+          # Fecha o ciclo: sem esta conferência, um deploy que falha pela metade
+          # passa como sucesso e o problema só aparece nos dados dos usuários.
+          URL="https://script.google.com/macros/s/$DEPLOYMENT_ID/exec?action=versao"
+          ESPERADA="${{ steps.versao.outputs.versao }}"
+
+          for tentativa in 1 2 3 4 5; do
+            RESPOSTA=$(curl -sSL --max-time 30 "$URL" || true)
+            PUBLICADA=$(echo "$RESPOSTA" | grep -oP '"versao"\s*:\s*"\K[^"]+' || true)
+            if [ "$PUBLICADA" = "$ESPERADA" ]; then
+              echo "Backend no ar na versão $PUBLICADA."
+              exit 0
+            fi
+            echo "Tentativa $tentativa: no ar '$PUBLICADA', esperada '$ESPERADA'. Aguardando propagação..."
+            sleep $((tentativa * 5))
+          done
+
+          echo "::error title=Versão publicada não confere::O endereço público responde '$PUBLICADA', mas o código publicado declara '$ESPERADA'. O site pode estar enviando dados para um backend antigo. Confira a implantação no editor do Apps Script."
+          exit 1

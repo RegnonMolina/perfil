@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
+    <script src="instrumento.js"></script>
     <script src="clima.js" defer></script>
     <style>
         * {
@@ -150,6 +151,21 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
+        }
+
+        /* A regra acima é para campos de texto. Rádios e caixas de seleção
+           também são <input> e, dentro de um .form-group, herdavam largura de
+           100% e 12px de padding — o círculo virava um bloco gigante e o texto
+           da alternativa ficava espremido na lateral. */
+        .form-group input[type="radio"],
+        .form-group input[type="checkbox"] {
+            width: auto;
+            padding: 0;
+            border: none;
+            flex: 0 0 auto;
+            /* Sem isto o flex estica o círculo na vertical quando o texto da
+               alternativa ocupa mais de uma linha, e ele vira uma elipse. */
+            align-self: flex-start;
         }
 
         .opcoes {
@@ -423,6 +439,309 @@
             color: #c62828;
             display: block;
         }
+
+        /* ===== v2.0 — blocos DISC, avisos e selos ===== */
+        .modulo-intro {
+            background: var(--cor-secundaria-suave);
+            border-left: 4px solid var(--cor-secundaria);
+            padding: 12px 14px;
+            border-radius: 5px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .disc-bloco {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .disc-bloco h4 {
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .disc-legenda {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .disc-linha {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 8px;
+            align-items: center;
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 5px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+        }
+
+        .disc-palavra {
+            font-size: 14px;
+        }
+
+        .disc-btn {
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .disc-btn:hover {
+            border-color: var(--cor-secundaria);
+        }
+
+        .disc-btn.mais-ativo {
+            background: var(--cor-secundaria);
+            border-color: var(--cor-secundaria);
+            color: white;
+        }
+
+        .disc-btn.menos-ativo {
+            background: #777;
+            border-color: #777;
+            color: white;
+        }
+
+        .item-atencao {
+            border: 2px dashed #ccc;
+        }
+
+        .alerta-qualidade {
+            background: #fff8e1;
+            border-left: 4px solid #f9a825;
+            padding: 10px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #7a5c00;
+            margin-bottom: 12px;
+        }
+
+        .aviso-instrumento {
+            font-size: 11px;
+            color: #777;
+            line-height: 1.6;
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        .selo-versao {
+            display: inline-block;
+            font-size: 11px;
+            color: #666;
+            background: #f0f0f0;
+            border-radius: 20px;
+            padding: 2px 10px;
+            margin-left: 6px;
+        }
+
+        .retomar {
+            background: #e8f5e9;
+            border-left: 4px solid #43a047;
+            padding: 12px 14px;
+            border-radius: 5px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: #1b5e20;
+        }
+
+        .retomar button {
+            border: none;
+            background: #43a047;
+            color: white;
+            border-radius: 5px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .disc-linha {
+                grid-template-columns: 1fr auto auto;
+                gap: 6px;
+                padding: 8px;
+            }
+            .disc-btn {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+            .disc-palavra {
+                font-size: 13px;
+            }
+        }
+
+        /* ===== Aviso de privacidade e consentimento ===== */
+        .privacidade {
+            border: 1px solid #e2e2e2;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            background: #fafafa;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #444;
+        }
+
+        .privacidade h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--cor-primaria);
+            margin-bottom: 8px;
+        }
+
+        .privacidade ul {
+            margin: 8px 0 0 18px;
+        }
+
+        .privacidade li {
+            margin-bottom: 5px;
+        }
+
+        .consentimento {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 12px 14px;
+            border: 2px solid #e2e2e2;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .consentimento:hover {
+            border-color: var(--cor-secundaria);
+        }
+
+        .consentimento.marcado {
+            border-color: var(--cor-secundaria);
+            background: var(--cor-secundaria-suave);
+        }
+
+        .consentimento input {
+            margin-top: 3px;
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+        }
+
+        .consentimento label {
+            font-size: 13px;
+            line-height: 1.6;
+            cursor: pointer;
+        }
+
+        /* Campo-armadilha: invisível para pessoas, preenchido por robôs.
+           Fica fora da tela em vez de display:none, que alguns robôs ignoram. */
+        .armadilha {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .bloqueio-versao {
+            background: #ffebee;
+            border-left: 4px solid #c62828;
+            border-radius: 8px;
+            padding: 13px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #8c1d1d;
+        }
+
+
+        /* ===== Eneagrama: fatores com 9 alternativas, escolhendo 2 ===== */
+        .fator {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .fator-cabeca {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .fator-cabeca h4 { color: #333; }
+
+        .fator-contagem {
+            font-size: 12px;
+            color: #777;
+            white-space: nowrap;
+        }
+
+        .fator-contagem.completo {
+            color: var(--cor-primaria);
+            font-weight: 600;
+        }
+
+        .ficha-opcao {
+            display: grid;
+            grid-template-columns: 34px 1fr;
+            gap: 10px;
+            align-items: start;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ficha-opcao:hover {
+            border-color: var(--cor-secundaria);
+            background: #f9f9f9;
+        }
+
+        .ficha-opcao.selecionada {
+            background: var(--cor-secundaria-suave);
+            border-color: var(--cor-secundaria);
+        }
+
+        .ficha-numero {
+            font-size: 11px;
+            color: #888;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 0;
+            text-align: center;
+            margin-top: 1px;
+        }
+
+        .ficha-opcao.selecionada .ficha-numero {
+            color: var(--cor-primaria);
+            border-color: var(--cor-secundaria);
+        }
+
     </style>
 </head>
 <body>
@@ -445,9 +764,23 @@
                 <div class="progresso-barra" id="progressoBarra"></div>
             </div>
 
+            <div class="bloqueio-versao" id="bloqueio-versao" style="display:none"></div>
+
+            <div class="retomar" id="retomar" style="display:none">
+                Encontramos um teste seu em andamento neste navegador.
+                <br>
+                <button onclick="retomarRascunho()">Continuar de onde parei</button>
+                <button style="background:#999" onclick="descartarRascunho()">Começar do zero</button>
+            </div>
+
             <!-- TELA 1: Identificação -->
             <div class="tela ativa" id="tela1">
                 <h2>1. Identificação</h2>
+                <div class="modulo-intro">
+                    São 4 blocos de perguntas, cerca de 12 minutos no total. Não existe resposta certa ou errada —
+                    responda pensando em como você <strong>realmente</strong> é, não em como gostaria de ser.
+                    Suas respostas ficam salvas neste navegador enquanto você responde, então dá para pausar e voltar.
+                </div>
                 <div class="form-group">
                     <label>Nome Completo *</label>
                     <input type="text" id="nome" placeholder="Seu nome" required>
@@ -457,28 +790,35 @@
                     <input type="email" id="email" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
-                    <label>Setor *</label>
+                    <label id="label-setor">Setor *</label>
                     <select id="setor" required>
-                        <option value="">Selecione um setor...</option>
-                        <option value="Administrativo">Administrativo</option>
-                        <option value="Comercial">Comercial</option>
-                        <option value="Coordenação">Coordenação</option>
-                        <option value="Auxiliar de sala">Auxiliar de sala</option>
-                        <option value="Professor(a)">Professor(a)</option>
-                        <option value="Cozinha">Cozinha</option>
-                        <option value="Limpeza">Limpeza</option>
-                        <option value="Segurança">Segurança</option>
-                        <option value="Externo (Consultor, Amigo, Parente)">Externo</option>
+                        <option value="">Selecione...</option>
                     </select>
                 </div>
+                <div class="armadilha" aria-hidden="true">
+                    <label>Não preencha este campo</label>
+                    <input type="text" id="confirmacao" tabindex="-1" autocomplete="off">
+                </div>
+
+                <div class="privacidade" id="aviso-privacidade"></div>
+
+                <div class="consentimento" id="caixa-consentimento" onclick="cliqueNaCaixaDeConsentimento(event)">
+                    <input type="checkbox" id="consentimento" onchange="alternarConsentimento()">
+                    <label for="consentimento" id="texto-consentimento"></label>
+                </div>
+
                 <div class="botoes">
                     <button class="btn btn-primario" onclick="irParaTela(2)">Próximo →</button>
                 </div>
             </div>
 
-            <!-- TELA 2: Linguagem Perguntas 1-15 -->
+            <!-- TELA 2: Linguagens de Valorização, itens 1 a 10 -->
             <div class="tela" id="tela2">
                 <h2>2. Linguagens de Valorização (1/2)</h2>
+                <div class="modulo-intro">
+                    Em cada par, escolha a opção que <strong>mais</strong> combina com você.
+                    As duas podem parecer boas: escolha a que pesa mais.
+                </div>
                 <div id="perguntas-ling-1"></div>
                 <div class="botoes">
                     <button class="btn btn-secundario" onclick="irParaTela(1)">← Anterior</button>
@@ -486,9 +826,12 @@
                 </div>
             </div>
 
-            <!-- TELA 3: Linguagem Perguntas 16-30 -->
+            <!-- TELA 3: Linguagens de Valorização, itens 11 a 20 -->
             <div class="tela" id="tela3">
                 <h2>2. Linguagens de Valorização (2/2)</h2>
+                <div class="modulo-intro">
+                    Continue escolhendo a opção que <strong>mais</strong> combina com você.
+                </div>
                 <div id="perguntas-ling-2"></div>
                 <div class="botoes">
                     <button class="btn btn-secundario" onclick="irParaTela(2)">← Anterior</button>
@@ -499,6 +842,10 @@
             <!-- TELA 4: Temperamento -->
             <div class="tela" id="tela4">
                 <h2>3. Temperamento</h2>
+                <div class="modulo-intro">
+                    Dê uma nota de <strong>1 (não tem nada a ver comigo)</strong> a
+                    <strong>5 (tem tudo a ver comigo)</strong> para cada afirmação.
+                </div>
                 <div id="perguntas-temp"></div>
                 <div class="botoes">
                     <button class="btn btn-secundario" onclick="irParaTela(3)">← Anterior</button>
@@ -506,28 +853,92 @@
                 </div>
             </div>
 
-            <!-- TELA 5: Eneagrama 1-5 -->
+            <!-- TELA 5: Eneagrama, fatores 1 e 2 -->
             <div class="tela" id="tela5">
-                <h2>4. Eneagrama (1/2)</h2>
-                <div id="eneagrama-1"></div>
+                <h2>4. Eneagrama (1/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-0"></div>
                 <div class="botoes">
                     <button class="btn btn-secundario" onclick="irParaTela(4)">← Anterior</button>
                     <button class="btn btn-primario" onclick="irParaTela(6)">Próximo →</button>
                 </div>
             </div>
 
-            <!-- TELA 6: Eneagrama 6-10 -->
+            <!-- TELA 6: Eneagrama, fatores 3 e 4 -->
             <div class="tela" id="tela6">
-                <h2>4. Eneagrama (2/2)</h2>
-                <div id="eneagrama-2"></div>
+                <h2>4. Eneagrama (2/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-1"></div>
                 <div class="botoes">
                     <button class="btn btn-secundario" onclick="irParaTela(5)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(7)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 7: Eneagrama, fatores 5 e 6 -->
+            <div class="tela" id="tela7">
+                <h2>4. Eneagrama (3/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-2"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(6)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(8)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 8: Eneagrama, fatores 7 e 8 -->
+            <div class="tela" id="tela8">
+                <h2>4. Eneagrama (4/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-3"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(7)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(9)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 9: Eneagrama, fatores 9 e 10 -->
+            <div class="tela" id="tela9">
+                <h2>4. Eneagrama (5/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-4"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(8)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(10)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 10: DISC -->
+            <div class="tela" id="tela10">
+                <h2>5. DISC</h2>
+                <div class="modulo-intro">
+                    Em cada bloco de 4 palavras, marque <strong>MAIS</strong> na que mais tem a ver com você e
+                    <strong>MENOS</strong> na que menos tem a ver. As outras duas ficam sem marcação.
+                </div>
+                <div id="blocos-disc"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(9)">← Anterior</button>
                     <button class="btn btn-primario" onclick="enviarFormulario()">Enviar →</button>
                 </div>
             </div>
 
-            <!-- TELA 7: Carregamento -->
-            <div class="tela" id="tela7">
+            <!-- TELA 11: Carregamento -->
+            <div class="tela" id="tela11">
                 <div class="loading">
                     <div class="spinner"></div>
                     <h3>Processando seu perfil...</h3>
@@ -535,8 +946,8 @@
                 </div>
             </div>
 
-            <!-- TELA 8: Resultado -->
-            <div class="tela" id="tela8">
+            <!-- TELA 12: Resultado -->
+            <div class="tela" id="tela12">
                 <h2>Seu Perfil Comportamental</h2>
                 <div id="resultado-conteudo"></div>
                 <div class="botoes">
@@ -600,77 +1011,36 @@
     </div>
 
     <script>
-        // ===== DADOS E CONFIGURAÇÃO =====
-        const PERGUNTAS_LINGUAGEM = [
-            { id: 1, a: "(A) Gosto de receber elogios por um trabalho bem feito.", b: "(B) Valorizo quando a coordenação dedica tempo para me ouvir." },
-            { id: 2, a: "(D) Sinto-me valorizado quando um colega me ajuda com uma demanda difícil.", b: "(B) Gosto de participar de momentos de confraternização com a equipe." },
-            { id: 3, a: "(C) Gosto de receber Mimos ou lembranças em datas especiais.", b: "(E) Sinto-me acolhido com um sorriso e um 'bom dia' entusiasmado." },
-            { id: 4, a: "(E) Um tapinha de encorajamento nas costas (parabenização) me faz bem.", b: "(B) Gosto de ter momentos de troca de ideias com meus líderes." },
-            { id: 5, a: "(A) Sinto-me motivado quando recebo um feedback positivo por escrito.", b: "(E) Sinto-me integrado quando o ambiente é receptivo e caloroso." },
-            { id: 6, a: "(B) Valorizo quando alguém para o que está fazendo para me dar atenção.", b: "(A) Palavras de incentivo são fundamentais para o meu dia." },
-            { id: 7, a: "(A) Gosto quando elogiam minha competência técnica.", b: "(E) Sinto-me seguro em um ambiente onde as pessoas são cordiais no trato físico." },
-            { id: 8, a: "(A) Prefiro um elogio sincero a um presente caro.", b: "(E) Um cumprimento de mão firme me passa confiança." },
-            { id: 9, a: "(A) Gosto que a direção reconheça meu esforço extra.", b: "(B) Gosto de ser consultado antes de decisões importantes serem tomadas." },
-            { id: 10, a: "(C) Adoro ganhar itens personalizados com a marca do Colégio.", b: "(A) Gosto que elogiem minha postura profissional." },
-            { id: 11, a: "(D) Ver que alguém se preocupou em facilitar meu trabalho me deixa feliz.", b: "(C) Gosto de ganhar kits ou presentes úteis para o meu dia a dia." },
-            { id: 12, a: "(B) Atenção total durante uma conversa é o melhor reconhecimento.", b: "(C) Sinto-me especial quando o Colégio celebra meu aniversário." },
-            { id: 13, a: "(D) Alguém me ajudar com a papelada/burocracia me faz sentir amado.", b: "(B) Valorizo quando sou ouvido sem ser julgado." },
-            { id: 14, a: "(B) Gosto de participar de reuniões de planejamento estratégico.", b: "(C) Fico feliz quando ganho um 'mimo' inesperado." },
-            { id: 15, a: "(A) Ouvir um 'obrigado por tudo o que você faz' me dá energia.", b: "(C) Pequenos gestos (como um doce com um bilhete) são marcantes." },
-            { id: 16, a: "(A) O reconhecimento verbal me faz sentir que pertenço ao lugar.", b: "(A) O feedback de palavras positivas é o que me faz crescer." },
-            { id: 17, a: "(B) Gosto de almoçar ou tomar café com colegas para trocar experiências.", b: "(D) Atitudes de apoio prático valem mais para mim do que elogios." },
-            { id: 18, a: "(C) Valorizo pequenas lembranças deixadas na minha mesa.", b: "(B) Sinto-me conectado à equipe quando trabalhamos juntos em um projeto." },
-            { id: 19, a: "(D) Sinto-me bem quando alguém assume uma tarefa minha para eu poder descansar.", b: "(B) Gosto de ser consultado antes de decisões importantes serem tomadas." },
-            { id: 20, a: "(D) Sinto-me apoiado quando alguém me traz um café ou ajuda na organização.", b: "(B) Valorizo quando reservam um tempo para entender meus desafios na sala de aula." },
-            { id: 21, a: "(D) Ver que alguém se preocupou em facilitar meu trabalho me deixa feliz.", b: "(D) Valorizo muito o esforço que os colegas fazem para me apoiar." },
-            { id: 22, a: "(D) Ajuda prática na hora do aperto é o que mais importa.", b: "(C) Sinto-me especial quando o Colégio celebra meu aniversário." },
-            { id: 23, a: "(D) Alguém me ajudar com a papelada/burocracia me faz sentir amado.", b: "(B) Valorizo quando sou ouvido sem ser julgado." },
-            { id: 24, a: "(B) Gosto de participar de reuniões de planejamento estratégico.", b: "(C) Fico feliz quando ganho um 'mimo' inesperado." },
-            { id: 25, a: "(B) Gosto quando olham nos meus olhos enquanto explico algo.", b: "(C) Pequenos gestos (como um doce com um bilhete) são marcantes." },
-            { id: 26, a: "(D) Sinto-me valorizado quando alguém resolve um problema técnico para mim.", b: "(A) O feedback de palavras positivas é o que me faz crescer." },
-            { id: 27, a: "(B) Valorizo quando sou ouvido sem ser julgado.", b: "(B) Gosto de participar de reuniões de planejamento estratégico." },
-            { id: 28, a: "(C) Fico feliz quando ganho um 'mimo' inesperado.", b: "(B) Gosto quando olham nos meus olhos enquanto explico algo." },
-            { id: 29, a: "(C) Pequenos gestos (como um doce com um bilhete) são marcantes.", b: "(D) Sinto-me valorizado quando alguém resolve um problema técnico para mim." },
-            { id: 30, a: "(A) O reconhecimento verbal me faz sentir que pertenço ao lugar.", b: "(E) O Acolhimento humano é o que me segura na empresa." }
-        ];
+        // ============================================================
+        //  PERFIL COMPORTAMENTAL — v2.0
+        // ============================================================
+        //
+        // O banco de itens e todo o cálculo ficam em instrumento.js, testados
+        // por tests/instrumento.test.js. Este arquivo cuida apenas da tela:
+        // renderizar as perguntas, guardar as respostas, enviar e exibir.
+        //
+        // Módulos: Linguagens de Valorização, Temperamento, Eneagrama e DISC.
 
-        const AFIRMACOES_TEMP = [
-            { id: 1, texto: "Quando surge um problema, minha reação mais natural é assumir o controle.", tipo: "col" },
-            { id: 2, texto: "Eu costumo ser comunicativo e me envolver com facilidade com as pessoas.", tipo: "san" },
-            { id: 3, texto: "Sou detalhista e percebo coisas que muita gente deixa passar.", tipo: "mel" },
-            { id: 4, texto: "Normalmente ajo com calma, mesmo quando os outros estão tensos.", tipo: "fle" },
-            { id: 5, texto: "Gosto de decidir rápido e partir para a ação.", tipo: "col" },
-            { id: 6, texto: "Tenho facilidade para animar o ambiente e deixar tudo mais leve.", tipo: "san" },
-            { id: 7, texto: "Costumo pensar bastante antes de confiar que algo está realmente certo.", tipo: "mel" },
-            { id: 8, texto: "Evito conflitos desnecessários e prefiro manter a harmonia.", tipo: "fle" },
-            { id: 9, texto: "Fico incomodado quando vejo lentidão, enrolação ou falta de resultado.", tipo: "col" },
-            { id: 10, texto: "Sou naturalmente expressivo e costumo demonstrar o que sinto.", tipo: "san" },
-            { id: 11, texto: "Tenho tendência a ser exigente comigo mesmo e com a qualidade das coisas.", tipo: "mel" },
-            { id: 12, texto: "As pessoas costumam me ver como alguém estável e tranquilo.", tipo: "fle" }
-        ];
-
-        const BLOCOS_ENEAGRAMA = [
-            { id: 1, titulo: "MUNDO IDEAL", opcoes: ["Mundo ético, moral e de respeito às regras", "Mundo de desafios e oportunidades"] },
-            { id: 2, titulo: "RELACIONAMENTO PROFISSIONAL", opcoes: ["Relacionamento baseado em solidariedade e apoio", "Relacionamento baseado em desafios e justiça"] },
-            { id: 3, titulo: "AUTO-IMAGEM", opcoes: ["Responsável. Dedicado. Autodisciplinado. Exigente.", "Competente. Entusiasmado. Autoconfiante. Realizador."] },
-            { id: 4, titulo: "PARTICIPAÇÃO E INFLUÊNCIA", opcoes: ["Pessoa correta e exigente consigo mesma.", "Pessoa sempre em busca de desafios e realizações."] },
-            { id: 5, titulo: "GRUPOS", opcoes: ["Grupos de estudos (Filosofia, Ciências, Autoconhecimento etc.)", "Grupos sociais e recreativos. Movimentos associativos."] },
-            { id: 6, titulo: "SENSIBILIDADE", opcoes: ["Anima os outros a fazerem o que é correto.", "Ajuda as pessoas a acreditarem no seu próprio valor."] },
-            { id: 7, titulo: "CONDUTA", opcoes: ["Saber ouvir.", "Tornar realidade."] },
-            { id: 8, titulo: "SUCESSO PESSOAL", opcoes: ["Buscar saber sempre mais.", "Alcançar resultados e ser vencedor."] },
-            { id: 9, titulo: "BUSCA PESSOAL", opcoes: ["Ficar do lado do bem e da razão.", "Ajudar as demais pessoas."] },
-            { id: 10, titulo: "IMAGEM PÚBLICA", opcoes: ["Organizado. Responsável. Perfeccionista.", "Franco. Destemido. Justo."] }
-        ];
+        const INST = window.INSTRUMENTO;
+        const TOTAL_TELAS = 12;
+        // Telas 5 a 9 são o eneagrama, dois fatores em cada.
+        const TELA_PRIMEIRO_FATOR = 5;
+        const CHAVE_RASCUNHO = "perfilRascunho";
 
         let dadosFormulario = {
+            versao: INST.VERSAO,
             nome: "",
             email: "",
             setor: "",
-            respostas_linguagem: [],
-            respostas_temperamento: [],
-            respostas_eneagrama: [],
-            scores_temperamento: {},
-            papel_grupo: "",
+            respostas_linguagem: [],    // { item, letra }
+            respostas_temperamento: [], // { item, valor }
+            respostas_eneagrama: [],    // { item, valor }
+            respostas_disc: [],         // { bloco, mais, menos }
+            resposta_atencao: null,
+            consentimento: false,
+            consentimento_em: "",
+            inicio: Date.now(),
+            perfil: null,
             analise_ia: {}
         };
 
@@ -684,7 +1054,29 @@
             corSecundaria: "#667eea",
             urlAppsScript: "",
             emailGestor: "",
-            rodape: ""
+            rodape: "",
+            // Vocabulário da organização. Fica aqui como padrão para o caso de
+            // um config.js antigo, sem o bloco "contexto", continuar em uso.
+            privacidade: {
+                controlador: "",
+                finalidade: "apoiar o desenvolvimento profissional e a comunicação da equipe",
+                quemAcessa: "a própria pessoa e a coordenação responsável",
+                retencao: "enquanto durar o vínculo, ou até que a pessoa peça a exclusão",
+                contato: "",
+                urlPolitica: ""
+            },
+            contexto: {
+                tipoOrganizacao: "uma escola",
+                termoPessoa: "colaborador",
+                termoLider: "gestor",
+                termoGrupo: "Setor",
+                descricaoAmbiente: "o dia a dia escolar",
+                opcoesGrupo: [
+                    "Administrativo", "Comercial", "Coordenação", "Auxiliar de sala",
+                    "Professor(a)", "Cozinha", "Limpeza", "Segurança",
+                    "Externo (Consultor, Amigo, Parente)"
+                ]
+            }
         };
 
         let branding = {};
@@ -693,6 +1085,18 @@
             let overrides = {};
             try { overrides = JSON.parse(localStorage.getItem("brandingOverrides") || "{}"); } catch (e) {}
             branding = { ...BRANDING_PADRAO, ...(window.CONFIG_ESCOLA || {}), ...overrides };
+            // O contexto é mesclado campo a campo para que um config.js que
+            // defina só parte dele não apague o restante do padrão.
+            branding.contexto = {
+                ...BRANDING_PADRAO.contexto,
+                ...((window.CONFIG_ESCOLA || {}).contexto || {}),
+                ...(overrides.contexto || {})
+            };
+            branding.privacidade = {
+                ...BRANDING_PADRAO.privacidade,
+                ...((window.CONFIG_ESCOLA || {}).privacidade || {}),
+                ...(overrides.privacidade || {})
+            };
         }
 
         function aplicarBranding() {
@@ -719,188 +1123,458 @@
             } else {
                 rodape.style.display = "none";
             }
+
+            aplicarContexto();
+        }
+
+        // Monta o rótulo e as opções do campo de grupo (Setor, Categoria...)
+        // a partir do vocabulário da organização definido no config.js.
+        function aplicarContexto() {
+            const ctx = branding.contexto || {};
+            const termo = ctx.termoGrupo || "Setor";
+            document.getElementById("label-setor").textContent = termo + " *";
+
+            const select = document.getElementById("setor");
+            const selecionado = select.value;
+            select.innerHTML = '<option value="">Selecione...</option>' +
+                (ctx.opcoesGrupo || []).map(function (op) {
+                    return '<option value="' + escaparHtml(op) + '">' + escaparHtml(op) + "</option>";
+                }).join("");
+            if (selecionado) select.value = selecionado;
+        }
+
+        // Monta o aviso de privacidade a partir do config.js da organização.
+        function aplicarPrivacidade() {
+            const p = branding.privacidade || {};
+            const ctx = branding.contexto || {};
+            const controlador = p.controlador || branding.nome;
+
+            const politica = p.urlPolitica
+                ? ` Política completa: <a href="${escaparHtml(p.urlPolitica)}" target="_blank" rel="noopener">${escaparHtml(p.urlPolitica)}</a>.`
+                : "";
+
+            document.getElementById("aviso-privacidade").innerHTML = `
+                <h3>Antes de começar: como seus dados são usados</h3>
+                <p>Este questionário coleta seu nome, e-mail e respostas para gerar um perfil comportamental.</p>
+                <ul>
+                    <li><strong>Quem é responsável:</strong> ${escaparHtml(controlador)}.</li>
+                    <li><strong>Para quê:</strong> ${escaparHtml(p.finalidade || "")}.</li>
+                    <li><strong>Quem vê o resultado:</strong> ${escaparHtml(p.quemAcessa || "")}.</li>
+                    <li><strong>Por quanto tempo:</strong> ${escaparHtml(p.retencao || "")}.</li>
+                    <li><strong>Seus direitos:</strong> você pode pedir acesso, correção ou exclusão dos seus dados a qualquer momento${p.contato ? ", pelo e-mail " + escaparHtml(p.contato) : ""}.</li>
+                </ul>
+                <p style="margin-top:8px">Este é um instrumento de autoconhecimento e desenvolvimento.
+                <strong>Não é usado para seleção, promoção ou avaliação de desempenho</strong>, não constitui
+                diagnóstico clínico e não substitui avaliação profissional.${politica}</p>
+            `;
+
+            document.getElementById("texto-consentimento").innerHTML =
+                `Li o aviso acima e concordo que ${escaparHtml(controlador)} trate meus dados para essa finalidade.`;
+        }
+
+        // Clique na área ao redor da caixa.
+        //
+        // Só trata o clique na própria div: a caixinha e o rótulo já alternam
+        // sozinhos, porque o <label for> faz isso nativamente. Sem esta guarda,
+        // o clique no rótulo alternava duas vezes — uma pelo navegador e outra
+        // por este código — e o resultado era nada acontecer.
+        function cliqueNaCaixaDeConsentimento(evento) {
+            if (evento.target.id !== "caixa-consentimento") return;
+            const caixa = document.getElementById("consentimento");
+            caixa.checked = !caixa.checked;
+            alternarConsentimento();
+        }
+
+        // Chamada pelo onchange da caixa, que dispara em todos os caminhos
+        // nativos: clique na caixinha, clique no rótulo e barra de espaço.
+        function alternarConsentimento() {
+            const caixa = document.getElementById("consentimento");
+
+            dadosFormulario.consentimento = caixa.checked;
+            dadosFormulario.consentimento_em = caixa.checked
+                ? new Date().toLocaleString("pt-BR")
+                : "";
+            document.getElementById("caixa-consentimento").classList.toggle("marcado", caixa.checked);
+            salvarRascunho();
+        }
+
+        // Confere se o Apps Script já está na mesma versão deste site.
+        //
+        // Sem isto, um site atualizado enviando para um backend antigo grava
+        // dados incompletos na aba errada, em silêncio. Aqui o problema aparece
+        // antes de a pessoa responder 75 itens.
+        // Comparação da versão INTEIRA, não só do número maior: o formato dos
+        // dados muda também entre versões menores (v2.0 -> v2.1 trocou o
+        // eneagrama por completo), e gravar com o backend antigo perderia campos.
+        function versaoPrincipal(v) {
+            return String(v || "").trim();
+        }
+
+        function bloquearPorVersao(mensagem) {
+            const el = document.getElementById("bloqueio-versao");
+            el.innerHTML = mensagem;
+            el.style.display = "block";
+            document.querySelectorAll(".btn-primario").forEach(function (b) {
+                b.disabled = true;
+                b.style.opacity = ".5";
+                b.style.cursor = "not-allowed";
+            });
+        }
+
+        function conferirVersaoDoServidor() {
+            if (!branding.urlAppsScript) return;
+            fetch(branding.urlAppsScript + "?action=versao")
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (!d || !d.versao) {
+                        bloquearPorVersao(
+                            "<strong>Sistema em manutenção.</strong> O servidor respondeu, mas não informou a versão. " +
+                            "Avise a coordenação antes de responder — as respostas podem não ser gravadas corretamente."
+                        );
+                        return;
+                    }
+                    if (versaoPrincipal(d.versao) !== versaoPrincipal(INST.VERSAO)) {
+                        bloquearPorVersao(
+                            "<strong>Sistema em atualização.</strong> Este questionário está na versão " +
+                            escaparHtml(INST.VERSAO) + ", mas o servidor ainda está na " + escaparHtml(d.versao) + ". " +
+                            "Responder agora gravaria um resultado incompleto. Avise a coordenação e tente mais tarde."
+                        );
+                    }
+                })
+                .catch(function () {
+                    // Sem rede não dá para concluir nada: não bloqueia aqui.
+                    // A conferência é refeita no envio, que é o momento crítico.
+                });
+        }
+
+        function escaparHtml(texto) {
+            return String(texto)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
         }
 
         // ===== INICIALIZAÇÃO =====
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             carregarBranding();
             aplicarBranding();
-            renderizarPerguntas();
+            aplicarPrivacidade();
+            renderizarTudo();
+            verificarRascunho();
             atualizarProgresso();
+            conferirVersaoDoServidor();
         });
 
         // ===== RENDERIZAÇÃO =====
-        function renderizarPerguntas() {
-            // Linguagem 1-15
-            let html1 = "";
-            for (let i = 0; i < 15; i++) {
-                const p = PERGUNTAS_LINGUAGEM[i];
-                html1 += `
-                    <div class="opcoes" style="margin-bottom: 15px;">
-                        <label style="font-weight: bold; color: #333;">Pergunta ${p.id}</label>
-                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'a')">
-                            <input type="radio" name="ling${p.id}" value="a">
-                            <div class="opcao-texto">${p.a}</div>
-                        </div>
-                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'b')">
-                            <input type="radio" name="ling${p.id}" value="b">
-                            <div class="opcao-texto">${p.b}</div>
-                        </div>
-                    </div>
-                `;
-            }
-            document.getElementById("perguntas-ling-1").innerHTML = html1;
+        function renderizarTudo() {
+            renderizarLinguagem("perguntas-ling-1", 0, 10);
+            renderizarLinguagem("perguntas-ling-2", 10, 20);
+            renderizarTemperamento();
+            for (var i = 0; i < 5; i++) renderizarEneagrama(i);
+            renderizarDisc();
+        }
 
-            // Linguagem 16-30
-            let html2 = "";
-            for (let i = 15; i < 30; i++) {
-                const p = PERGUNTAS_LINGUAGEM[i];
-                html2 += `
-                    <div class="opcoes" style="margin-bottom: 15px;">
-                        <label style="font-weight: bold; color: #333;">Pergunta ${p.id}</label>
-                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'a')">
-                            <input type="radio" name="ling${p.id}" value="a">
-                            <div class="opcao-texto">${p.a}</div>
-                        </div>
-                        <div class="opcao" onclick="selecionarLinguagem(${i}, 'b')">
-                            <input type="radio" name="ling${p.id}" value="b">
-                            <div class="opcao-texto">${p.b}</div>
-                        </div>
-                    </div>
-                `;
-            }
-            document.getElementById("perguntas-ling-2").innerHTML = html2;
-
-            // Temperamento
-            let htmlTemp = `<label style="color: #666; margin-bottom: 20px; display: block;">Para cada afirmação abaixo, escolha um valor de 1 a 5 (sendo 1 = discordo completamente, 5 = concordo totalmente)</label>`;
-            AFIRMACOES_TEMP.forEach((af, idx) => {
-                htmlTemp += `
-                    <div style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px;">
-                        <p style="margin-bottom: 10px; font-weight: 500;">${af.id}. ${af.texto}</p>
-                        <div class="escala-container">
-                            ${[1,2,3,4,5].map(v => `
-                                <button class="escala-btn" onclick="selecionarTemperamento(${idx}, ${v}, '${af.tipo}')">${v}</button>
-                            `).join('')}
+        // Módulo 1 — pares de escolha forçada.
+        function renderizarLinguagem(containerId, de, ate) {
+            let html = "";
+            INST.ITENS_LINGUAGEM.slice(de, ate).forEach(function (item) {
+                html += `
+                    <div class="form-group">
+                        <label>${item.id}. Qual opção mais combina com você?</label>
+                        <div class="opcoes">
+                            <div class="opcao" id="ling-${item.id}-a" onclick="selecionarLinguagem(${item.id}, 'a')">
+                                <input type="radio" name="ling${item.id}" value="a">
+                                <span class="opcao-texto">${escaparHtml(item.a.texto)}</span>
+                            </div>
+                            <div class="opcao" id="ling-${item.id}-b" onclick="selecionarLinguagem(${item.id}, 'b')">
+                                <input type="radio" name="ling${item.id}" value="b">
+                                <span class="opcao-texto">${escaparHtml(item.b.texto)}</span>
+                            </div>
                         </div>
                     </div>
                 `;
             });
-            document.getElementById("perguntas-temp").innerHTML = htmlTemp;
+            document.getElementById(containerId).innerHTML = html;
+        }
 
-            // Eneagrama 1-5
-            let htmlEnea1 = "";
-            for (let i = 0; i < 5; i++) {
-                const bloco = BLOCOS_ENEAGRAMA[i];
-                htmlEnea1 += `
-                    <div class="blocos-eneagrama">
-                        <h4>${bloco.titulo}</h4>
-                        <div class="bloco-opcoes">
-                            ${bloco.opcoes.map((op, idx) => `
-                                <div class="bloco-opcao" onclick="selecionarEneagrama(${bloco.id}, ${idx})">
-                                    <input type="radio" name="enea${bloco.id}" value="${idx}">
-                                    <label>${op}</label>
-                                </div>
-                            `).join('')}
+        // Módulo 2 — escala de 1 a 5.
+        function renderizarTemperamento() {
+            let html = "";
+            INST.ITENS_TEMPERAMENTO.forEach(function (item) {
+                html += blocoEscalaHtml("temp", item.id, item.id + ". " + escaparHtml(item.texto), "selecionarTemperamento", false);
+            });
+            // O item de atenção vive aqui: é o único módulo com escala de concordância.
+            var at = INST.ITEM_ATENCAO;
+            html += blocoEscalaHtml("atencao", at.id, escaparHtml(at.texto), "selecionarAtencao", true);
+            document.getElementById("perguntas-temp").innerHTML = html;
+        }
+
+        // Módulo 3 — os 10 fatores do eneagrama, dois por tela.
+        // Em cada fator a pessoa escolhe DUAS das nove alternativas.
+        function renderizarEneagrama(tela) {
+            var html = "";
+            INST.BLOCOS_ENEAGRAMA.slice(tela * 2, tela * 2 + 2).forEach(function (bloco, pos) {
+                var f = tela * 2 + pos;
+                var opcoes = bloco.opcoes.map(function (o) {
+                    return `
+                        <button type="button" class="ficha-opcao" id="ficha-${o.ficha}"
+                            onclick="selecionarFicha(${f}, ${o.ficha})">
+                            <span class="ficha-numero">${o.ficha}</span>
+                            <span>${escaparHtml(o.texto)}</span>
+                        </button>`;
+                }).join("");
+
+                html += `
+                    <div class="fator">
+                        <div class="fator-cabeca">
+                            <h4>${f + 1}. ${escaparHtml(bloco.fator)}</h4>
+                            <span class="fator-contagem" id="contagem-fator-${f}">0 de 2</span>
                         </div>
+                        ${opcoes}
                     </div>
                 `;
-            }
-            document.getElementById("eneagrama-1").innerHTML = htmlEnea1;
+            });
+            document.getElementById("eneagrama-" + tela).innerHTML = html;
+        }
 
-            // Eneagrama 6-10
-            let htmlEnea2 = "";
-            for (let i = 5; i < 10; i++) {
-                const bloco = BLOCOS_ENEAGRAMA[i];
-                htmlEnea2 += `
-                    <div class="blocos-eneagrama">
-                        <h4>${bloco.titulo}</h4>
-                        <div class="bloco-opcoes">
-                            ${bloco.opcoes.map((op, idx) => `
-                                <div class="bloco-opcao" onclick="selecionarEneagrama(${bloco.id}, ${idx})">
-                                    <input type="radio" name="enea${bloco.id}" value="${idx}">
-                                    <label>${op}</label>
-                                </div>
-                            `).join('')}
+        function blocoEscalaHtml(prefixo, id, rotulo, funcao, destacado) {
+            const botoes = [1, 2, 3, 4, 5].map(function (v) {
+                return `<button class="escala-btn" id="${prefixo}-${id}-${v}" onclick="${funcao}(${id}, ${v})">${v}</button>`;
+            }).join("");
+            return `
+                <div class="blocos-eneagrama ${destacado ? "item-atencao" : ""}">
+                    <p style="margin-bottom: 10px; font-weight: 500;">${rotulo}</p>
+                    <div class="escala-container" id="${prefixo}-${id}">${botoes}</div>
+                </div>
+            `;
+        }
+
+        // Módulo 4 — tétrades: uma palavra MAIS e uma MENOS por bloco.
+        function renderizarDisc() {
+            let html = "";
+            INST.BLOCOS_DISC.forEach(function (bloco, idx) {
+                const linhas = bloco.opcoes.map(function (op) {
+                    return `
+                        <div class="disc-linha">
+                            <span class="disc-palavra">${escaparHtml(op.palavra)}</span>
+                            <button class="disc-btn" id="disc-${bloco.id}-${op.fator}-mais"
+                                onclick="selecionarDisc(${bloco.id}, '${op.fator}', 'mais')">MAIS</button>
+                            <button class="disc-btn" id="disc-${bloco.id}-${op.fator}-menos"
+                                onclick="selecionarDisc(${bloco.id}, '${op.fator}', 'menos')">MENOS</button>
                         </div>
+                    `;
+                }).join("");
+                html += `
+                    <div class="disc-bloco">
+                        <h4>Bloco ${idx + 1} de ${INST.BLOCOS_DISC.length}</h4>
+                        <p class="disc-legenda">Marque uma palavra como MAIS e outra como MENOS.</p>
+                        ${linhas}
                     </div>
                 `;
-            }
-            document.getElementById("eneagrama-2").innerHTML = htmlEnea2;
+            });
+            document.getElementById("blocos-disc").innerHTML = html;
         }
 
         // ===== SELEÇÃO DE RESPOSTAS =====
-        function selecionarLinguagem(idx, valor) {
-            const p = PERGUNTAS_LINGUAGEM[idx];
-            const letra = valor === 'a' ? p.a.match(/\(([A-E])\)/)[1] : p.b.match(/\(([A-E])\)/)[1];
-            
-            // Remove resposta anterior se existir
-            const existente = dadosFormulario.respostas_linguagem.findIndex(r => r.pergunta === p.id);
-            if (existente !== -1) {
-                dadosFormulario.respostas_linguagem.splice(existente, 1);
+        function guardarResposta(lista, chave, valorChave, registro) {
+            const existente = lista.findIndex(function (r) { return r[chave] === valorChave; });
+            if (existente !== -1) lista.splice(existente, 1);
+            lista.push(registro);
+            salvarRascunho();
+        }
+
+        function selecionarLinguagem(itemId, lado) {
+            const item = INST.ITENS_LINGUAGEM.filter(function (i) { return i.id === itemId; })[0];
+            if (!item) return;
+            const letra = lado === "a" ? item.a.letra : item.b.letra;
+
+            guardarResposta(dadosFormulario.respostas_linguagem, "item", itemId, { item: itemId, letra: letra });
+
+            document.getElementById("ling-" + itemId + "-a").classList.toggle("selecionada", lado === "a");
+            document.getElementById("ling-" + itemId + "-b").classList.toggle("selecionada", lado === "b");
+            const radio = document.querySelector('input[name="ling' + itemId + '"][value="' + lado + '"]');
+            if (radio) radio.checked = true;
+        }
+
+        function selecionarTemperamento(itemId, valor) {
+            guardarResposta(dadosFormulario.respostas_temperamento, "item", itemId, { item: itemId, valor: valor });
+            marcarEscala("temp", itemId, valor);
+        }
+
+        // Escolha de duas fichas por fator. Clicar numa já marcada desmarca;
+        // clicar numa terceira libera a mais antiga, para nunca travar a pessoa.
+        function selecionarFicha(fator, ficha) {
+            var registro = dadosFormulario.respostas_eneagrama.filter(function (r) { return r.fator === fator; })[0];
+            if (!registro) {
+                registro = { fator: fator, fichas: [] };
+                dadosFormulario.respostas_eneagrama.push(registro);
             }
-            
-            dadosFormulario.respostas_linguagem.push({ pergunta: p.id, resposta: letra });
-            document.querySelector(`input[name="ling${p.id}"][value="${valor}"]`).checked = true;
-            document.querySelector(`input[name="ling${p.id}"][value="${valor}"]`).parentElement.classList.add("selecionada");
-            if (valor === 'a') {
-                document.querySelector(`input[name="ling${p.id}"][value="b"]`).parentElement.classList.remove("selecionada");
+
+            var pos = registro.fichas.indexOf(ficha);
+            if (pos !== -1) {
+                registro.fichas.splice(pos, 1);
             } else {
-                document.querySelector(`input[name="ling${p.id}"][value="a"]`).parentElement.classList.remove("selecionada");
+                registro.fichas.push(ficha);
+                if (registro.fichas.length > INST.ESCOLHAS_POR_FATOR) registro.fichas.shift();
+            }
+
+            salvarRascunho();
+            marcarFator(fator);
+        }
+
+        function marcarFator(fator) {
+            var registro = dadosFormulario.respostas_eneagrama.filter(function (r) { return r.fator === fator; })[0] || { fichas: [] };
+            var bloco = INST.BLOCOS_ENEAGRAMA[fator];
+            if (!bloco) return;
+
+            bloco.opcoes.forEach(function (o) {
+                var el = document.getElementById("ficha-" + o.ficha);
+                if (el) el.classList.toggle("selecionada", registro.fichas.indexOf(o.ficha) !== -1);
+            });
+
+            var contagem = document.getElementById("contagem-fator-" + fator);
+            if (contagem) {
+                contagem.textContent = registro.fichas.length + " de " + INST.ESCOLHAS_POR_FATOR;
+                contagem.classList.toggle("completo", registro.fichas.length === INST.ESCOLHAS_POR_FATOR);
             }
         }
 
-        function selecionarTemperamento(idx, valor, tipo) {
-            // Substitui a resposta anterior da mesma afirmação (evita pontuação duplicada ao mudar de opção)
-            const existente = dadosFormulario.respostas_temperamento.findIndex(r => r.afirmacao === idx + 1);
-            if (existente !== -1) {
-                dadosFormulario.respostas_temperamento.splice(existente, 1);
-            }
-            dadosFormulario.respostas_temperamento.push({ afirmacao: idx + 1, valor: valor, temperamento: tipo });
-            
-            document.querySelectorAll(`.escala-container`)[idx].querySelectorAll(".escala-btn").forEach((btn, i) => {
-                if (i + 1 === valor) {
-                    btn.classList.add("selecionado");
-                } else {
-                    btn.classList.remove("selecionado");
-                }
+        function selecionarAtencao(itemId, valor) {
+            dadosFormulario.resposta_atencao = valor;
+            salvarRascunho();
+            marcarEscala("atencao", itemId, valor);
+        }
+
+        function marcarEscala(prefixo, id, valor) {
+            [1, 2, 3, 4, 5].forEach(function (v) {
+                const btn = document.getElementById(prefixo + "-" + id + "-" + v);
+                if (btn) btn.classList.toggle("selecionado", v === valor);
             });
         }
 
-        function selecionarEneagrama(blocoId, posicao) {
-            // Substitui a resposta anterior do mesmo bloco (evita contagem duplicada ao mudar de opção)
-            const existente = dadosFormulario.respostas_eneagrama.findIndex(r => r.bloco === blocoId);
-            if (existente !== -1) {
-                dadosFormulario.respostas_eneagrama.splice(existente, 1);
+        // MAIS e MENOS não podem cair na mesma palavra: marcar uma limpa a outra.
+        function selecionarDisc(blocoId, fator, tipo) {
+            let registro = dadosFormulario.respostas_disc.filter(function (r) { return r.bloco === blocoId; })[0];
+            if (!registro) {
+                registro = { bloco: blocoId, mais: null, menos: null };
+                dadosFormulario.respostas_disc.push(registro);
             }
-            dadosFormulario.respostas_eneagrama.push({ bloco: blocoId, posicao: posicao });
-            document.querySelector(`input[name="enea${blocoId}"][value="${posicao}"]`).parentElement.classList.add("selecionada");
-            [...document.querySelectorAll(`input[name="enea${blocoId}"]`)].forEach((inp, idx) => {
-                if (idx === posicao) {
-                    inp.parentElement.classList.add("selecionada");
-                } else {
-                    inp.parentElement.classList.remove("selecionada");
-                }
+
+            const oposto = tipo === "mais" ? "menos" : "mais";
+            if (registro[oposto] === fator) registro[oposto] = null;
+            registro[tipo] = registro[tipo] === fator ? null : fator;
+
+            salvarRascunho();
+            marcarDisc(blocoId);
+        }
+
+        function marcarDisc(blocoId) {
+            const registro = dadosFormulario.respostas_disc.filter(function (r) { return r.bloco === blocoId; })[0] || {};
+            const bloco = INST.BLOCOS_DISC.filter(function (b) { return b.id === blocoId; })[0];
+            if (!bloco) return;
+            bloco.opcoes.forEach(function (op) {
+                const btnMais = document.getElementById("disc-" + blocoId + "-" + op.fator + "-mais");
+                const btnMenos = document.getElementById("disc-" + blocoId + "-" + op.fator + "-menos");
+                if (btnMais) btnMais.classList.toggle("mais-ativo", registro.mais === op.fator);
+                if (btnMenos) btnMenos.classList.toggle("menos-ativo", registro.menos === op.fator);
             });
+        }
+
+        // ===== RASCUNHO (salvar e retomar neste navegador) =====
+        // Com 75 itens, perder tudo por um fechamento acidental de aba é
+        // desistência garantida. O rascunho fica só neste navegador.
+        function salvarRascunho() {
+            try {
+                localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify({
+                    versao: INST.VERSAO,
+                    dados: dadosFormulario,
+                    salvoEm: Date.now()
+                }));
+            } catch (e) {}
+        }
+
+        function lerRascunho() {
+            try {
+                const bruto = JSON.parse(localStorage.getItem(CHAVE_RASCUNHO) || "null");
+                // Rascunho de uma versão anterior do instrumento não serve:
+                // os itens mudaram e as respostas não são comparáveis.
+                if (!bruto || bruto.versao !== INST.VERSAO) return null;
+                return bruto;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function verificarRascunho() {
+            const rascunho = lerRascunho();
+            if (!rascunho) return;
+            const d = rascunho.dados || {};
+            const respondidas = (d.respostas_linguagem || []).length +
+                (d.respostas_temperamento || []).length +
+                (d.respostas_eneagrama || []).length +
+                (d.respostas_disc || []).length;
+            if (respondidas > 0) document.getElementById("retomar").style.display = "block";
+        }
+
+        function retomarRascunho() {
+            const rascunho = lerRascunho();
+            if (!rascunho) return;
+            dadosFormulario = { ...dadosFormulario, ...rascunho.dados };
+            // O cronômetro continua do início original, para o controle de tempo.
+            if (!dadosFormulario.inicio) dadosFormulario.inicio = Date.now();
+
+            document.getElementById("nome").value = dadosFormulario.nome || "";
+            document.getElementById("email").value = dadosFormulario.email || "";
+            document.getElementById("setor").value = dadosFormulario.setor || "";
+
+            // O consentimento é restaurado com a data original do aceite.
+            if (dadosFormulario.consentimento) {
+                document.getElementById("consentimento").checked = true;
+                document.getElementById("caixa-consentimento").classList.add("marcado");
+            }
+
+            restaurarSelecoes();
+            document.getElementById("retomar").style.display = "none";
+            mostrarMensagem("Respostas anteriores restauradas.", "sucesso");
+        }
+
+        function descartarRascunho() {
+            try { localStorage.removeItem(CHAVE_RASCUNHO); } catch (e) {}
+            document.getElementById("retomar").style.display = "none";
+        }
+
+        function restaurarSelecoes() {
+            (dadosFormulario.respostas_linguagem || []).forEach(function (r) {
+                const item = INST.ITENS_LINGUAGEM.filter(function (i) { return i.id === r.item; })[0];
+                if (!item) return;
+                const lado = item.a.letra === r.letra ? "a" : "b";
+                const el = document.getElementById("ling-" + r.item + "-" + lado);
+                if (el) el.classList.add("selecionada");
+            });
+            (dadosFormulario.respostas_temperamento || []).forEach(function (r) { marcarEscala("temp", r.item, r.valor); });
+            (dadosFormulario.respostas_eneagrama || []).forEach(function (r) { marcarFator(r.fator); });
+            if (dadosFormulario.resposta_atencao) marcarEscala("atencao", INST.ITEM_ATENCAO.id, dadosFormulario.resposta_atencao);
+            (dadosFormulario.respostas_disc || []).forEach(function (r) { marcarDisc(r.bloco); });
         }
 
         // ===== NAVEGAÇÃO =====
         function irParaTela(n) {
             if (n === 2 && !validarTela1()) return;
-            if (n === 3 && !validarTela2()) return;
-            if (n === 4 && !validarTela3()) return;
-            if (n === 5 && !validarTela4()) return;
-            if (n === 6 && !validarTela5()) return;
+            if (n === 3 && !validarLinguagem(1, 10)) return;
+            if (n === 4 && !validarLinguagem(11, 20)) return;
+            if (n === 5 && !validarTemperamento()) return;
+            // Ao sair de cada tela do eneagrama, confere os dois fatores dela.
+            if (n >= 6 && n <= 10 && !validarTelaEneagrama(n - 1 - TELA_PRIMEIRO_FATOR)) return;
 
-            document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+            document.querySelectorAll(".tela").forEach(function (t) { t.classList.remove("ativa"); });
             document.getElementById("tela" + n).classList.add("ativa");
+            window.scrollTo({ top: 0, behavior: "smooth" });
             atualizarProgresso();
         }
 
         function atualizarProgresso() {
             const telaAtual = document.querySelector(".tela.ativa");
             const telaNum = parseInt(telaAtual.id.replace("tela", ""));
-            const pct = (telaNum / 8) * 100;
-            document.getElementById("progressoBarra").style.width = pct + "%";
+            document.getElementById("progressoBarra").style.width = ((telaNum / TOTAL_TELAS) * 100) + "%";
         }
 
         // ===== VALIDAÇÃO =====
@@ -914,129 +1588,154 @@
                 return false;
             }
             if (!document.getElementById("setor").value) {
-                mostrarMensagem("Por favor, selecione um setor.", "erro");
+                mostrarMensagem("Por favor, selecione uma opção.", "erro");
+                return false;
+            }
+            if (!document.getElementById("consentimento").checked) {
+                mostrarMensagem("Para continuar, é preciso aceitar o aviso de privacidade.", "erro");
+                document.getElementById("caixa-consentimento").scrollIntoView({ behavior: "smooth", block: "center" });
                 return false;
             }
             dadosFormulario.nome = document.getElementById("nome").value;
             dadosFormulario.email = document.getElementById("email").value;
             dadosFormulario.setor = document.getElementById("setor").value;
+            salvarRascunho();
             return true;
         }
 
-        function validarTela2() {
-            if (dadosFormulario.respostas_linguagem.filter(r => r.pergunta <= 15).length < 15) {
-                mostrarMensagem("Por favor, responda todas as perguntas antes de prosseguir.", "erro");
+        function validarLinguagem(de, ate) {
+            const respondidas = dadosFormulario.respostas_linguagem.filter(function (r) {
+                return r.item >= de && r.item <= ate;
+            }).length;
+            if (respondidas < (ate - de + 1)) {
+                mostrarMensagem("Faltam " + ((ate - de + 1) - respondidas) + " pergunta(s) nesta tela.", "erro");
                 return false;
             }
             return true;
         }
 
-        function validarTela3() {
-            if (dadosFormulario.respostas_linguagem.filter(r => r.pergunta > 15).length < 15) {
-                mostrarMensagem("Por favor, responda todas as perguntas antes de prosseguir.", "erro");
+        function validarTemperamento() {
+            const faltam = INST.ITENS_TEMPERAMENTO.length - dadosFormulario.respostas_temperamento.length;
+            if (faltam > 0) {
+                mostrarMensagem("Faltam " + faltam + " afirmação(ões) nesta tela.", "erro");
+                return false;
+            }
+            if (dadosFormulario.resposta_atencao === null) {
+                mostrarMensagem("Falta responder a última afirmação desta tela.", "erro");
                 return false;
             }
             return true;
         }
 
-        function validarTela4() {
-            if (dadosFormulario.respostas_temperamento.length < 12) {
-                mostrarMensagem("Por favor, responda todas as afirmações antes de prosseguir.", "erro");
-                return false;
-            }
-            calcularTemperamentoScores();
-            return true;
-        }
-
-        function validarTela5() {
-            if (dadosFormulario.respostas_eneagrama.filter(r => r.bloco <= 5).length < 5) {
-                mostrarMensagem("Por favor, selecione uma opção para cada bloco.", "erro");
-                return false;
-            }
-            return true;
-        }
-
-        function validarTela6() {
-            if (dadosFormulario.respostas_eneagrama.filter(r => r.bloco > 5).length < 5) {
-                mostrarMensagem("Por favor, selecione uma opção para cada bloco.", "erro");
-                return false;
-            }
-            return true;
-        }
-
-        function calcularTemperamentoScores() {
-            const scores = { colerico: 0, sanguineo: 0, melancol: 0, fleumatico: 0 };
-            dadosFormulario.respostas_temperamento.forEach(r => {
-                if (r.temperamento === "col") scores.colerico += r.valor;
-                else if (r.temperamento === "san") scores.sanguineo += r.valor;
-                else if (r.temperamento === "mel") scores.melancol += r.valor;
-                else if (r.temperamento === "fle") scores.fleumatico += r.valor;
+        // Cada tela do eneagrama traz dois fatores; ambos precisam de duas escolhas.
+        function validarTelaEneagrama(tela) {
+            const fatores = [tela * 2, tela * 2 + 1].filter(function (f) {
+                return f < INST.BLOCOS_ENEAGRAMA.length;
             });
-            dadosFormulario.scores_temperamento = scores;
+
+            const incompletos = fatores.filter(function (f) {
+                const r = dadosFormulario.respostas_eneagrama.filter(function (x) { return x.fator === f; })[0];
+                return !r || r.fichas.length !== INST.ESCOLHAS_POR_FATOR;
+            });
+
+            if (incompletos.length) {
+                const nome = INST.BLOCOS_ENEAGRAMA[incompletos[0]].fator;
+                mostrarMensagem("Escolha duas afirmativas em " + nome + ".", "erro");
+                const alvo = document.getElementById("contagem-fator-" + incompletos[0]);
+                if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "center" });
+                return false;
+            }
+            return true;
         }
 
-        // ===== CÁLCULO DO PERFIL =====
-        const NOMES_LINGUAGEM = {
-            A: "Palavras de afirmação",
-            B: "Tempo de qualidade",
-            C: "Presentes / Mimos",
-            D: "Atos de serviço",
-            E: "Presença / Acolhimento"
-        };
-
-        // Retorna todas as chaves empatadas com a maior pontuação (perfil combinado em caso de empate)
-        function chavesNoTopo(contagens) {
-            const max = Math.max(...Object.values(contagens));
-            if (max <= 0) return [];
-            return Object.keys(contagens).filter(k => contagens[k] === max);
+        function validarDisc() {
+            const incompletos = INST.BLOCOS_DISC.filter(function (b) {
+                const r = dadosFormulario.respostas_disc.filter(function (x) { return x.bloco === b.id; })[0];
+                return !r || !r.mais || !r.menos;
+            });
+            if (incompletos.length > 0) {
+                mostrarMensagem("Marque MAIS e MENOS em todos os blocos. Faltam " + incompletos.length + ".", "erro");
+                return false;
+            }
+            return true;
         }
 
+        // ===== CÁLCULO =====
         function calcularPerfil() {
-            const contaLinguagens = {};
-            "ABCDE".split("").forEach(l => {
-                contaLinguagens[l] = dadosFormulario.respostas_linguagem.filter(r => r.resposta === l).length;
+            return INST.calcularPerfilCompleto({
+                linguagem: dadosFormulario.respostas_linguagem,
+                temperamento: dadosFormulario.respostas_temperamento,
+                eneagrama: dadosFormulario.respostas_eneagrama,
+                disc: dadosFormulario.respostas_disc,
+                respostaAtencao: dadosFormulario.resposta_atencao,
+                segundos: Math.round((Date.now() - dadosFormulario.inicio) / 1000)
             });
-            const lingTop = chavesNoTopo(contaLinguagens);
-
-            const nomesTemp = { colerico: "Colérico", sanguineo: "Sanguíneo", melancol: "Melancólico", fleumatico: "Fleumático" };
-            const tempTop = chavesNoTopo(dadosFormulario.scores_temperamento).map(k => nomesTemp[k]);
-
-            const eneaContagem = {};
-            dadosFormulario.respostas_eneagrama.forEach(r => {
-                const tipo = r.posicao + 1;
-                eneaContagem[tipo] = (eneaContagem[tipo] || 0) + 1;
-            });
-            const eneaTop = chavesNoTopo(eneaContagem).map(t => "Tipo " + t);
-
-            return {
-                linguagem: lingTop.map(l => NOMES_LINGUAGEM[l]).join(" / "),
-                distribuicao_linguagem: contaLinguagens,
-                temperamento: tempTop.join(" / "),
-                eneagrama: eneaTop.join(" / ")
-            };
         }
 
         // ===== ENVIO =====
         function enviarFormulario() {
-            if (!validarTela6()) return;
+            if (!validarDisc()) return;
+            // Rede de segurança: os 10 fatores precisam somar 20 escolhas.
+            for (var tela = 0; tela < 5; tela++) {
+                if (!validarTelaEneagrama(tela)) { irParaTela(TELA_PRIMEIRO_FATOR + tela); return; }
+            }
 
-            irParaTela(7);
+            irParaTela(11);
 
             const perfil = calcularPerfil();
             dadosFormulario.perfil = perfil;
 
+            const ctx = branding.contexto || {};
             const payload = {
                 action: "submit",
+                versao_instrumento: perfil.versao,
+
                 nome: dadosFormulario.nome,
                 email: dadosFormulario.email,
                 setor: dadosFormulario.setor,
-                linguagem: perfil.linguagem,
-                distribuicao_linguagem: perfil.distribuicao_linguagem,
-                temperamento: perfil.temperamento,
-                scores_temperamento: dadosFormulario.scores_temperamento,
-                eneagrama: perfil.eneagrama,
-                email_gestor: branding.emailGestor || "",
+
+                // Consentimento (o Apps Script recusa o envio sem ele)
+                consentimento: dadosFormulario.consentimento === true,
+                consentimento_em: dadosFormulario.consentimento_em || "",
+
+                // Campo-armadilha: só um robô preencheria isto.
+                confirmacao: (document.getElementById("confirmacao") || {}).value || "",
+
+                // Módulo 1
+                linguagem: perfil.linguagem.principalNome,
+                linguagem_secundaria: perfil.linguagem.secundariaNome,
+                distribuicao_linguagem: perfil.linguagem.contagem,
+
+                // Módulo 2
+                temperamento: perfil.temperamento.principalNome,
+                temperamento_secundario: perfil.temperamento.secundarioNome,
+                scores_temperamento: perfil.temperamento.bruto,
+                percentual_temperamento: perfil.temperamento.percentual,
+
+                // Módulo 3
+                eneagrama: perfil.eneagrama.primeiroNome,
+                eneagrama_segundo: perfil.eneagrama.segundoNome,
+                eneagrama_centro: perfil.eneagrama.centro,
+                eneagrama_fichas: perfil.eneagrama.fichas.join(", "),
+                scores_eneagrama: perfil.eneagrama.bruto,
+
+                // Módulo 4
+                disc: perfil.disc.perfil,
+                disc_dominante: perfil.disc.dominanteNome,
+                disc_secundario: perfil.disc.secundarioNome,
+                scores_disc: perfil.disc.score,
+                intensidade_disc: perfil.disc.intensidade,
+
+                // Controle de qualidade da resposta
+                qualidade_status: perfil.qualidade.status,
+                qualidade_alertas: perfil.qualidade.alertas.join("; "),
+                duracao_segundos: perfil.qualidade.segundos,
+
+                // Identidade e vocabulário da organização (usados pela IA e pelo e-mail)
                 escola: branding.nome,
+                organizacao: branding.nome,
+                contexto: ctx,
+                email_gestor: branding.emailGestor || "",
                 cor: branding.corPrimaria,
                 logo_url: branding.logoUrl || ""
             };
@@ -1046,96 +1745,156 @@
                 method: "POST",
                 body: JSON.stringify(payload)
             })
-            .then(r => r.json())
-            .then(data => {
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
                 if (data && data.analise && data.analise.quem_e) {
                     dadosFormulario.analise_ia = data.analise;
                 }
+                if (data && data.ok) {
+                    // Só descarta o rascunho depois da confirmação de que salvou.
+                    descartarRascunho();
+                    // Confere no envio se o servidor está na versão esperada.
+                    if (data.versao && versaoPrincipal(data.versao) !== versaoPrincipal(INST.VERSAO)) {
+                        dadosFormulario.falhaEnvio = true;
+                        dadosFormulario.erroEnvio =
+                            "O servidor está na versão " + data.versao + " e este questionário na " +
+                            INST.VERSAO + ". Parte do seu resultado pode não ter sido gravada.";
+                    }
+                } else {
+                    dadosFormulario.falhaEnvio = true;
+                    // A mensagem do servidor é mostrada à pessoa: recusa por
+                    // limite ou por consentimento precisa ser compreensível.
+                    dadosFormulario.erroEnvio = (data && data.erro) || "";
+                }
                 exibirResultado();
             })
-            .catch(e => {
+            .catch(function (e) {
                 console.log("Erro ao enviar: " + e);
+                // O rascunho é mantido de propósito: se não salvou no servidor,
+                // a pessoa não pode perder as respostas.
+                dadosFormulario.falhaEnvio = true;
                 exibirResultado(); // Mesmo com erro, mostra o resultado calculado localmente
             });
         }
 
+        // ===== EXIBIÇÃO =====
         function miniBarrasHtml(pares) {
-            const max = Math.max(...pares.map(p => p.valor), 1);
-            return '<div class="mini-barras">' + pares.map(p => `
+            const max = Math.max.apply(null, pares.map(function (p) { return p.valor; }).concat([1]));
+            return '<div class="mini-barras">' + pares.map(function (p) {
+                const largura = Math.max(0, Math.round(p.valor / max * 100));
+                return `
                 <div class="mini-barra-linha">
-                    <div class="mini-barra-nome">${p.nome}</div>
-                    <div class="mini-barra-trilha"><div class="mini-barra-preenchida" style="width:${Math.round(p.valor / max * 100)}%"></div></div>
-                    <div class="mini-barra-num">${p.valor}</div>
-                </div>`).join('') + '</div>';
+                    <div class="mini-barra-nome">${escaparHtml(p.nome)}</div>
+                    <div class="mini-barra-trilha"><div class="mini-barra-preenchida" style="width:${largura}%"></div></div>
+                    <div class="mini-barra-num">${p.rotulo !== undefined ? p.rotulo : p.valor}</div>
+                </div>`;
+            }).join("") + "</div>";
         }
 
-        function paresLinguagem(c) {
-            return "ABCDE".split("").map(l => ({ nome: NOMES_LINGUAGEM[l], valor: c[l] || 0 }));
+        function paresLinguagem(perfil) {
+            return Object.keys(INST.LINGUAGENS).map(function (l) {
+                return { nome: INST.LINGUAGENS[l], valor: perfil.contagem[l] || 0 };
+            });
         }
 
-        function paresTemperamento(s) {
-            return [
-                { nome: "Colérico", valor: s.colerico || 0 },
-                { nome: "Sanguíneo", valor: s.sanguineo || 0 },
-                { nome: "Melancólico", valor: s.melancol || 0 },
-                { nome: "Fleumático", valor: s.fleumatico || 0 }
-            ];
+        function paresTemperamento(perfil) {
+            return Object.keys(INST.TEMPERAMENTOS).map(function (t) {
+                return {
+                    nome: INST.TEMPERAMENTOS[t],
+                    valor: perfil.percentual[t] || 0,
+                    rotulo: (perfil.percentual[t] || 0) + "%"
+                };
+            });
+        }
+
+        function paresEneagrama(perfil) {
+            // Ordena do mais escolhido para o menos, que é como a folha é lida.
+            return perfil.ordem.map(function (t) {
+                return {
+                    nome: INST.TIPOS_ENEAGRAMA[t].nome,
+                    valor: perfil.bruto[t] || 0,
+                    rotulo: (perfil.bruto[t] || 0) + "/10"
+                };
+            });
+        }
+
+        function paresDisc(perfil) {
+            return Object.keys(INST.FATORES_DISC).map(function (f) {
+                return {
+                    nome: f + " — " + INST.FATORES_DISC[f],
+                    valor: perfil.intensidade[f] || 0,
+                    rotulo: (perfil.score[f] > 0 ? "+" : "") + perfil.score[f]
+                };
+            });
         }
 
         function exibirResultado() {
             const perfil = dadosFormulario.perfil || calcularPerfil();
-            const c = perfil.distribuicao_linguagem;
-            const scores = dadosFormulario.scores_temperamento;
             const ia = dadosFormulario.analise_ia || {};
+            const ctx = branding.contexto || {};
 
-            let html = `
-                <div class="resultado">
-                    <div class="resultado-card">
-                        <h3>${dadosFormulario.nome}</h3>
-                        <p style="font-size: 13px;">${dadosFormulario.setor} · ${branding.nome} · ${new Date().toLocaleDateString("pt-BR")}</p>
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Linguagem de Valorização</h3>
-                        <p><strong>${perfil.linguagem}</strong></p>
-                        ${miniBarrasHtml(paresLinguagem(c))}
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Temperamento</h3>
-                        <p><strong>${perfil.temperamento}</strong></p>
-                        ${miniBarrasHtml(paresTemperamento(scores))}
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Eneagrama</h3>
-                        <p><strong>${perfil.eneagrama}</strong></p>
-                    </div>
+            let html = '<div class="resultado">';
+
+            if (dadosFormulario.falhaEnvio) {
+                html += `
+                    <div class="alerta-qualidade">
+                        Não conseguimos confirmar o envio das suas respostas ao servidor. O resultado abaixo foi
+                        calculado neste navegador e suas respostas continuam salvas aqui — avise
+                        ${escaparHtml(ctx.termoLider || "o gestor")} para que o envio seja refeito.
+                        ${dadosFormulario.erroEnvio ? "<br><br><strong>Motivo:</strong> " + escaparHtml(dadosFormulario.erroEnvio) : ""}
+                    </div>`;
+            }
+
+            if (perfil.qualidade.status !== "OK") {
+                html += `
+                    <div class="alerta-qualidade">
+                        <strong>Leia com atenção:</strong> ${escaparHtml(perfil.qualidade.alertas.join(". "))}.
+                        Respostas dadas muito rápido ou sempre com a mesma nota reduzem a precisão do resultado.
+                        Se quiser, refaça o teste com calma.
+                    </div>`;
+            }
+
+            html += `
+                <div class="resultado-card">
+                    <h3>${escaparHtml(dadosFormulario.nome)}<span class="selo-versao">${perfil.versao}</span></h3>
+                    <p style="font-size: 13px;">${escaparHtml(dadosFormulario.setor)} · ${escaparHtml(branding.nome)} · ${new Date().toLocaleDateString("pt-BR")}</p>
+                </div>
+
+                <div class="resultado-card">
+                    <h3>Linguagem de Valorização</h3>
+                    <p><strong>${escaparHtml(perfil.linguagem.principalNome)}</strong>${perfil.linguagem.secundariaNome ? " · secundária: " + escaparHtml(perfil.linguagem.secundariaNome) : ""}</p>
+                    ${miniBarrasHtml(paresLinguagem(perfil.linguagem))}
+                </div>
+
+                <div class="resultado-card">
+                    <h3>Temperamento</h3>
+                    <p><strong>${escaparHtml(perfil.temperamento.principalNome)}</strong>${perfil.temperamento.secundarioNome ? " · secundário: " + escaparHtml(perfil.temperamento.secundarioNome) : ""}</p>
+                    ${miniBarrasHtml(paresTemperamento(perfil.temperamento))}
+                </div>
+
+                <div class="resultado-card">
+                    <h3>Eneagrama</h3>
+                    <p><strong>${escaparHtml(perfil.eneagrama.primeiroNome)}</strong> · centro ${escaparHtml(perfil.eneagrama.centro)}</p>
+                    <p style="font-size:13px">Segundo lugar: ${escaparHtml(perfil.eneagrama.segundoNome)}${perfil.eneagrama.empate ? " · <strong>houve empate no primeiro lugar</strong>: leia os dois e veja qual você reconhece." : ""}</p>
+                    ${miniBarrasHtml(paresEneagrama(perfil.eneagrama))}
+                    <p style="font-size:12px;color:#666;margin-top:8px">Suas fichas: ${escaparHtml(perfil.eneagrama.fichas.join(", "))} — ${perfil.eneagrama.total} de 20 escolhas.</p>
+                </div>
+
+                <div class="resultado-card">
+                    <h3>DISC</h3>
+                    <p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " · dominante: " + escaparHtml(perfil.disc.dominanteNome) : ""}${perfil.disc.secundarioNome ? " · secundário: " + escaparHtml(perfil.disc.secundarioNome) : ""}</p>
+                    ${miniBarrasHtml(paresDisc(perfil.disc))}
+                </div>
             `;
 
             if (ia.quem_e) {
                 html += `
-                    <div class="resultado-card">
-                        <h3>Quem é você</h3>
-                        <p>${ia.quem_e}</p>
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Pontos Fortes</h3>
-                        <p>${ia.pontos_fortes}</p>
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Pontos a Desenvolver</h3>
-                        <p>${ia.pontos_desenvolver}</p>
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Como Comunicar</h3>
-                        <p>${ia.como_comunicar}</p>
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Como Motivar</h3>
-                        <p>${ia.como_motivar}</p>
-                    </div>
-                    <div class="resultado-card">
-                        <h3>Evitar Atrito</h3>
-                        <p>${ia.evitar_atrito}</p>
-                    </div>
+                    <div class="resultado-card"><h3>Quem é você</h3><p>${escaparHtml(ia.quem_e)}</p></div>
+                    <div class="resultado-card"><h3>Pontos Fortes</h3><p>${escaparHtml(ia.pontos_fortes)}</p></div>
+                    <div class="resultado-card"><h3>Pontos a Desenvolver</h3><p>${escaparHtml(ia.pontos_desenvolver)}</p></div>
+                    <div class="resultado-card"><h3>Como Comunicar</h3><p>${escaparHtml(ia.como_comunicar)}</p></div>
+                    <div class="resultado-card"><h3>Como Motivar</h3><p>${escaparHtml(ia.como_motivar)}</p></div>
+                    <div class="resultado-card"><h3>Evitar Atrito</h3><p>${escaparHtml(ia.evitar_atrito)}</p></div>
                 `;
             } else {
                 html += `
@@ -1145,7 +1904,13 @@
                 `;
             }
 
-            html += `</div>`;
+            html += `
+                <p class="aviso-instrumento">
+                    Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Não é ferramenta de seleção,
+                    não constitui diagnóstico clínico e não substitui avaliação profissional.
+                </p>
+            </div>`;
+
             document.getElementById("resultado-conteudo").innerHTML = html;
 
             // Avisa o dashboard aberto em outra aba do mesmo navegador
@@ -1155,29 +1920,29 @@
                     nome: dadosFormulario.nome,
                     email: dadosFormulario.email,
                     setor: dadosFormulario.setor,
-                    linguagem: perfil.linguagem,
-                    temperamento: perfil.temperamento,
-                    eneagrama: perfil.eneagrama,
+                    linguagem: perfil.linguagem.principalNome,
+                    temperamento: perfil.temperamento.principalNome,
+                    eneagrama: perfil.eneagrama.primeiroNome,
+                    disc: perfil.disc.perfil,
+                    versao: perfil.versao,
                     como_comunicar: ia.como_comunicar || ""
                 }));
             } catch (e) {}
 
-            irParaTela(8);
+            irParaTela(12);
         }
 
         function baixarPDF() {
             const perfil = dadosFormulario.perfil || calcularPerfil();
-            const c = perfil.distribuicao_linguagem;
-            const scores = dadosFormulario.scores_temperamento;
             const ia = dadosFormulario.analise_ia || {};
 
             const secoesIA = ia.quem_e ? `
-                <h2>Quem é você</h2><p>${ia.quem_e}</p>
-                <h2>Pontos Fortes</h2><p>${ia.pontos_fortes}</p>
-                <h2>Pontos a Desenvolver</h2><p>${ia.pontos_desenvolver}</p>
-                <h2>Como Comunicar</h2><p>${ia.como_comunicar}</p>
-                <h2>Como Motivar</h2><p>${ia.como_motivar}</p>
-                <h2>Evitar Atrito</h2><p>${ia.evitar_atrito}</p>` : "";
+                <h2>Quem é você</h2><p>${escaparHtml(ia.quem_e)}</p>
+                <h2>Pontos Fortes</h2><p>${escaparHtml(ia.pontos_fortes)}</p>
+                <h2>Pontos a Desenvolver</h2><p>${escaparHtml(ia.pontos_desenvolver)}</p>
+                <h2>Como Comunicar</h2><p>${escaparHtml(ia.como_comunicar)}</p>
+                <h2>Como Motivar</h2><p>${escaparHtml(ia.como_motivar)}</p>
+                <h2>Evitar Atrito</h2><p>${escaparHtml(ia.evitar_atrito)}</p>` : "";
 
             const win = window.open("", "_blank");
             if (!win) {
@@ -1186,11 +1951,14 @@
             }
             const cor = branding.corPrimaria;
             const logoHtml = branding.logoUrl ? `<img src="${branding.logoUrl}" alt="Logo" style="max-height:56px;max-width:200px;margin-bottom:8px">` : "";
-            const listaLing = paresLinguagem(c).map(p => p.nome + ": " + p.valor).join(" · ");
-            const listaTemp = paresTemperamento(scores).map(p => p.nome + ": " + p.valor).join(" · ");
+
+            const listaLing = paresLinguagem(perfil.linguagem).map(function (p) { return p.nome + ": " + p.valor; }).join(" · ");
+            const listaTemp = paresTemperamento(perfil.temperamento).map(function (p) { return p.nome + ": " + p.rotulo; }).join(" · ");
+            const listaEnea = paresEneagrama(perfil.eneagrama).map(function (p) { return p.nome.replace(/^Tipo /, "") + ": " + p.valor; }).join(" · ");
+            const listaDisc = paresDisc(perfil.disc).map(function (p) { return p.nome + ": " + p.rotulo; }).join(" · ");
 
             win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-                <title>Perfil Comportamental - ${dadosFormulario.nome}</title>
+                <title>Perfil Comportamental - ${escaparHtml(dadosFormulario.nome)}</title>
                 <style>
                     body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #222; max-width: 720px; margin: 30px auto; padding: 0 20px; }
                     .topo { text-align: center; border-bottom: 3px solid ${cor}; padding-bottom: 15px; margin-bottom: 25px; }
@@ -1200,21 +1968,25 @@
                     p { font-size: 13px; line-height: 1.6; }
                     .dados { font-size: 13px; margin-bottom: 10px; line-height: 1.7; }
                     .detalhe { font-size: 12px; color: #555; }
+                    .rodape-aviso { font-size: 10px; color: #888; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; line-height: 1.6; }
                     @media print { body { margin: 10mm auto; } }
                 </style></head><body>
-                <div class="topo">${logoHtml}<h1>Perfil Comportamental</h1><p>${branding.nome} — ${new Date().toLocaleDateString("pt-BR")}</p></div>
-                <div class="dados"><strong>Nome:</strong> ${dadosFormulario.nome}<br><strong>E-mail:</strong> ${dadosFormulario.email}<br><strong>Setor:</strong> ${dadosFormulario.setor}</div>
-                <h2>Linguagem de Valorização</h2><p><strong>${perfil.linguagem}</strong><br><span class="detalhe">${listaLing}</span></p>
-                <h2>Temperamento</h2><p><strong>${perfil.temperamento}</strong><br><span class="detalhe">${listaTemp}</span></p>
-                <h2>Eneagrama</h2><p><strong>${perfil.eneagrama}</strong></p>
+                <div class="topo">${logoHtml}<h1>Perfil Comportamental</h1><p>${escaparHtml(branding.nome)} — ${new Date().toLocaleDateString("pt-BR")}</p></div>
+                <div class="dados"><strong>Nome:</strong> ${escaparHtml(dadosFormulario.nome)}<br><strong>E-mail:</strong> ${escaparHtml(dadosFormulario.email)}<br><strong>${escaparHtml((branding.contexto || {}).termoGrupo || "Setor")}:</strong> ${escaparHtml(dadosFormulario.setor)}</div>
+                <h2>Linguagem de Valorização</h2><p><strong>${escaparHtml(perfil.linguagem.principalNome)}</strong>${perfil.linguagem.secundariaNome ? " (secundária: " + escaparHtml(perfil.linguagem.secundariaNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaLing)}</span></p>
+                <h2>Temperamento</h2><p><strong>${escaparHtml(perfil.temperamento.principalNome)}</strong>${perfil.temperamento.secundarioNome ? " (secundário: " + escaparHtml(perfil.temperamento.secundarioNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaTemp)}</span></p>
+                <h2>Eneagrama</h2><p><strong>${escaparHtml(perfil.eneagrama.primeiroNome)}</strong> — centro ${escaparHtml(perfil.eneagrama.centro)}<br>Segundo lugar: ${escaparHtml(perfil.eneagrama.segundoNome)}<br><span class="detalhe">${escaparHtml(listaEnea)}</span></p>
+                <h2>DISC</h2><p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " — dominante " + escaparHtml(perfil.disc.dominanteNome) : ""}${perfil.disc.secundarioNome ? ", secundário " + escaparHtml(perfil.disc.secundarioNome) : ""}<br><span class="detalhe">${escaparHtml(listaDisc)}</span></p>
                 ${secoesIA}
+                <p class="rodape-aviso">Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional.</p>
                 </body></html>`);
             win.document.close();
             win.focus();
-            setTimeout(() => win.print(), 400);
+            setTimeout(function () { win.print(); }, 400);
         }
 
         function novaConsulta() {
+            descartarRascunho();
             location.reload();
         }
 
@@ -1265,10 +2037,10 @@
             const el = document.getElementById("mensagem");
             el.textContent = msg;
             el.className = "mensagem " + tipo;
-            setTimeout(() => el.className = "mensagem", 3000);
+            setTimeout(function () { el.className = "mensagem"; }, 4000);
         }
 
-        window.onclick = function(e) {
+        window.onclick = function (e) {
             if (e.target.classList.contains("modal")) {
                 e.target.style.display = "none";
             }

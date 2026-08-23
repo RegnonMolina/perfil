@@ -6,11 +6,59 @@ Sistema de avaliação de perfil comportamental **white-label**: cada colégio c
 
 | Arquivo | O que é |
 |---|---|
-| `config.js` | **Identidade do colégio** — nome, logo, cores, URL do Apps Script. O único arquivo que cada colégio edita. |
+| `config.js` | **Identidade da organização** — nome, logo, cores, URL do Apps Script, o vocabulário (`contexto`), a privacidade e o card de clima. O único arquivo que cada organização edita. |
+| `config.bni.js` | Exemplo de configuração para um grupo de networking, com outro vocabulário |
+| `instrumento.js` | **O questionário e o cálculo** — banco de itens dos quatro módulos e as funções de pontuação. Não edite sem rodar `npm test`. |
 | `clima.js` | **Card de clima** exibido no topo das páginas (componente reaproveitável) |
-| `index.html` | O questionário que os colaboradores respondem |
-| `dashboard.html` | O painel do gestor com todos os resultados e gráficos |
+| `index.html` | O questionário que as pessoas respondem |
+| `dashboard.html` | O painel com todos os resultados e gráficos |
 | `apps-script/Codigo.gs` | O "servidor" (Google Apps Script): salva na planilha, gera a análise com IA (Claude) e envia os e-mails |
+| `tests/` | Testes automatizados que provam as propriedades do questionário |
+| `docs/` | Relatório da correção do instrumento e o convite para refazer o teste |
+
+## O instrumento (v2.0)
+
+São quatro módulos, 75 itens pontuados, cerca de 12 minutos:
+
+| Módulo | Itens | Formato | O que devolve |
+|---|---|---|---|
+| Linguagens de Valorização | 20 pares | Escolha forçada entre duas | Principal, secundária e distribuição nas 5 linguagens |
+| Temperamento | 16 afirmações | Escala 1 a 5 | Principal, secundário e percentual nos 4 temperamentos |
+| Eneagrama | 10 fatores | Escolher 2 de 9 alternativas | 1º e 2º lugar entre os 9 tipos, centro de inteligência |
+| DISC | 12 blocos | Tétrade MAIS/MENOS | Score dos 4 fatores, dominante, secundário e combinação |
+
+São 58 decisões ao todo, cerca de 12 minutos. Mais um item de atenção, que não
+pontua e serve para identificar quem respondeu no automático.
+
+### Sobre o módulo de Eneagrama
+
+Ele é a reconstrução fiel do instrumento já usado na instituição (o documento
+`TESTE_ENEAGRAMA`): **10 fatores, 9 alternativas em cada, 90 fichas**, escolhendo
+duas por fator — 20 escolhas no total, como manda a folha de tabulação original.
+
+A numeração das fichas (1 a 90) bate com a grade impressa nessa folha, então um
+resultado gerado aqui pode ser conferido contra um preenchido no papel. Os textos
+das alternativas não foram reescritos.
+
+O resultado traz **primeiro e segundo lugar**, e trata empate como empate — a
+própria folha prevê "primeiro lugar (ou empatado em)". Não há cálculo de asa, de
+propósito: o instrumento não mede isso, e o segundo colocado não é necessariamente
+um tipo vizinho.
+
+> ⚠️ As perguntas são **iguais para todas as organizações**, de propósito: mudar o
+> texto dos itens por cliente tornaria os resultados incomparáveis entre si. O que
+> muda por organização é o vocabulário da análise (bloco `contexto` do `config.js`).
+
+> Este é um instrumento de autoconhecimento e desenvolvimento. Não é ferramenta de
+> seleção, não constitui diagnóstico clínico e não substitui avaliação profissional.
+
+### Se você mexer no questionário
+
+Rode `npm test` antes de publicar. Os testes verificam, entre outras coisas, que
+todas as linguagens têm as mesmas chances de pontuar, que nenhum item está
+duplicado, que os nove tipos do eneagrama são todos alcançáveis, que as 90 fichas
+seguem a numeração da folha original e que o DISC continua balanceado. São
+exatamente as falhas que existiam na versão anterior.
 
 ---
 
@@ -28,8 +76,22 @@ corPrimaria: "#1f4788",     // cor institucional (cabeçalho, títulos)
 corSecundaria: "#667eea",   // cor de destaque (botões, seleções)
 urlAppsScript: "https://script.google.com/macros/s/SEU_ID/exec",
 emailGestor: "gestor@colegioexemplo.com.br",
-rodape: "© Colégio Exemplo — Recursos Humanos"
+rodape: "© Colégio Exemplo — Recursos Humanos",
+
+// Vocabulário usado na tela, no e-mail e na análise da IA
+contexto: {
+  tipoOrganizacao: "uma escola",       // "um grupo de networking", "uma clínica"...
+  termoPessoa: "colaborador",          // "membro", "profissional"...
+  termoLider: "gestor",                // "líder do capítulo", "coordenador"...
+  termoGrupo: "Setor",                 // rótulo do campo de agrupamento
+  descricaoAmbiente: "o dia a dia escolar",
+  opcoesGrupo: ["Administrativo", "Coordenação", "Professor(a)"]
+}
 ```
+
+O bloco `contexto` é o que permite um único backend atender o colégio e o grupo de
+networking sem manter duas cópias do `Codigo.gs`. Veja `config.bni.js` para um
+exemplo completo com outro vocabulário.
 
 Essas cores e textos se aplicam automaticamente a **tudo**: teste, tela de resultado, PDF, e-mails e dashboard.
 
@@ -83,16 +145,81 @@ Em um app hospedado em outro lugar — inclusive um App da Web do Apps Script fe
 
 1. Crie uma planilha no Google Sheets (ou use a existente).
 2. Na planilha: **Extensões → Apps Script** → apague o código e cole todo o conteúdo de `apps-script/Codigo.gs` → salve.
-3. **Chave da IA**: crie uma chave em <https://console.anthropic.com> (menu API Keys). É paga por uso — cerca de **US$ 0,03 (~R$ 0,17) por teste respondido**. No Apps Script: **Configurações do projeto (engrenagem) → Propriedades do script → Adicionar**:
-   - `ANTHROPIC_API_KEY` = sua chave (`sk-ant-...`)
-   - `EMAIL_GESTOR` = e-mail padrão do gestor (opcional)
+3. **Propriedades do script**: em **Configurações do projeto (engrenagem) → Propriedades do script → Adicionar**:
+
+   | Propriedade | Obrigatória? | Para que serve |
+   |---|---|---|
+   | `TOKEN_GESTOR` | **Sim** | Senha que autoriza o dashboard a ler os dados. Sem ela, **a leitura fica bloqueada**. |
+   | `ANTHROPIC_API_KEY` | Não | Chave da IA (`sk-ant-...`), de <https://console.anthropic.com>. Paga por uso, cerca de **US$ 0,03 (~R$ 0,17) por teste**. Sem ela o teste funciona, só não gera a análise escrita. |
+   | `EMAIL_GESTOR` | Não | E-mail que recebe cópia de todos os resultados. |
+   | `LIMITE_ENVIOS_DIA` | Não | Teto diário de envios (padrão 200). |
+   | `LIMITE_EMAILS_DIA` | Não | Teto diário de e-mails (padrão 150). |
+
+   Para o `TOKEN_GESTOR`, use um valor longo e aleatório — 20 caracteres ou mais.
+   Um jeito rápido de gerar: no navegador, aperte F12, cole
+   `crypto.randomUUID()` no console e use o resultado.
+
 4. **Implantar → Nova implantação → App da Web**:
    - Executar como: **você**
    - Quem pode acessar: **Qualquer pessoa**
 5. Copie a **URL do App da Web** e cole no campo `urlAppsScript` do `config.js`.
 
-> 🔒 A chave da API fica guardada **só no Apps Script** — nunca aparece no site público.
+> 🔒 A chave da API e o token ficam guardados **só no Apps Script** — nunca aparecem no site público.
 > Na primeira execução o Google pedirá autorização para acessar a planilha e enviar e-mails — autorize.
+
+### 1.3.1 Proteção dos dados
+
+Os resultados são dados pessoais: nome, e-mail e um perfil comportamental.
+O que protege cada coisa:
+
+| O quê | Como está protegido | Alcance real |
+|---|---|---|
+| **Ler os resultados** (`?action=read`) | Exige o `TOKEN_GESTOR`, que vive só nas Propriedades do Script | **Protegido.** Sem o token, o servidor não devolve nada. Se a propriedade não estiver configurada, a leitura é recusada — falha fechada. |
+| **Enviar respostas** (o formulário) | Consentimento obrigatório, campo-armadilha, teto diário de envios, intervalo mínimo por e-mail e teto diário de e-mails | **Limitado, não impedido.** O formulário é público por natureza. As travas seguram robôs simples e limitam custo, cota de e-mail e volume — não impedem alguém determinado de inserir linhas. |
+| **Abrir o dashboard** | Trava de tela opcional, verificada no navegador | **Conveniência apenas.** Serve contra olhares por cima do ombro. Quem realmente protege os dados é o token. |
+
+O token é digitado **uma vez** no dashboard (⚙ Configurar → Token do gestor) e
+fica guardado só naquele navegador. **Nunca coloque o token no `config.js`**: esse
+arquivo faz parte do site público e qualquer pessoa consegue lê-lo.
+
+Se o token vazar (alguém compartilhou por engano, um computador foi perdido),
+troque o valor da propriedade `TOKEN_GESTOR` no Apps Script: todos os dashboards
+param de carregar até que o novo valor seja digitado.
+
+> **Proteção mais forte, se você tiver Google Workspace:** implante o app como
+> *"Executar como: usuário que acessa"* com acesso restrito ao domínio. Aí a
+> leitura passa a exigir login Google da instituição, em vez de um token
+> compartilhado. O custo é que o formulário deixa de aceitar quem está fora do
+> domínio — o que não serve para o grupo de networking, mas pode servir para o
+> colégio.
+
+### 1.3.2 Privacidade e LGPD
+
+Antes de começar o teste, a pessoa lê um aviso e precisa marcar o aceite. O
+texto é montado a partir do bloco `privacidade` do `config.js`:
+
+```js
+privacidade: {
+  controlador: "Colégio Mundo do Saber",
+  finalidade: "conhecer melhor o perfil de cada pessoa da equipe e apoiar o desenvolvimento profissional",
+  quemAcessa: "a própria pessoa e a coordenação responsável",
+  retencao: "enquanto durar o vínculo com a instituição, ou até que a pessoa peça a exclusão",
+  contato: "regnon@colegiomundodosaber.com.br",
+  urlPolitica: ""
+}
+```
+
+O aceite é exigido **no servidor**, e não só na tela: o Apps Script recusa
+qualquer envio sem `consentimento: true`, então alterar a página no navegador
+não contorna a regra. A data e a hora do aceite ficam gravadas na planilha, na
+coluna **Consentimento**.
+
+Ao receber um pedido de exclusão pelo canal informado, apague a linha da pessoa
+na aba `Respostas v2` (e na `Respostas`, se houver registro antigo).
+
+> Os textos são informativos e devem ser preenchidos com dados reais da sua
+> organização. Não são peça jurídica pronta — se houver dúvida sobre a base
+> legal aplicável, vale passar por quem cuida do jurídico antes de publicar.
 
 ### 1.4 Publicar o site
 
@@ -103,10 +230,50 @@ No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `h
 1. Responda um teste completo no `index.html`.
 2. Confira: cards de análise da IA no resultado, linha nova na planilha, e-mails recebidos, botão **Baixar PDF** (escolha "Salvar como PDF" na impressão).
 3. Abra o `dashboard.html` → **Atualizar**: gráficos e tabela carregam. Se configurar senha, ela é pedida ao abrir.
+4. Confira que a planilha ganhou a aba **"Respostas v2"** com o cabeçalho novo, e que a aba **"Respostas"** (histórico da versão anterior) continua intocada.
+
+> As respostas da versão antiga do questionário aparecem no dashboard com o selo
+> `v1` e podem ser separadas pelo filtro de versões. Não misture `v1` e `v2` em
+> médias ou comparações: os questionários são diferentes. O relatório completo do
+> que mudou está em `docs/RELATORIO-INSTRUMENTO-V2.md`, e há um convite pronto para
+> pedir que as pessoas refaçam o teste em `docs/CONVITE-REFAZER-TESTE.md`.
+
+---
+
+## Ordem de atualização (importante)
+
+O site e o Apps Script são duas metades da mesma coisa e precisam estar na
+mesma versão. **Atualize sempre o Apps Script primeiro, o site depois.**
+
+Se o site subir para a v2 com o Apps Script ainda na v1, o formulário envia
+campos que o backend antigo não conhece: DISC, asa, centro e o controle de
+qualidade são descartados e a resposta vai para a aba errada — sem erro
+nenhum aparecer.
+
+Para que isso não dependa de ninguém lembrar, existem duas travas automáticas:
+
+- **No formulário:** ao abrir a página, ele pergunta a versão ao servidor
+  (`?action=versao`). Se as versões não baterem, aparece um aviso vermelho e o
+  botão de avançar é desabilitado — a pessoa é impedida de responder 75 itens
+  para depois perder o resultado. A conferência é refeita no envio.
+- **No fluxo de publicação:** depois do `clasp deploy`, o GitHub Actions
+  consulta o endereço público e confere se a versão no ar é a mesma do código.
+  Se não for, o fluxo falha em vermelho em vez de dar por publicado.
+
+Ao mudar o formato dos dados, suba o `VERSAO_BACKEND` no `apps-script/Codigo.gs`
+junto com a `VERSAO` do `instrumento.js`.
 
 ---
 
 ## Publicação automática do Apps Script (opcional)
+
+> Enquanto o segredo `CLASPRC_JSON` não existir, este fluxo **falha e o backend
+> não é publicado** — o Apps Script continua com o que foi colado à mão no
+> editor. Nesse caso, atualize o backend manualmente: **Extensões → Apps
+> Script**, cole o conteúdo de `apps-script/Codigo.gs`, e então
+> **Implantar → Gerenciar implantações → editar a implantação existente → Nova
+> versão** (editar a existente preserva a URL; criar uma nova geraria outro
+> endereço e o `config.js` deixaria de apontar para o lugar certo).
 
 Com esta automação, **toda alteração na pasta `apps-script/` que entrar na branch `main` é publicada sozinha** no seu projeto Apps Script — sem copiar e colar. Ela usa o GitHub Actions (arquivo `.github/workflows/deploy-apps-script.yml`) e a ferramenta oficial `clasp` do Google.
 

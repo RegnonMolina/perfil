@@ -1,0 +1,29 @@
+# Roda os testes do instrumento a cada push e a cada pull request.
+#
+# Estes testes provam as propriedades de validade do questionário (equilíbrio
+# entre fatores, ausência de item degenerado ou duplicado, alcance dos 9 tipos
+# do eneagrama, desenho ipsativo do DISC). Se alguém alterar o banco de itens e
+# quebrar o equilíbrio, o CI acusa antes de a alteração chegar em produção.
+
+name: Testes do instrumento
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  testar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Rodar os testes
+        run: npm test
