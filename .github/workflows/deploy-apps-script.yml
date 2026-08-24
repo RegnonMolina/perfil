@@ -25,7 +25,7 @@ on:
   workflow_dispatch: {}
 
 env:
-  DEPLOYMENT_ID: AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL
+  DEPLOYMENT_ID: AKfycbw93nCoG-IfMQCdLBtLsb60SZvT3ClZBeE6Lkm-yjBMq6EujKHXaeHrsgwERIolakSUCw
 
 jobs:
   deploy:

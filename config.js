@@ -28,7 +28,7 @@ window.CONFIG_ESCOLA = {
   corSecundaria: "#667eea", // cor de destaque: botões, seleções, barra de progresso
 
   // URL do App da Web do Google Apps Script (veja CONFIGURACAO.md)
-  urlAppsScript: "https://script.google.com/macros/s/AKfycbylnX-qItREgco0fPVlrp70KXjrg5JIzdSjp513TAxZIlykmcd89w7oS8Cns0ZdkEdL/exec",
+  urlAppsScript: "https://script.google.com/macros/s/AKfycbw93nCoG-IfMQCdLBtLsb60SZvT3ClZBeE6Lkm-yjBMq6EujKHXaeHrsgwERIolakSUCw/exec",
 
   // E-mail do gestor que recebe cópia de todos os resultados.
   // Deixe "" para configurar apenas no Apps Script (propriedade EMAIL_GESTOR).
