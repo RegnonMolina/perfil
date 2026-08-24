@@ -585,34 +585,7 @@
             }
         }
 
-        /* ===== Aviso de privacidade e consentimento ===== */
-        .privacidade {
-            border: 1px solid #e2e2e2;
-            border-radius: 8px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            background: #fafafa;
-            font-size: 13px;
-            line-height: 1.65;
-            color: #444;
-        }
-
-        .privacidade h3 {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            color: var(--cor-primaria);
-            margin-bottom: 8px;
-        }
-
-        .privacidade ul {
-            margin: 8px 0 0 18px;
-        }
-
-        .privacidade li {
-            margin-bottom: 5px;
-        }
-
+        /* ===== Caixa de consentimento ===== */
         .consentimento {
             display: flex;
             gap: 10px;
@@ -799,8 +772,6 @@
                     <label>Não preencha este campo</label>
                     <input type="text" id="confirmacao" tabindex="-1" autocomplete="off">
                 </div>
-
-                <div class="privacidade" id="aviso-privacidade"></div>
 
                 <div class="consentimento" id="caixa-consentimento" onclick="cliqueNaCaixaDeConsentimento(event)">
                     <input type="checkbox" id="consentimento" onchange="alternarConsentimento()">
@@ -1143,33 +1114,20 @@
             if (selecionado) select.value = selecionado;
         }
 
-        // Monta o aviso de privacidade a partir do config.js da organização.
+        // Monta a frase de consentimento a partir do config.js da organização.
+        // O aviso longo de privacidade foi retirado da tela a pedido do gestor;
+        // a frase abaixo resume a coleta e a finalidade, e o aceite continua
+        // obrigatório e registrado na planilha (coluna "Consentimento").
         function aplicarPrivacidade() {
             const p = branding.privacidade || {};
-            const ctx = branding.contexto || {};
             const controlador = p.controlador || branding.nome;
 
             const politica = p.urlPolitica
-                ? ` Política completa: <a href="${escaparHtml(p.urlPolitica)}" target="_blank" rel="noopener">${escaparHtml(p.urlPolitica)}</a>.`
+                ? ` <a href="${escaparHtml(p.urlPolitica)}" target="_blank" rel="noopener">Saiba como seus dados são usados</a>.`
                 : "";
 
-            document.getElementById("aviso-privacidade").innerHTML = `
-                <h3>Antes de começar: como seus dados são usados</h3>
-                <p>Este questionário coleta seu nome, e-mail e respostas para gerar um perfil comportamental.</p>
-                <ul>
-                    <li><strong>Quem é responsável:</strong> ${escaparHtml(controlador)}.</li>
-                    <li><strong>Para quê:</strong> ${escaparHtml(p.finalidade || "")}.</li>
-                    <li><strong>Quem vê o resultado:</strong> ${escaparHtml(p.quemAcessa || "")}.</li>
-                    <li><strong>Por quanto tempo:</strong> ${escaparHtml(p.retencao || "")}.</li>
-                    <li><strong>Seus direitos:</strong> você pode pedir acesso, correção ou exclusão dos seus dados a qualquer momento${p.contato ? ", pelo e-mail " + escaparHtml(p.contato) : ""}.</li>
-                </ul>
-                <p style="margin-top:8px">Este é um instrumento de autoconhecimento e desenvolvimento.
-                <strong>Não é usado para seleção, promoção ou avaliação de desempenho</strong>, não constitui
-                diagnóstico clínico e não substitui avaliação profissional.${politica}</p>
-            `;
-
             document.getElementById("texto-consentimento").innerHTML =
-                `Li o aviso acima e concordo que ${escaparHtml(controlador)} trate meus dados para essa finalidade.`;
+                `Concordo que ${escaparHtml(controlador)} use meu nome, e-mail e respostas para gerar meu perfil comportamental.${politica}`;
         }
 
         // Clique na área ao redor da caixa.
