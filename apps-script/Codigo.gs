@@ -248,9 +248,20 @@ function doGet(e) {
 
 // ===== PLANILHA =====
 
+// Num script vinculado à planilha, getActiveSpreadsheet() a encontra sozinho.
+// Num script independente ele retorna null — aí vale a propriedade PLANILHA_ID
+// (colégios replicados) ou, por fim, o ID da planilha do CMS.
+var PLANILHA_ID_PADRAO = "1pQZ5SPhJzeuw5vPs3CBKJVuBODxdOtXOCWe1sLbaNGM";
+
+function obterPlanilha() {
+  var ativa = SpreadsheetApp.getActiveSpreadsheet();
+  if (ativa) return ativa;
+  return SpreadsheetApp.openById(propriedade("PLANILHA_ID", PLANILHA_ID_PADRAO));
+}
+
 // Aba do histórico v1. Só é usada para leitura — nunca recebe linha nova.
 function obterAba() {
-  var planilha = SpreadsheetApp.getActiveSpreadsheet();
+  var planilha = obterPlanilha();
   var aba = planilha.getSheetByName(NOME_ABA);
   if (!aba) {
     aba = planilha.insertSheet(NOME_ABA);
@@ -263,7 +274,7 @@ function obterAba() {
 }
 
 function obterAbaV2() {
-  var planilha = SpreadsheetApp.getActiveSpreadsheet();
+  var planilha = obterPlanilha();
   var aba = planilha.getSheetByName(NOME_ABA_V2);
   if (!aba) {
     aba = planilha.insertSheet(NOME_ABA_V2);

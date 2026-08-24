@@ -154,6 +154,7 @@ Em um app hospedado em outro lugar — inclusive um App da Web do Apps Script fe
    | `EMAIL_GESTOR` | Não | E-mail que recebe cópia de todos os resultados. |
    | `LIMITE_ENVIOS_DIA` | Não | Teto diário de envios (padrão 200). |
    | `LIMITE_EMAILS_DIA` | Não | Teto diário de e-mails (padrão 150). |
+   | `PLANILHA_ID` | Não* | ID da planilha de respostas (o trecho entre `/d/` e `/edit` na URL dela). *Obrigatória apenas se o projeto Apps Script for **independente** (criado em script.google.com) em vez de vinculado à planilha (criado por **Extensões → Apps Script**). No CMS há um padrão embutido no código. |
 
    Para o `TOKEN_GESTOR`, use um valor longo e aleatório — 20 caracteres ou mais.
    Um jeito rápido de gerar: no navegador, aperte F12, cole
