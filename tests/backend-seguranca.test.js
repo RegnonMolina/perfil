@@ -261,3 +261,26 @@ test("Texto comum não é alterado ao ir para a planilha", () => {
   assert.strictEqual(a.textoParaPlanilha("Coordenação"), "Coordenação");
   assert.strictEqual(a.textoParaPlanilha(""), "");
 });
+
+// ============================================================
+// SCRIPT INDEPENDENTE (NÃO VINCULADO À PLANILHA)
+// ============================================================
+
+test("Envio grava mesmo quando o script não está vinculado à planilha", () => {
+  // Num projeto Apps Script independente, getActiveSpreadsheet() volta null.
+  // O backend precisa cair para openById com a propriedade PLANILHA_ID —
+  // senão todo envio quebra em produção sem nenhum aviso no formulário.
+  const a = criarAmbiente({ propriedades: { PLANILHA_ID: "planilha-do-colegio" } });
+  a.__semPlanilhaAtiva = true;
+  const r = post(a, envioValido());
+  assert.strictEqual(r.ok, true, JSON.stringify(r));
+  assert.strictEqual(a.__ultimoOpenById, "planilha-do-colegio");
+});
+
+test("Sem PLANILHA_ID configurada, o script independente usa o ID padrão do CMS", () => {
+  const a = criarAmbiente();
+  a.__semPlanilhaAtiva = true;
+  const r = post(a, envioValido());
+  assert.strictEqual(r.ok, true, JSON.stringify(r));
+  assert.match(a.__ultimoOpenById, /^1pQZ5/);
+});

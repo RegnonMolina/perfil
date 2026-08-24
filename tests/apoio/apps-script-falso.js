@@ -87,10 +87,19 @@ function criarAmbiente(opcoes = {}) {
     },
 
     SpreadsheetApp: {
-      getActiveSpreadsheet: () => ({
+      // __semPlanilhaAtiva simula um script independente (não vinculado),
+      // onde getActiveSpreadsheet() retorna null e o código cai no openById.
+      getActiveSpreadsheet: () => contexto.__semPlanilhaAtiva ? null : ({
         getSheetByName: (nome) => abas.get(nome) || null,
         insertSheet: (nome) => criarAba(nome)
-      })
+      }),
+      openById: (id) => {
+        contexto.__ultimoOpenById = id;
+        return {
+          getSheetByName: (nome) => abas.get(nome) || null,
+          insertSheet: (nome) => criarAba(nome)
+        };
+      }
     },
 
     MailApp: {
