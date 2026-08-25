@@ -81,7 +81,22 @@ tr:hover td{background:#F8FAFC}
 .chip-filtro span{opacity:.6}
 .bar-label{flex:0 0 110px;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-track{flex:1;height:14px;background:var(--bg);border-radius:7px;overflow:hidden}
-.bar-fill{height:100%;border-radius:7px;background:var(--primary);min-width:2px;transition:width .3s}
+.bar-fill{height:100%;border-radius:7px;background:var(--primary);min-width:2px;transition:width .45s cubic-bezier(.22,.9,.36,1)}
+/* Entrada em cascata das linhas e cards ao (re)desenhar a lista. A partir da
+   oitava linha o atraso é o mesmo — o efeito só precisa existir no topo. */
+#tabela-body tr,.pcard{animation:linhaEntra .3s ease backwards}
+#tabela-body tr:nth-child(n),.pcard:nth-child(n){animation-delay:.21s}
+#tabela-body tr:nth-child(1),.pcard:nth-child(1){animation-delay:.03s}
+#tabela-body tr:nth-child(2),.pcard:nth-child(2){animation-delay:.06s}
+#tabela-body tr:nth-child(3),.pcard:nth-child(3){animation-delay:.09s}
+#tabela-body tr:nth-child(4),.pcard:nth-child(4){animation-delay:.12s}
+#tabela-body tr:nth-child(5),.pcard:nth-child(5){animation-delay:.15s}
+#tabela-body tr:nth-child(6),.pcard:nth-child(6){animation-delay:.18s}
+@keyframes linhaEntra{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  #tabela-body tr,.pcard{animation:none}
+  .bar-fill{transition:none}
+}
 .bar-num{flex:0 0 24px;font-size:11px;color:var(--text3);text-align:right}
 @media(max-width:700px){
   .summary-grid{grid-template-columns:1fr 1fr 1fr}
@@ -224,6 +239,9 @@ let CFG={
 };
 let DADOS=[];
 let FILTRADOS=[];
+// Liga a contagem animada dos números do topo só na próxima atualização de
+// métricas (a carga de dados liga; os redesenhos por filtro não).
+let ANIMAR_METRICAS=false;
 
 // Vocabulário da organização (config.js). Cai no padrão antigo se não existir.
 const CTX=ESCOLA.contexto||{};
@@ -369,6 +387,7 @@ async function carregarDados(){
     return;
   }
   FILTRADOS=[...DADOS];
+  ANIMAR_METRICAS=true;
   atualizarMetricas();
   atualizarFiltros();
   renderCharts();
@@ -420,9 +439,15 @@ function renderCharts(){
     el.innerHTML=entradas.map(([nome,n],i)=>{
       const cor=CORES[i%CORES.length].dot;
       const ativa=CHIPS[key]===nome?' bar-ativa':'';
-      return `<div class="bar-row${ativa}" data-v="${esc(nome)}" title="Clique para filtrar por ${esc(nome)}"><div class="bar-label">${esc(nome)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%;background:${cor}"></div></div><div class="bar-num">${n}</div></div>`;
+      return `<div class="bar-row${ativa}" data-v="${esc(nome)}" title="Clique para filtrar por ${esc(nome)}"><div class="bar-label">${esc(nome)}</div><div class="bar-track"><div class="bar-fill" data-w="${Math.round(n/max*100)}" style="width:0%;background:${cor}"></div></div><div class="bar-num">${n}</div></div>`;
     }).join('');
     el.querySelectorAll('.bar-row').forEach(r=>r.onclick=()=>toggleChip(key,r.dataset.v));
+    // As barras nascem em 0% e crescem até o valor no quadro seguinte, para a
+    // transição de largura do CSS acontecer. Com "reduzir movimento" ativo no
+    // sistema, a transição está desligada e a largura só é aplicada direto.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.querySelectorAll('.bar-fill').forEach(b=>b.style.width=b.dataset.w+'%');
+    }));
   };
   desenha('chart-ling',conta(ling1),'ling');
   desenha('chart-temp',conta(temp1),'temp');
@@ -456,8 +481,21 @@ function atualizarMetricas(){
     return top?top[0]:'—';
   };
 
-  document.getElementById('m-total').textContent=DADOS.length;
-  document.getElementById('m-setores').textContent=[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].length;
+  // Na carga dos dados os números sobem do zero até o valor; nos redesenhos
+  // por filtro eles só são reescritos (animar a cada clique cansaria).
+  const escreveNum=(id,valor)=>{
+    const el=document.getElementById(id);
+    if(!ANIMAR_METRICAS||valor<2||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){el.textContent=valor;return;}
+    const inicio=performance.now(),dur=650;
+    (function passo(agora){
+      const p=Math.min(1,(agora-inicio)/dur);
+      el.textContent=Math.round(valor*(1-Math.pow(1-p,3)));
+      if(p<1)requestAnimationFrame(passo);
+    })(inicio);
+  };
+  escreveNum('m-total',DADOS.length);
+  escreveNum('m-setores',[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].length);
+  ANIMAR_METRICAS=false;
 
   // Os quatro cards de "mais comum" também filtram: o rótulo exibido pode vir
   // encurtado, mas o clique usa o valor completo, guardado aqui no elemento.
