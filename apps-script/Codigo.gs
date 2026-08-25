@@ -4,7 +4,8 @@
  * O que este script faz:
  *  1. Recebe as respostas do formulário (index.html) via POST
  *  2. Salva o resultado na planilha
- *  3. Gera a análise personalizada com IA (Claude / Anthropic)
+ *  3. Gera a análise escrita — com IA (Claude / Anthropic) quando há chave
+ *     configurada; sem chave, com o banco de textos por perfil deste arquivo
  *  4. Envia o resultado por e-mail para a pessoa e para quem lidera
  *  5. Fornece os dados para o dashboard (dashboard.html) via GET ?action=read
  *
@@ -27,7 +28,8 @@
  * CONFIGURAÇÃO (veja também o arquivo CONFIGURACAO.md no repositório):
  *  - Crie o script VINCULADO à sua planilha (Extensões > Apps Script)
  *  - Em Configurações do projeto > Propriedades do script, adicione:
- *      ANTHROPIC_API_KEY  = sua chave da API da Anthropic (sk-ant-...)
+ *      ANTHROPIC_API_KEY  = chave da API da Anthropic (sk-ant-...) — opcional;
+ *                           sem ela a análise sai do banco de textos por perfil
  *      EMAIL_GESTOR       = e-mail padrão de quem lidera (opcional)
  *  - Implante como App da Web: executar como VOCÊ, acesso "Qualquer pessoa"
  */
@@ -208,7 +210,9 @@ function doPost(e) {
       });
     }
 
-    var analise = gerarAnaliseIA(dados); // null se a chave da API não estiver configurada
+    // Com chave da API configurada a análise vem da IA (personalizada);
+    // sem chave — ou se a chamada falhar — vem do banco de textos por perfil.
+    var analise = gerarAnaliseIA(dados) || gerarAnalisePadrao(dados);
 
     salvarNaPlanilha(dados, analise);
     enviarEmails(dados, analise);
@@ -611,6 +615,251 @@ function gerarAnaliseIA(dados) {
     console.error("Falha ao gerar análise com IA: " + erro);
     return null;
   }
+}
+
+// ===== ANÁLISE PADRÃO (SEM IA) =====
+//
+// Quando a chave da API não está configurada (ou a chamada falha), a análise
+// sai deste banco de textos, montada a partir das categorias do perfil. É o
+// mesmo modelo dos testes comerciais: texto curado por tipo, combinado por
+// código. A leitura é "do tipo", não "da pessoa" — a IA, quando ligada,
+// continua tendo prioridade porque cruza nuances que texto fixo não cruza.
+//
+// Convenção de voz (a mesma da análise por IA): quem_e, pontos_fortes e
+// pontos_desenvolver falam com a própria pessoa ("você"); como_comunicar,
+// como_motivar e evitar_atrito orientam quem lidera.
+
+var TEXTOS_LINGUAGEM = {
+  A: { // Palavras de afirmação
+    comunicar: "Escolha bem as palavras: para essa pessoa, o modo de dizer pesa tanto quanto o conteúdo, e um retorno que começa pelo que ela fez bem abre a escuta para o resto.",
+    motivar: "Reconhecimento dito com todas as letras vale muito: um elogio específico, um agradecimento sincero ou uma mensagem escrita têm efeito duradouro."
+  },
+  B: { // Tempo de qualidade
+    comunicar: "Prefira conversas sem pressa e sem interrupções; atenção dividida ou mensagens apressadas soam como descaso.",
+    motivar: "Tempo dedicado é a moeda de reconhecimento: uma conversa individual com atenção inteira motiva mais do que elogios rápidos."
+  },
+  C: { // Presentes / Mimos
+    comunicar: "Pequenos gestos que acompanham a mensagem — lembrar de um detalhe pessoal antes de tratar do assunto — tornam a conversa mais receptiva.",
+    motivar: "Gestos concretos de lembrança — um mimo, uma atenção em data importante, algo escolhido pensando nela — mostram a essa pessoa que ela é vista."
+  },
+  D: { // Atos de serviço
+    comunicar: "Mostre disponibilidade concreta: perguntar o que pode fazer para ajudar — e cumprir — vale mais do que longas conversas.",
+    motivar: "Ajuda prática é o que mais toca: tirar um obstáculo do caminho ou dividir uma tarefa pesada diz mais do que qualquer discurso."
+  },
+  E: { // Presença / Acolhimento
+    comunicar: "Comece pela pessoa, depois vá ao assunto: um contato humano genuíno antes da pauta faz diferença na receptividade.",
+    motivar: "Sentir-se acolhida e incluída é o principal combustível: estar presente nos momentos difíceis e garantir que ela não fique de fora pesa mais que prêmios."
+  }
+};
+
+var TEXTOS_TEMPERAMENTO = {
+  "Colérico": {
+    essencia: "Você tende a se mover por resultados: decide rápido, assume a frente e não se intimida com desafios.",
+    forte: "Iniciativa, coragem para decidir e energia para tirar planos do papel estão entre seus pontos fortes.",
+    desenvolver: "O convite de desenvolvimento é dosar a intensidade: ouvir até o fim antes de decidir e lembrar que nem todos acompanham seu ritmo.",
+    atrito: "Evite microgerenciar ou desautorizar essa pessoa em público; ela rende melhor com metas claras e autonomia do que com controle de cada passo."
+  },
+  "Sanguíneo": {
+    essencia: "Você tende a ser uma pessoa comunicativa e entusiasmada, com facilidade para criar vínculos e contagiar o ambiente.",
+    forte: "Otimismo, espontaneidade e talento para engajar pessoas são marcas suas.",
+    desenvolver: "O ponto de atenção é a constância: sustentar o foco até o fim e cuidar dos detalhes que a empolgação às vezes atropela.",
+    atrito: "Evite deixar essa pessoa sem retorno ou fazer críticas que soem como rejeição pessoal; ela murcha quando se sente ignorada."
+  },
+  "Melancólico": {
+    essencia: "Você tende a ser uma pessoa profunda e reflexiva, com padrão alto de qualidade e sensibilidade para perceber o que os outros não veem.",
+    forte: "Capricho, análise cuidadosa e lealdade às pessoas e às causas em que acredita estão entre seus pontos fortes.",
+    desenvolver: "O convite é ser mais gentil consigo: o mesmo padrão alto que gera excelência pode virar autocrítica excessiva e adiamento por medo de errar.",
+    atrito: "Evite cobranças públicas e mudanças de última hora sem explicação; essa pessoa precisa de tempo e contexto para processar."
+  },
+  "Fleumático": {
+    essencia: "Você tende a ser uma pessoa calma e constante, um ponto de equilíbrio que ameniza conflitos ao redor.",
+    forte: "Paciência, diplomacia e estabilidade — as pessoas confiam em você justamente porque você não muda com o vento.",
+    desenvolver: "O ponto de crescimento é a iniciativa: expressar sua opinião antes de ser perguntada e se posicionar mesmo quando isso desagrada.",
+    atrito: "Evite pressão por respostas imediatas e conflitos abertos; essa pessoa rende mais com prazos claros e clima respeitoso."
+  }
+};
+
+var TEXTOS_ENEAGRAMA = {
+  1: {
+    essencia: "Há em você um desejo forte de fazer o certo: você percebe rapidamente o que pode ser melhorado e se cobra coerência.",
+    forte: "Do eneagrama vêm a ética, a organização e um olhar apurado para qualidade.",
+    desenvolver: "Vale também aprender a conviver com o \"bom o suficiente\" e tratar erros — seus e dos outros — com menos severidade.",
+    motivar: "Reconheça o esforço por fazer bem-feito e dê espaço para essa pessoa aprimorar processos.",
+    atrito: "Regras aplicadas de forma incoerente e improvisos sem critério são o que mais a desgastam."
+  },
+  2: {
+    essencia: "Você tende a perceber as necessidades dos outros antes mesmo de serem ditas, e encontra sentido em ajudar.",
+    forte: "Do eneagrama vêm a generosidade, a empatia e o talento para cuidar das pessoas.",
+    desenvolver: "Vale também aprender a dizer não e a expressar as próprias necessidades antes de se sobrecarregar.",
+    motivar: "Agradeça de forma pessoal e mostre o impacto que a ajuda dela teve em pessoas concretas.",
+    atrito: "Tratar a disponibilidade dela como obrigação é o que mais a machuca; ninguém gosta de se sentir invisível, ela menos ainda."
+  },
+  3: {
+    essencia: "Você tende a se orientar por metas: gosta de conquistar, apresentar resultados e fazer acontecer.",
+    forte: "Do eneagrama vêm o foco, a eficiência e a capacidade de inspirar pelo exemplo de entrega.",
+    desenvolver: "Vale também separar o próprio valor dos resultados: você vale pelo que é, não só pelo que realiza.",
+    motivar: "Dê metas desafiadoras, visibilidade para as conquistas e retorno frequente sobre progresso.",
+    atrito: "Ignorar resultados alcançados ou desvalorizar uma entrega em público é o que mais a ressente."
+  },
+  4: {
+    essencia: "Você tende a buscar autenticidade e profundidade: sente com intensidade e quer que sua contribuição tenha uma marca própria.",
+    forte: "Do eneagrama vêm a sensibilidade, a criatividade e a coragem de ser diferente.",
+    desenvolver: "Vale também cultivar a constância nos dias comuns, sem esperar a inspiração perfeita.",
+    motivar: "Valorize o toque pessoal do trabalho dela e ofereça espaço para criar; tarefas com significado rendem mais que tarefas em série.",
+    atrito: "Padronizar tudo ou tratar os sentimentos dela como exagero é o que mais a afasta."
+  },
+  5: {
+    essencia: "Você tende a observar antes de agir: gosta de entender a fundo, valoriza conhecimento e preserva sua energia e seu espaço.",
+    forte: "Do eneagrama vêm a análise profunda, a objetividade e a autonomia intelectual.",
+    desenvolver: "Vale também compartilhar o que sabe antes de se sentir totalmente em ponto, e se permitir mais presença nos momentos coletivos.",
+    motivar: "Ofereça problemas interessantes, tempo para estudar e autonomia; reconheça a competência técnica dela.",
+    atrito: "Reuniões intermináveis, cobranças invasivas e pedidos sem contexto são o que mais a desgastam."
+  },
+  6: {
+    essencia: "Você tende a ser uma pessoa leal e precavida: pensa nos riscos, cumpre o que promete e valoriza segurança e confiança.",
+    forte: "Do eneagrama vêm o comprometimento, o senso de responsabilidade e o olhar atento ao que pode dar errado.",
+    desenvolver: "Vale também confiar mais na própria capacidade de resposta: nem todo cenário ruim imaginado vai acontecer.",
+    motivar: "Dê clareza sobre regras e expectativas, cumpra os combinados e mostre que ela pode contar com quem lidera.",
+    atrito: "Mudanças bruscas sem explicação e ambiguidade prolongada são o que mais a desgastam."
+  },
+  7: {
+    essencia: "Você tende a ser uma pessoa entusiasta e versátil: gosta de possibilidades, de novidade e de manter o clima leve.",
+    forte: "Do eneagrama vêm a criatividade, a agilidade mental e a capacidade de animar o grupo.",
+    desenvolver: "Vale também concluir antes de começar o próximo: profundidade e presença nos momentos difíceis também constroem alegria.",
+    motivar: "Ofereça variedade, projetos novos e liberdade — e comemore as conquistas com ela.",
+    atrito: "Rotina engessada e clima pesado sem necessidade fazem essa pessoa se desconectar."
+  },
+  8: {
+    essencia: "Você tende a ser uma pessoa direta e protetora: assume o comando com naturalidade e defende quem está sob seu cuidado.",
+    forte: "Do eneagrama vêm a coragem, a franqueza e a força para decisões difíceis.",
+    desenvolver: "Vale também dosar a intensidade e mostrar a própria vulnerabilidade: nem toda situação é uma disputa.",
+    motivar: "Seja uma liderança direta e justa, com desafios de verdade e espaço de decisão; ela respeita quem sustenta a palavra.",
+    atrito: "Rodeios, controle velado e decisões impostas sem conversa franca fazem essa pessoa perder a confiança."
+  },
+  9: {
+    essencia: "Você tende a ser uma pessoa conciliadora: enxerga todos os lados, evita conflitos desnecessários e traz calma ao ambiente.",
+    forte: "Do eneagrama vêm a empatia, a paciência e o talento para mediar e unir pessoas.",
+    desenvolver: "Vale também dizer o que pensa mesmo quando pode desagradar: sua opinião importa, e o conflito bem conduzido também constrói.",
+    motivar: "Peça a opinião dela explicitamente e valorize sua contribuição para a harmonia do grupo.",
+    atrito: "Confrontos agressivos e decisões atropeladas fazem essa pessoa se fechar."
+  }
+};
+
+var TEXTOS_DISC = {
+  D: { // Dominância
+    comunicar: "Vá direto ao ponto: apresente o objetivo e as opções e deixe espaço para essa pessoa decidir; rodeios soam como perda de tempo.",
+    forte: "No dia a dia isso aparece como orientação a resultados e disposição para assumir riscos e decisões.",
+    atrito: "Não dispute o controle em miudezas: combine o resultado esperado e dê liberdade no caminho."
+  },
+  I: { // Influência
+    comunicar: "Comunique com entusiasmo e abertura: essa pessoa responde melhor a conversas do que a comunicados frios, e gosta de pensar em voz alta.",
+    forte: "No dia a dia isso aparece como facilidade de relacionamento e talento para envolver pessoas.",
+    atrito: "Não a isole em trabalhos longos e solitários nem corte suas ideias sem ouvir; reconhecimento diante do grupo importa."
+  },
+  S: { // Estabilidade
+    comunicar: "Comunique com calma e antecedência: explique o porquê das mudanças e dê tempo para a pessoa se ajustar.",
+    forte: "No dia a dia isso aparece como constância, cooperação e um jeito confiável de sustentar rotinas e equipes.",
+    atrito: "Não mude tudo de uma vez nem cobre respostas no susto; previsibilidade é a base do rendimento dela."
+  },
+  C: { // Conformidade
+    comunicar: "Comunique com dados e critérios: essa pessoa confia em fatos, prazos definidos e combinados por escrito.",
+    forte: "No dia a dia isso aparece como precisão, disciplina e cuidado com qualidade e regras.",
+    atrito: "Não cobre decisões de improviso nem critique o trabalho sem apontar o critério; vagueza e desorganização são o que mais a incomodam."
+  }
+};
+
+// Devolve a chave do maior valor de um mapa de scores, ou null se vazio/empatado
+// no zero. Usada como plano B quando o nome do resultado não é reconhecível.
+function chaveMaiorScore(mapa) {
+  if (!mapa || typeof mapa !== "object") return null;
+  var melhor = null;
+  Object.keys(mapa).forEach(function (k) {
+    var v = Number(mapa[k]);
+    if (!isNaN(v) && (melhor === null || v > Number(mapa[melhor]))) melhor = k;
+  });
+  return melhor;
+}
+
+// Cada detector tenta primeiro o nome legível gravado no envio (que resolve
+// empates pelo critério do instrumento) e só depois cai para os scores brutos
+// — assim um envio de um front antigo, com nomes diferentes, ainda é lido.
+function detectarLinguagem(dados) {
+  var nome = String((dados && dados.linguagem) || "");
+  var marcas = { A: "Palavras", B: "Tempo", C: "Presentes", D: "Atos", E: "Presença" };
+  var achada = null;
+  Object.keys(marcas).forEach(function (l) {
+    if (achada === null && nome.indexOf(marcas[l]) !== -1) achada = l;
+  });
+  return achada || chaveMaiorScore(dados && dados.distribuicao_linguagem);
+}
+
+function detectarTemperamento(dados) {
+  var nome = String((dados && dados.temperamento) || "");
+  var achado = null;
+  Object.keys(TEXTOS_TEMPERAMENTO).forEach(function (t) {
+    if (achado === null && nome.indexOf(t) !== -1) achado = t;
+  });
+  if (achado) return achado;
+  var porScore = { colerico: "Colérico", sanguineo: "Sanguíneo", melancol: "Melancólico", fleumatico: "Fleumático" };
+  var chave = chaveMaiorScore((dados && (dados.percentual_temperamento || dados.scores_temperamento)) || null);
+  return porScore[chave] || null;
+}
+
+function detectarEneagrama(dados) {
+  var m = String((dados && dados.eneagrama) || "").match(/Tipo\s*([1-9])/);
+  if (m) return Number(m[1]);
+  var chave = chaveMaiorScore(dados && dados.scores_eneagrama);
+  return chave && TEXTOS_ENEAGRAMA[Number(chave)] ? Number(chave) : null;
+}
+
+function detectarDisc(dados) {
+  var nome = String((dados && dados.disc_dominante) || "");
+  var porNome = { "Dominância": "D", "Influência": "I", "Estabilidade": "S", "Conformidade": "C" };
+  var achado = null;
+  Object.keys(porNome).forEach(function (n) {
+    if (achado === null && nome.indexOf(n) !== -1) achado = porNome[n];
+  });
+  if (achado) return achado;
+  var inicial = String((dados && dados.disc) || "").charAt(0);
+  if (TEXTOS_DISC[inicial]) return inicial;
+  return chaveMaiorScore(dados && dados.scores_disc);
+}
+
+// Monta a análise a partir do banco de textos. Sempre devolve os seis campos
+// preenchidos: quando um módulo veio equilibrado demais para ter dominante,
+// as frases dele são omitidas, e se um campo ficar vazio entra o texto honesto
+// de resultado equilibrado — nunca uma célula em branco.
+function gerarAnalisePadrao(dados) {
+  dados = dados || {};
+  var ling = TEXTOS_LINGUAGEM[detectarLinguagem(dados)] || {};
+  var temp = TEXTOS_TEMPERAMENTO[detectarTemperamento(dados)] || {};
+  var enea = TEXTOS_ENEAGRAMA[detectarEneagrama(dados)] || {};
+  var disc = TEXTOS_DISC[detectarDisc(dados)] || {};
+
+  var frases = function () {
+    var partes = [];
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i]) partes.push(arguments[i]);
+    }
+    return partes.join(" ") ||
+      "Os resultados deste módulo vieram equilibrados, sem um estilo dominante claro — vale uma conversa pessoal para aprofundar essa leitura.";
+  };
+
+  var nuancas = [];
+  if (dados.temperamento_secundario) nuancas.push("o temperamento secundário (" + dados.temperamento_secundario + ")");
+  if (dados.eneagrama_segundo) nuancas.push("o segundo tipo do eneagrama (" + dados.eneagrama_segundo + ")");
+  var fraseNuancas = nuancas.length
+    ? "Como toda leitura de perfil, esta é uma tendência, não um rótulo — " + nuancas.join(" e ") + " acrescenta" + (nuancas.length > 1 ? "m" : "") + " nuances a esse retrato."
+    : "Como toda leitura de perfil, esta é uma tendência, não um rótulo.";
+
+  return {
+    quem_e: frases(temp.essencia, enea.essencia, fraseNuancas),
+    pontos_fortes: frases(temp.forte, enea.forte, disc.forte),
+    pontos_desenvolver: frases(temp.desenvolver, enea.desenvolver),
+    como_comunicar: frases(disc.comunicar, ling.comunicar),
+    como_motivar: frases(ling.motivar, enea.motivar),
+    evitar_atrito: frases(temp.atrito, enea.atrito, disc.atrito)
+  };
 }
 
 // ===== E-MAIL =====
