@@ -314,8 +314,30 @@ async function carregarDados(){
   }
   try{
     // Lê da planilha via Apps Script, autenticando com o token do gestor.
-    const resp=await fetch(CFG.sheetUrl+'?action=read&token='+encodeURIComponent(CFG.token));
-    const data=await resp.json();
+    //
+    // O token vai no CORPO de um POST, nunca na URL: querystring acaba em
+    // histórico de navegador e em logs de servidor, e um token registrado
+    // nesses lugares deixa de ser segredo. O corpo vai sem cabeçalho
+    // Content-Type de propósito — é o que dispensa o preflight de CORS no
+    // Apps Script, exatamente como o formulário já faz no envio.
+    let data=null;
+    try{
+      const respPost=await fetch(CFG.sheetUrl,{
+        method:'POST',
+        body:JSON.stringify({action:'read',token:CFG.token})
+      });
+      data=await respPost.json();
+    }catch(e){data=null;}
+
+    // Compatibilidade com um backend anterior à leitura por POST: ele responde
+    // "Ação desconhecida" (só conhecia "submit"). Nesse caso — e só nesse —
+    // recorre ao caminho antigo por GET, para o painel não ficar cego durante
+    // a troca de versão. Um token errado NÃO cai aqui: o backend novo responde
+    // com o próprio erro de token, que é mostrado à pessoa.
+    if(!data || (data.ok===false && /ação desconhecida/i.test(data.erro||''))){
+      const respGet=await fetch(CFG.sheetUrl+'?action=read&token='+encodeURIComponent(CFG.token));
+      data=await respGet.json();
+    }
     if(data && data.ok===false){
       avisoDash('O servidor recusou a leitura',esc(data.erro||'Token inválido.'));
       DADOS=[];FILTRADOS=[];

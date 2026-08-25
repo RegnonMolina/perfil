@@ -169,6 +169,12 @@ function doPost(e) {
   try {
     var dados = JSON.parse(e.postData.contents);
 
+    // Leitura pelo corpo do POST: é o caminho que o dashboard usa, porque o
+    // token não pode viajar na URL (querystring acaba em histórico e logs).
+    if (dados.action === "read") {
+      return lerComToken(dados.token);
+    }
+
     if (dados.action !== "submit") {
       return respostaJson({ ok: false, erro: "Ação desconhecida" });
     }
@@ -213,6 +219,24 @@ function doPost(e) {
   }
 }
 
+// Leitura autenticada da base, usada pelos dois caminhos HTTP.
+// Falha FECHADA: sem token configurado, ninguém lê. O contrário
+// transformaria um esquecimento de configuração em base aberta.
+function lerComToken(enviado) {
+  var token = propriedade("TOKEN_GESTOR", "");
+  if (!token) {
+    return respostaJson({
+      ok: false,
+      erro: "Leitura bloqueada: a propriedade TOKEN_GESTOR não está configurada no Apps Script. " +
+            "Veja CONFIGURACAO.md, seção 'Proteção dos dados'."
+    });
+  }
+  if (!comparacaoSegura(enviado || "", token)) {
+    return respostaJson({ ok: false, erro: "Token do gestor inválido ou ausente." });
+  }
+  return respostaJson({ ok: true, rows: lerRespostas(), versao: VERSAO_BACKEND });
+}
+
 function doGet(e) {
   var action = (e && e.parameter && e.parameter.action) || "";
 
@@ -222,25 +246,11 @@ function doGet(e) {
     return respostaJson({ ok: true, servico: "Perfil Comportamental", versao: VERSAO_BACKEND });
   }
 
+  // Caminho antigo de leitura, mantido só para um dashboard anterior à leitura
+  // por POST não ficar cego durante a troca de versão. O dashboard atual NÃO
+  // usa mais este caminho: token em querystring acaba em histórico e em logs.
   if (action === "read") {
-    var token = propriedade("TOKEN_GESTOR", "");
-
-    // Falha FECHADA: sem token configurado, ninguém lê. O contrário
-    // transformaria um esquecimento de configuração em base aberta.
-    if (!token) {
-      return respostaJson({
-        ok: false,
-        erro: "Leitura bloqueada: a propriedade TOKEN_GESTOR não está configurada no Apps Script. " +
-              "Veja CONFIGURACAO.md, seção 'Proteção dos dados'."
-      });
-    }
-
-    var enviado = (e && e.parameter && e.parameter.token) || "";
-    if (!comparacaoSegura(enviado, token)) {
-      return respostaJson({ ok: false, erro: "Token do gestor inválido ou ausente." });
-    }
-
-    return respostaJson({ ok: true, rows: lerRespostas(), versao: VERSAO_BACKEND });
+    return lerComToken((e && e.parameter && e.parameter.token) || "");
   }
 
   return respostaJson({ ok: true, servico: "Perfil Comportamental", versao: VERSAO_BACKEND });
