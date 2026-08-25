@@ -68,7 +68,15 @@ tr:hover td{background:#F8FAFC}
 .charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
 .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:16px}
 .chart-box h3{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bar-row{display:flex;align-items:center;gap:8px;margin:0 -4px 8px;padding:2px 4px;border-radius:6px;cursor:pointer}
+.bar-row:hover{background:var(--bg)}
+.bar-row.bar-ativa{background:var(--primary-light);box-shadow:inset 0 0 0 1px var(--primary)}
+.metric.clicavel{cursor:pointer}
+.metric.clicavel:hover{box-shadow:inset 0 0 0 1px var(--primary)}
+.metric.metric-ativa{box-shadow:inset 0 0 0 2px var(--primary)}
+.chips-row{display:none;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.chip-filtro{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;background:var(--primary-light);color:var(--primary-dark);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--primary)}
+.chip-filtro span{opacity:.6}
 .bar-label{flex:0 0 110px;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-track{flex:1;height:14px;background:var(--bg);border-radius:7px;overflow:hidden}
 .bar-fill{height:100%;border-radius:7px;background:var(--primary);min-width:2px;transition:width .3s}
@@ -161,6 +169,9 @@ tr:hover td{background:#F8FAFC}
     <button class="view-btn" id="btn-cards" onclick="setView('cards')">⊞ Cards</button>
   </div>
 </div>
+
+<!-- FILTROS ATIVOS POR CLIQUE NOS GRÁFICOS -->
+<div class="chips-row" id="chips-ativos"></div>
 
 <!-- TABELA -->
 <div class="table-wrap" id="table-view">
@@ -314,8 +325,30 @@ async function carregarDados(){
   }
   try{
     // Lê da planilha via Apps Script, autenticando com o token do gestor.
-    const resp=await fetch(CFG.sheetUrl+'?action=read&token='+encodeURIComponent(CFG.token));
-    const data=await resp.json();
+    //
+    // O token vai no CORPO de um POST, nunca na URL: querystring acaba em
+    // histórico de navegador e em logs de servidor, e um token registrado
+    // nesses lugares deixa de ser segredo. O corpo vai sem cabeçalho
+    // Content-Type de propósito — é o que dispensa o preflight de CORS no
+    // Apps Script, exatamente como o formulário já faz no envio.
+    let data=null;
+    try{
+      const respPost=await fetch(CFG.sheetUrl,{
+        method:'POST',
+        body:JSON.stringify({action:'read',token:CFG.token})
+      });
+      data=await respPost.json();
+    }catch(e){data=null;}
+
+    // Compatibilidade com um backend anterior à leitura por POST: ele responde
+    // "Ação desconhecida" (só conhecia "submit"). Nesse caso — e só nesse —
+    // recorre ao caminho antigo por GET, para o painel não ficar cego durante
+    // a troca de versão. Um token errado NÃO cai aqui: o backend novo responde
+    // com o próprio erro de token, que é mostrado à pessoa.
+    if(!data || (data.ok===false && /ação desconhecida/i.test(data.erro||''))){
+      const respGet=await fetch(CFG.sheetUrl+'?action=read&token='+encodeURIComponent(CFG.token));
+      data=await respGet.json();
+    }
     if(data && data.ok===false){
       avisoDash('O servidor recusou a leitura',esc(data.erro||'Token inválido.'));
       DADOS=[];FILTRADOS=[];
@@ -337,26 +370,59 @@ async function carregarDados(){
   renderCards();
 }
 
+// Filtros ativados por clique nos gráficos e nos cards de resumo.
+// A regra combinada com o gestor: clicar em "Colérico" mostra quem teve
+// Colérico como resultado principal OU empatado no principal. Como o campo
+// gravado guarda só o principal (empates viram "X e Y" — e, na v1, "X / Y"),
+// basta procurar o valor clicado dentro dele; o secundário fica de fora
+// porque vive em outro campo.
+let CHIPS={setor:'',ling:'',temp:'',enea:'',disc:''};
+const CAMPO_CHIP={setor:d=>d.setor,ling:d=>d.linguagem,temp:d=>d.temperamento,enea:d=>d.eneagrama,disc:d=>d.disc};
+
+function passaChips(d){
+  return Object.keys(CHIPS).every(k=>{
+    if(!CHIPS[k])return true;
+    return String(CAMPO_CHIP[k](d)||'').includes(CHIPS[k]);
+  });
+}
+
+function toggleChip(key,valor){
+  CHIPS[key]=CHIPS[key]===valor?'':valor;
+  filtrar();
+}
+
+function renderChips(){
+  const el=document.getElementById('chips-ativos');
+  const rotulos={setor:CTX.termoGrupo||'Setor',ling:'Linguagem',temp:'Temperamento',enea:'Eneagrama',disc:'DISC'};
+  const ativos=Object.keys(CHIPS).filter(k=>CHIPS[k]);
+  if(!ativos.length){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='flex';
+  el.innerHTML=ativos.map(k=>`<button class="chip-filtro" data-k="${k}" title="Clique para remover este filtro"><span>${esc(rotulos[k])}:</span> ${esc(CHIPS[k])} ✕</button>`).join('');
+  el.querySelectorAll('.chip-filtro').forEach(b=>b.onclick=()=>toggleChip(b.dataset.k,CHIPS[b.dataset.k]));
+}
+
 function renderCharts(){
   const conta=extrair=>{
     const c={};
     FILTRADOS.forEach(d=>{const v=extrair(d);if(v)c[v]=(c[v]||0)+1;});
     return Object.entries(c).sort((a,b)=>b[1]-a[1]);
   };
-  const desenha=(id,entradas)=>{
+  const desenha=(id,entradas,key)=>{
     const el=document.getElementById(id);
     if(!entradas.length){el.innerHTML='<div class="empty" style="padding:20px">Sem dados</div>';return;}
     const max=entradas[0][1];
     el.innerHTML=entradas.map(([nome,n],i)=>{
       const cor=CORES[i%CORES.length].dot;
-      return `<div class="bar-row"><div class="bar-label" title="${esc(nome)}">${esc(nome)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%;background:${cor}"></div></div><div class="bar-num">${n}</div></div>`;
+      const ativa=CHIPS[key]===nome?' bar-ativa':'';
+      return `<div class="bar-row${ativa}" data-v="${esc(nome)}" title="Clique para filtrar por ${esc(nome)}"><div class="bar-label">${esc(nome)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/max*100)}%;background:${cor}"></div></div><div class="bar-num">${n}</div></div>`;
     }).join('');
+    el.querySelectorAll('.bar-row').forEach(r=>r.onclick=()=>toggleChip(key,r.dataset.v));
   };
-  desenha('chart-ling',conta(ling1));
-  desenha('chart-temp',conta(temp1));
-  desenha('chart-setor',conta(d=>String(d.setor||'').trim()));
-  desenha('chart-enea',conta(enea1));
-  desenha('chart-disc',conta(disc1));
+  desenha('chart-ling',conta(ling1),'ling');
+  desenha('chart-temp',conta(temp1),'temp');
+  desenha('chart-setor',conta(d=>String(d.setor||'').trim()),'setor');
+  desenha('chart-enea',conta(enea1),'enea');
+  desenha('chart-disc',conta(disc1),'disc');
 }
 
 // Escuta novos dados vindos do formulário (mesma aba)
@@ -386,10 +452,24 @@ function atualizarMetricas(){
 
   document.getElementById('m-total').textContent=DADOS.length;
   document.getElementById('m-setores').textContent=[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].length;
-  document.getElementById('m-ling').textContent=maisComum(ling1).split(' ')[0];
-  document.getElementById('m-temp').textContent=maisComum(temp1);
-  document.getElementById('m-enea').textContent=maisComum(enea1).replace('Tipo ','T');
-  document.getElementById('m-disc').textContent=maisComum(disc1).split(' ')[0];
+
+  // Os quatro cards de "mais comum" também filtram: o rótulo exibido pode vir
+  // encurtado, mas o clique usa o valor completo, guardado aqui no elemento.
+  const tile=(id,key,valorCheio,rotulo)=>{
+    const num=document.getElementById(id);
+    num.textContent=rotulo;
+    const card=num.closest('.metric');
+    if(valorCheio==='—'){card.classList.remove('clicavel','metric-ativa');card.onclick=null;return;}
+    card.classList.add('clicavel');
+    card.classList.toggle('metric-ativa',CHIPS[key]===valorCheio);
+    card.title='Clique para filtrar por '+valorCheio;
+    card.onclick=()=>toggleChip(key,valorCheio);
+  };
+  const vLing=maisComum(ling1),vTemp=maisComum(temp1),vEnea=maisComum(enea1),vDisc=maisComum(disc1);
+  tile('m-ling','ling',vLing,vLing.split(' ')[0]);
+  tile('m-temp','temp',vTemp,vTemp);
+  tile('m-enea','enea',vEnea,vEnea.replace('Tipo ','T'));
+  tile('m-disc','disc',vDisc,vDisc.split(' ')[0]);
 }
 
 function atualizarFiltros(){
@@ -413,9 +493,12 @@ function filtrar(){
     if(ling&&!d.linguagem?.includes(ling))return false;
     if(temp&&!d.temperamento?.includes(temp))return false;
     if(versao&&versao1(d)!==versao)return false;
+    if(!passaChips(d))return false;
     return true;
   });
-  renderCharts();renderTabela();renderCards();
+  // As métricas saem de DADOS (não mudam com o filtro), mas o realce de card
+  // ativo vive nelas — por isso também são redesenhadas aqui.
+  atualizarMetricas();renderChips();renderCharts();renderTabela();renderCards();
 }
 
 function setView(v){

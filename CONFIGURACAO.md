@@ -150,7 +150,7 @@ Em um app hospedado em outro lugar — inclusive um App da Web do Apps Script fe
    | Propriedade | Obrigatória? | Para que serve |
    |---|---|---|
    | `TOKEN_GESTOR` | **Sim** | Senha que autoriza o dashboard a ler os dados. Sem ela, **a leitura fica bloqueada**. |
-   | `ANTHROPIC_API_KEY` | Não | Chave da IA (`sk-ant-...`), de <https://console.anthropic.com>. Paga por uso, cerca de **US$ 0,03 (~R$ 0,17) por teste**. Sem ela o teste funciona, só não gera a análise escrita. |
+   | `ANTHROPIC_API_KEY` | Não | Chave da IA (`sk-ant-...`), de <https://console.anthropic.com>. Paga por uso, cerca de **US$ 0,03 (~R$ 0,17) por teste**. Sem ela a análise escrita sai de um banco de textos por perfil embutido no código (gratuito); com ela, a IA gera uma análise personalizada que cruza os quatro módulos. |
    | `EMAIL_GESTOR` | Não | E-mail que recebe cópia de todos os resultados. |
    | `LIMITE_ENVIOS_DIA` | Não | Teto diário de envios (padrão 200). |
    | `LIMITE_EMAILS_DIA` | Não | Teto diário de e-mails (padrão 150). |
