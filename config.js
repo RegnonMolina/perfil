@@ -23,6 +23,10 @@ window.CONFIG_ESCOLA = {
   // Deixe "" para não exibir logo.
   logoUrl: "",
 
+  // Ícone da aba do navegador (favicon), separado da logo.
+  // Deixe "" para usar os emojis padrão: 🧠 no formulário, 📊 no dashboard.
+  faviconUrl: "",
+
   // Cores da identidade visual (formato #RRGGBB)
   corPrimaria: "#1f4788",   // cor institucional forte: cabeçalho, títulos
   corSecundaria: "#667eea", // cor de destaque: botões, seleções, barra de progresso

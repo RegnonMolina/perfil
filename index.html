@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil Comportamental</title>
-    <!-- Favicon padrão (emoji). Se a organização tiver logo no config.js,
-         aplicarBranding() troca por ela. -->
+    <!-- Favicon padrão (emoji). Se o config.js definir faviconUrl,
+         aplicarBranding() troca por ele — campo próprio, separado da logo,
+         para cada organização escolher o ícone da aba de forma independente. -->
     <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧠%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1120,10 +1121,14 @@
             if (branding.logoUrl) {
                 logo.src = branding.logoUrl;
                 logo.style.display = "inline-block";
-                // A logo da organização também vira o ícone da aba.
-                document.getElementById("favicon").href = branding.logoUrl;
             } else {
                 logo.style.display = "none";
+            }
+
+            // Ícone da aba: só muda se a organização definir faviconUrl no
+            // config.js; sem ele, fica o emoji padrão da página.
+            if (branding.faviconUrl) {
+                document.getElementById("favicon").href = branding.faviconUrl;
             }
 
             const rodape = document.getElementById("rodape");
