@@ -122,12 +122,46 @@
 
         .tela.ativa {
             display: block;
-            animation: fadeIn 0.3s ease;
+            animation: telaEntra 0.45s cubic-bezier(0.22, 0.9, 0.36, 1);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes telaEntra {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* Entrada em cascata das perguntas da tela ativa: cada bloco chega
+           alguns milissegundos depois do anterior. A partir do oitavo, todos
+           usam o mesmo atraso — quem rola até lá já os encontra parados. */
+        .tela.ativa .form-group,
+        .tela.ativa .resultado-card {
+            animation: itemEntra 0.5s cubic-bezier(0.22, 0.9, 0.36, 1) backwards;
+        }
+        .tela.ativa .form-group:nth-child(n) { animation-delay: 0.28s; }
+        .tela.ativa .form-group:nth-child(1) { animation-delay: 0.04s; }
+        .tela.ativa .form-group:nth-child(2) { animation-delay: 0.08s; }
+        .tela.ativa .form-group:nth-child(3) { animation-delay: 0.12s; }
+        .tela.ativa .form-group:nth-child(4) { animation-delay: 0.16s; }
+        .tela.ativa .form-group:nth-child(5) { animation-delay: 0.20s; }
+        .tela.ativa .form-group:nth-child(6) { animation-delay: 0.24s; }
+        .tela.ativa .resultado-card:nth-child(n) { animation-delay: 0.45s; }
+        .tela.ativa .resultado-card:nth-child(1) { animation-delay: 0.10s; }
+        .tela.ativa .resultado-card:nth-child(2) { animation-delay: 0.17s; }
+        .tela.ativa .resultado-card:nth-child(3) { animation-delay: 0.24s; }
+        .tela.ativa .resultado-card:nth-child(4) { animation-delay: 0.31s; }
+        .tela.ativa .resultado-card:nth-child(5) { animation-delay: 0.38s; }
+
+        @keyframes itemEntra {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* Acessibilidade: quem pediu menos movimento no sistema operacional
+           recebe as telas sem animação (e sem confete, tratado no código). */
+        @media (prefers-reduced-motion: reduce) {
+            .tela.ativa, .tela.ativa .form-group, .tela.ativa .resultado-card {
+                animation: none;
+            }
         }
 
         .tela h2 {
@@ -326,7 +360,7 @@
             background: var(--cor-secundaria);
             height: 100%;
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.6s cubic-bezier(0.22, 0.9, 0.36, 1);
         }
 
         .resultado {
@@ -1893,6 +1927,63 @@
             } catch (e) {}
 
             irParaTela(12);
+            celebrar();
+        }
+
+        // Confete discreto ao concluir o questionário, nas cores da
+        // organização. Sem biblioteca: um canvas temporário e ~2 segundos de
+        // queda. Quem pediu menos movimento no sistema não recebe confete.
+        function celebrar() {
+            if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+            if (document.getElementById("canvas-confete")) return;
+
+            const estilos = getComputedStyle(document.documentElement);
+            const cores = [
+                estilos.getPropertyValue("--cor-primaria").trim() || "#185FA5",
+                estilos.getPropertyValue("--cor-secundaria").trim() || "#0F6E56",
+                "#F2B705", "#E8E5DC"
+            ];
+
+            const canvas = document.createElement("canvas");
+            canvas.id = "canvas-confete";
+            canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999";
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.body.appendChild(canvas);
+            const ctx = canvas.getContext("2d");
+
+            const pecas = [];
+            for (let i = 0; i < 110; i++) {
+                pecas.push({
+                    x: Math.random() * canvas.width,
+                    y: -20 - Math.random() * canvas.height * 0.4,
+                    vy: 2.2 + Math.random() * 2.6,
+                    vx: -1 + Math.random() * 2,
+                    lado: 5 + Math.random() * 6,
+                    cor: cores[i % cores.length],
+                    giro: Math.random() * Math.PI,
+                    vgiro: -0.12 + Math.random() * 0.24
+                });
+            }
+
+            const inicio = performance.now();
+            (function quadro(agora) {
+                const t = agora - inicio;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Nos ~600ms finais o confete some em fade, em vez de sumir de estalo.
+                ctx.globalAlpha = t < 1700 ? 1 : Math.max(0, 1 - (t - 1700) / 600);
+                pecas.forEach(function (p) {
+                    p.x += p.vx; p.y += p.vy; p.giro += p.vgiro;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.giro);
+                    ctx.fillStyle = p.cor;
+                    ctx.fillRect(-p.lado / 2, -p.lado / 2, p.lado, p.lado * 0.6);
+                    ctx.restore();
+                });
+                if (t < 2300) requestAnimationFrame(quadro);
+                else canvas.remove();
+            })(inicio);
         }
 
         function baixarPDF() {
