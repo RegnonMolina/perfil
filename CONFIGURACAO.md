@@ -194,7 +194,32 @@ param de carregar até que o novo valor seja digitado.
 > domínio — o que não serve para o grupo de networking, mas pode servir para o
 > colégio.
 
-### 1.3.2 Privacidade e LGPD
+> ⚠️ **Acesso restrito quebra o dashboard deste site, e não tem como contornar.**
+> O painel se autentica pelo **token**, não pela sessão do Google: a leitura é um
+> `fetch` entre origens diferentes (`github.io` → `script.google.com`), e o
+> navegador **não envia o cookie de login** numa requisição dessas. Com acesso
+> `DOMAIN`, o endereço devolve a página de login do Google em vez do JSON — em
+> qualquer aparelho, logado ou não. O dashboard detecta esse caso e diz
+> exatamente isso na tela, em vez de acusar problema de rede.
+>
+> A implantação usada pelo site (`urlAppsScript` no `config.js`) precisa
+> continuar com **"Qualquer pessoa"**. Se o mesmo script também servir uma tela
+> interna que deve ser restrita, ela tem de sair numa **implantação separada** —
+> nunca republicando a do site.
+
+### 1.3.2 O token fica no aparelho, não na conta
+
+O token é digitado uma vez por **navegador e aparelho**, e vive no
+`localStorage`. Ele **não viaja com a sua conta Google**: o Chrome sincroniza
+favoritos, senhas, histórico e abas — nunca dados de site.
+
+Na prática: se o dashboard mostra os dados no computador e no celular aparece
+"Falta o token do gestor neste aparelho", não é falha nem falta de login. É só
+digitar o token uma vez naquele aparelho. A cor institucional é o sintoma
+gêmeo — ela também vem do `localStorage`, então um aparelho sem configuração
+volta à cor do `config.js`.
+
+### 1.3.3 Privacidade e LGPD
 
 Antes de começar o teste, a pessoa lê um aviso e precisa marcar o aceite. O
 texto é montado a partir do bloco `privacidade` do `config.js`:
@@ -267,6 +292,37 @@ junto com a `VERSAO` do `instrumento.js`.
 ---
 
 ## Publicação automática do Apps Script (opcional)
+
+> 🛑 **Travada desde 2026-08-26, e não é para destravar sem resolver isto antes.**
+>
+> O script `1LfooPF...` deixou de ser só o backend deste site: ele hoje hospeda
+> **também** o web app interno "Perfil Comportamental" — a tela com a barra do
+> Hub —, em três arquivos que **não existem** em `apps-script/` neste
+> repositório: `Codigo.js`, `PerfilComportamental.html` e `Servico_Coleta.js`.
+>
+> `clasp push` **substitui o conteúdo inteiro** do projeto pelo que houver em
+> `rootDir`. Como o `rootDir` aqui é `apps-script/` (dois arquivos), a primeira
+> publicação automática **apagaria os três**, derrubando o web app interno e o
+> recebimento do formulário — e ainda trocaria o manifesto (`ANYONE_ANONYMOUS`
+> aqui, `DOMAIN` lá).
+>
+> Isso nunca aconteceu porque as 7 execuções do fluxo até hoje falharam na etapa
+> *"Verificar credencial"*: o segredo `CLASPRC_JSON` nunca foi criado. O perigo
+> mora justamente aí — **o estrago começa no dia em que alguém criar o segredo**
+> para fazer a automação funcionar.
+>
+> Por isso o fluxo agora tem uma **trava de segurança** que falha explicando o
+> problema. Para liberar, é preciso primeiro decidir e executar uma das saídas:
+>
+> - **Separar:** deixar a implantação do site (`ANYONE_ANONYMOUS`) num script
+>   próprio, e a tela interna (`DOMAIN`) em outro. É a saída limpa: cada um
+>   volta a ter um dono e um manifesto.
+> - **Unificar:** trazer os três arquivos vivos para `apps-script/`, e então
+>   decidir qual `access` vale para o script inteiro — lembrando que `DOMAIN`
+>   quebra o dashboard e o formulário deste site (ver 1.3.1).
+>
+> Resolvido isso, crie a variável de repositório (**Settings → Secrets and
+> variables → Actions → Variables**) `DEPLOY_APPS_SCRIPT_LIBERADO` = `sim`.
 
 > Enquanto o segredo `CLASPRC_JSON` não existir, este fluxo **falha e o backend
 > não é publicado** — o Apps Script continua com o que foi colado à mão no
