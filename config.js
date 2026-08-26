@@ -41,6 +41,45 @@ window.CONFIG_ESCOLA = {
   // Texto pequeno exibido no rodapé das páginas (deixe "" para ocultar)
   rodape: "",
 
+  // ----------------------------------------------------------
+  //  BARRA SUPERIOR (navegação entre os sistemas da organização)
+  // ----------------------------------------------------------
+  // Mesma barra que os web apps do Apps Script já têm no topo.
+  // OUTRAS ESCOLAS: troque os grupos pelos seus próprios sistemas, ou
+  // apague o bloco inteiro / use exibir:false — sem ele nenhuma barra
+  // é montada e as páginas ficam como eram.
+  menubar: {
+    exibir: true,
+    titulo: "Sistema CMS + BNI",
+    logoUrl: "https://colegiomundodosaber.com.br/wp-content/uploads/2024/11/Logo-Oficial-2048x1003.png",
+    grupos: [
+      {
+        nome: "CMS",
+        itens: [
+          { nome: "Avisos de Vencimento",  icone: "🔔", url: "https://script.google.com/macros/s/AKfycbz7yppFxWfd62Bikg3Klmp4IDIc64RSooU5mdDsB4xx6kxaXtmOFNUlWVw9OCupWgZScw/exec" },
+          { nome: "B.I. Financeiro",       icone: "📊", url: "https://script.google.com/macros/s/AKfycbwf8KMNha-zaEc_H5Km8It6MxrFEsDyU6TF8jhNPxPbG3VjU1jJ_pcknQ5AxHvBqm0/exec" },
+          { nome: "Busca de Currículos",   icone: "📄", url: "https://script.google.com/a/macros/colegiomundodosaber.com.br/s/AKfycbwKD_EAWUCQQFSN0jxEFW9IeTn8FPtOAbou_dSlx56TJZRJIa71eOU_vvme30yXQmTi1w/exec" },
+          { nome: "Cobranças",             icone: "💰", url: "https://script.google.com/macros/s/AKfycbwZfLC7aH02yrnuWK9jUw9BhrczGNU4Yy90yKH0pU3jKG-bA2mXumHwuBSVYQ0MlEcmeg/exec" },
+          { nome: "Perfil Comportamental", icone: "🧭", url: "https://script.google.com/macros/s/AKfycbzBk6TW3cmioqepgvotL1Dnici_sCbY_yu9WagNaHIgCuhizwtSV-qJwBiS-6wzA6A/exec" },
+          { nome: "Rematrículas",          icone: "🎓", url: "https://script.google.com/a/macros/colegiomundodosaber.com.br/s/AKfycbzs3_XV5Wrj9rs_DKG350ppiZl3KotQ8QPgpJZmm_rsBM5biAcsdaW73X9aZ76bkL3xrQ/exec" }
+        ]
+      },
+      {
+        nome: "BNI",
+        itens: [
+          { nome: "BNI Imperador", icone: "🤝", url: "https://script.google.com/macros/s/AKfycbza1ISrbDAYV9Z5IdyhDDzHKk_PFksb38OWJUgaP0FGhEi6szb5skrxretO2CFTd-85lQ/exec" },
+          { nome: "ROI BNI",       icone: "📊", url: "https://script.google.com/macros/s/AKfycbyvRHnTr5p9DP5FWI7CohXPTJYJT7SgvAVnyI11VwGioLsfievqpfwsdhPtF9iZXbHbug/exec" }
+        ]
+      },
+      {
+        nome: "Ferramentas",
+        itens: [
+          { nome: "Controle de Acesso", icone: "🔐", url: "https://script.google.com/a/macros/colegiomundodosaber.com.br/s/AKfycbzHRwDKNKrUzz8oH4GcO6m4uzfPZerXEm67U6PTMcy_FR5n6fz0KzBFfJ53BPxVeSCjJA/exec" }
+        ]
+      }
+    ]
+  },
+
   // Card de clima exibido no topo das páginas (dados da API gratuita Open-Meteo)
   clima: {
     exibir: true,             // false esconde o card em todas as páginas
