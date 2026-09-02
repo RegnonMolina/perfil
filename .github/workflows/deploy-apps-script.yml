@@ -31,6 +31,36 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # TRAVA DE SEGURANÇA (2026-08-26)
+      #
+      # O script 1LfooPF... deixou de ser só o backend deste site: ele hoje
+      # hospeda TAMBÉM o web app interno "Perfil Comportamental" (a tela com a
+      # barra do Hub), em três arquivos que NÃO existem em apps-script/ neste
+      # repositório -- Codigo.js, PerfilComportamental.html e Servico_Coleta.js.
+      #
+      # `clasp push` substitui o conteúdo INTEIRO do projeto pelo que existe em
+      # rootDir. Como rootDir aqui é apps-script/ (dois arquivos), a primeira
+      # publicação automática APAGARIA o web app interno e o handler do
+      # formulário, e trocaria o manifesto (ANYONE_ANONYMOUS aqui, DOMAIN lá).
+      #
+      # As 7 execuções deste fluxo até hoje falharam na etapa "Verificar
+      # credencial", porque o segredo CLASPRC_JSON nunca foi criado. Ou seja: o
+      # estrago não aconteceu por acidente, não por desenho. No dia em que
+      # alguém criar o segredo para fazer o deploy automático funcionar, ele
+      # acontece no primeiro push que tocar config.js.
+      #
+      # Esta trava troca esse acidente por um erro explicado. Para liberar,
+      # resolva a divergência primeiro (ver CONFIGURACAO.md, "Publicação
+      # automática") e então crie a variável de repositório
+      # DEPLOY_APPS_SCRIPT_LIBERADO com o valor "sim".
+      - name: Trava de segurança — divergência entre o repo e o script
+        run: |
+          if [ "${{ vars.DEPLOY_APPS_SCRIPT_LIBERADO }}" != "sim" ]; then
+            echo "::error title=Publicação automática travada::O script no Google tem arquivos que este repositório não tem (Codigo.js, PerfilComportamental.html, Servico_Coleta.js). Um 'clasp push' a partir de apps-script/ APAGARIA os três, derrubando o web app interno do Perfil Comportamental e o recebimento do formulário. Resolva a divergência e só então crie a variável de repositório DEPLOY_APPS_SCRIPT_LIBERADO=sim. Detalhes no CONFIGURACAO.md."
+            exit 1
+          fi
+          echo "Trava liberada por DEPLOY_APPS_SCRIPT_LIBERADO=sim."
+
       - name: Baixar o código
         uses: actions/checkout@v4
 
