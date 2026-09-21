@@ -230,7 +230,7 @@ No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `h
 
 1. Responda um teste completo no `index.html`.
 2. Confira: cards de análise da IA no resultado, linha nova na planilha, e-mails recebidos, botão **Baixar PDF** (escolha "Salvar como PDF" na impressão).
-3. Abra o `dashboard.html` → **Atualizar**: gráficos e tabela carregam. Se configurar senha, ela é pedida ao abrir.
+3. Abra o `dashboard.html` → **Atualizar**: gráficos e tabela carregam. Se configurar senha, ela é pedida ao abrir e fica lembrada naquele navegador por 90 dias (ou até a senha ser trocada).
 4. Confira que a planilha ganhou a aba **"Respostas v2"** com o cabeçalho novo, e que a aba **"Respostas"** (histórico da versão anterior) continua intocada.
 
 > As respostas da versão antiga do questionário aparecem no dashboard com o selo

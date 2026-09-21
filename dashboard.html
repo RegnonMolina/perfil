@@ -625,11 +625,23 @@ function exportarCSV(){
 // máquina já aberta — não protege os dados, porque a verificação acontece no
 // navegador. Quem protege os dados é o TOKEN_GESTOR exigido pelo Apps Script
 // em carregarDados(): sem ele, o servidor não entrega nada.
+//
+// Depois de acertada, a trava fica lembrada neste navegador por
+// DIAS_LEMBRAR_TRAVA dias. A lembrança vive em localStorage (sessionStorage
+// morre ao fechar a aba, e na prática a senha era pedida todo dia) e guarda a
+// própria senha junto do prazo: trocar a trava em ⚙ Configurar invalida a
+// lembrança antiga, e vencido o prazo a senha é pedida de novo.
+const DIAS_LEMBRAR_TRAVA=90;
 function verificarSenha(){
   if(!CFG.senha)return true;
-  if(sessionStorage.getItem('dashAuth')===CFG.senha)return true;
+  let lembrada=null;
+  try{lembrada=JSON.parse(localStorage.getItem('dashAuth')||'null');}catch(e){}
+  if(lembrada&&lembrada.senha===CFG.senha&&Number(lembrada.ate)>Date.now())return true;
   const s=prompt('Digite a trava de tela para abrir o dashboard:');
-  if(s===CFG.senha){sessionStorage.setItem('dashAuth',s);return true;}
+  if(s===CFG.senha){
+    try{localStorage.setItem('dashAuth',JSON.stringify({senha:s,ate:Date.now()+DIAS_LEMBRAR_TRAVA*24*60*60*1000}));}catch(e){}
+    return true;
+  }
   document.querySelector('.shell').innerHTML='<div class="empty" style="padding:80px 20px"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Acesso restrito. Recarregue a página para tentar novamente.</div>';
   return false;
 }
