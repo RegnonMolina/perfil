@@ -339,14 +339,53 @@ function avisoDash(titulo,detalhe){
   document.getElementById('cards-container').innerHTML=html;
 }
 
+// Lê a resposta como JSON, mas primeiro em texto, para distinguir dois erros
+// que o .json() cru confunde num SyntaxError genérico:
+//
+//   - o corpo começa com "<"  -> veio HTML. Na prática é a página de login do
+//     Google, servida quando a implantação está com acesso DOMAIN em vez de
+//     ANYONE_ANONYMOUS. O painel não tem como contornar: ele se autentica pelo
+//     token, e o fetch entre origens não manda o cookie de sessão do Google.
+//   - qualquer outra coisa -> resposta realmente malformada.
+//
+// Sem essa separação, uma implantação republicada com acesso restrito aparece
+// como "não foi possível falar com o servidor" e manda quem for investigar
+// procurar problema de rede.
+async function lerJson(resposta){
+  const texto=await resposta.text();
+  if(/^\s*</.test(texto)){
+    const erro=new Error('Resposta em HTML, não JSON');
+    erro.nome='exigiu-login';
+    throw erro;
+  }
+  return JSON.parse(texto);
+}
+
+// Abre a caixa de configuração (diferente de toggleConfig, que alterna).
+// Usada quando falta algo sem o qual o painel não tem o que mostrar: deixar a
+// pessoa diante do campo que falta poupa uma caçada.
+function abrirConfig(){
+  document.getElementById('config-box').style.display='block';
+}
+
 async function carregarDados(){
   if(!CFG.sheetUrl){
-    avisoDash('Falta configurar a URL do Apps Script','Clique em <strong>⚙ Configurar</strong> e cole a URL do App da Web.');
+    avisoDash('Falta configurar a URL do Apps Script','Cole abaixo, em <strong>URL do Apps Script</strong>, o endereço do App da Web.');
+    abrirConfig();
     return;
   }
   if(!CFG.token){
-    avisoDash('Falta o token do gestor',
-      'Os dados são pessoais e o servidor só os entrega mediante token. Clique em <strong>⚙ Configurar</strong> e cole o valor da propriedade <code>TOKEN_GESTOR</code> definida no Apps Script.');
+    // Este é o caso de "funciona no meu computador e não no celular"
+    // (2026-08-26): o token fica no localStorage, que é por navegador e por
+    // aparelho, e a conta Google não o carrega junto -- o Chrome sincroniza
+    // favoritos, senhas e histórico, nunca dados de site. Por isso o aviso
+    // diz onde o token mora, e a caixa já abre no campo que falta.
+    avisoDash('Falta o token do gestor neste aparelho',
+      'Os dados são pessoais e o servidor só os entrega mediante token.<br><br>' +
+      'O token fica guardado <strong>neste navegador, neste aparelho</strong> — ele não viaja com a sua conta Google. ' +
+      'Se o painel funciona no computador e não aqui, é isto: falta digitá-lo uma vez neste aparelho.<br><br>' +
+      'Cole abaixo, em <strong>Token do gestor</strong>, o valor da propriedade <code>TOKEN_GESTOR</code> definida no Apps Script.');
+    abrirConfig();
     return;
   }
   try{
@@ -363,8 +402,13 @@ async function carregarDados(){
         method:'POST',
         body:JSON.stringify({action:'read',token:CFG.token})
       });
-      data=await respPost.json();
-    }catch(e){data=null;}
+      data=await lerJson(respPost);
+    }catch(e){
+      // Página de login em vez de JSON é diagnóstico, não falha de rede:
+      // sobe para o catch de fora, que sabe explicar o que aconteceu.
+      if(e && e.nome==='exigiu-login')throw e;
+      data=null;
+    }
 
     // Compatibilidade com um backend anterior à leitura por POST: ele responde
     // "Ação desconhecida" (só conhecia "submit"). Nesse caso — e só nesse —
@@ -373,7 +417,7 @@ async function carregarDados(){
     // com o próprio erro de token, que é mostrado à pessoa.
     if(!data || (data.ok===false && /ação desconhecida/i.test(data.erro||''))){
       const respGet=await fetch(CFG.sheetUrl+'?action=read&token='+encodeURIComponent(CFG.token));
-      data=await respGet.json();
+      data=await lerJson(respGet);
     }
     if(data && data.ok===false){
       avisoDash('O servidor recusou a leitura',esc(data.erro||'Token inválido.'));
@@ -383,7 +427,17 @@ async function carregarDados(){
     }
     DADOS=(data && data.rows)?data.rows:[];
   }catch(e){
-    avisoDash('Não foi possível falar com o servidor','Confira a URL do Apps Script e sua conexão, e clique em <strong>↻ Atualizar</strong>.');
+    if(e && e.nome==='exigiu-login'){
+      avisoDash('A implantação do Apps Script passou a exigir login',
+        'O endereço configurado devolveu uma página de login do Google em vez dos dados. ' +
+        'Isso acontece quando a implantação usada por este site é republicada com acesso ' +
+        '<code>DOMAIN</code> (só o domínio) em vez de <code>ANYONE_ANONYMOUS</code>.<br><br>' +
+        'O site não tem como contornar: ele autentica pelo token, não pela sessão do Google ' +
+        '(a leitura é feita entre origens diferentes, e o navegador não envia o cookie de login). ' +
+        'Republique a implantação a partir de uma versão com acesso anônimo — veja o CONFIGURACAO.md.');
+    }else{
+      avisoDash('Não foi possível falar com o servidor','Confira a URL do Apps Script e sua conexão, e clique em <strong>↻ Atualizar</strong>.');
+    }
     DADOS=[];FILTRADOS=[];
     atualizarMetricas();renderCharts();
     return;
