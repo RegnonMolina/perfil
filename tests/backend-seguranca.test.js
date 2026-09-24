@@ -223,7 +223,7 @@ test("Cor inválida não escapa do atributo style", () => {
     contexto: {}
   }, null);
   assert.ok(!html.includes("onload="), "a cor permitiu sair do atributo");
-  assert.ok(html.includes("#1f4788"), "cor inválida deveria cair no padrão");
+  assert.ok(html.includes("#0f5c56"), "cor inválida deveria cair no padrão");
 });
 
 test("Só logo https e sem aspas é aceita", () => {

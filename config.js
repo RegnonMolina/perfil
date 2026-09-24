@@ -28,8 +28,8 @@ window.CONFIG_ESCOLA = {
   faviconUrl: "",
 
   // Cores da identidade visual (formato #RRGGBB)
-  corPrimaria: "#1f4788",   // cor institucional forte: cabeçalho, títulos
-  corSecundaria: "#667eea", // cor de destaque: botões, seleções, barra de progresso
+  corPrimaria: "#0f5c56",   // cor institucional forte: cabeçalho, títulos
+  corSecundaria: "#0b4741", // cor de destaque: botões, seleções, barra de progresso
 
   // URL do App da Web do Google Apps Script (veja CONFIGURACAO.md)
   urlAppsScript: "https://script.google.com/macros/s/AKfycbw93nCoG-IfMQCdLBtLsb60SZvT3ClZBeE6Lkm-yjBMq6EujKHXaeHrsgwERIolakSUCw/exec",

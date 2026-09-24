@@ -356,7 +356,7 @@ function escaparHtml(valor) {
 // A cor entra num atributo style. Só hexadecimal de 6 dígitos passa; qualquer
 // outra coisa vira a cor padrão, em vez de escapar do atributo.
 function corValida(valor) {
-  return /^#[0-9A-Fa-f]{6}$/.test(String(valor || "")) ? String(valor) : "#1f4788";
+  return /^#[0-9A-Fa-f]{6}$/.test(String(valor || "")) ? String(valor) : "#0f5c56";
 }
 
 // A logo entra num src="...". Precisa ser https e não pode conter aspas nem
