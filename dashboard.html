@@ -15,22 +15,38 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --primary:#0f5c56;--primary-light:#E6F2F1;--primary-dark:#0b4741;
-  --accent:#F4A623;--success:#3B6D11;--success-light:#EAF3DE;
-  --warn:#854F0B;--bg:#F4F6F9;--surface:#fff;--border:#E2E8F0;
-  --text:#1A202C;--text2:#4A5568;--text3:#718096;--r:10px;--rlg:14px;
+  --primary:#0f5c56;--primary-light:#173a37;--primary-dark:#0b4741;
+  --accent:#F4A623;--success:#3ecf8e;--success-light:#173a37;
+  --warn:#e0a634;--bg:#14181a;--surface:#1b2023;--surface2:#20262a;--border:#2a3236;
+  --text:#e8ecee;--text2:#a3adb3;--text3:#6f7a80;--r:10px;--rlg:14px;
+  --sidebar-w:220px;
 }
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.shell{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
-.topbar{background:var(--primary);padding:16px 20px;border-radius:var(--rlg);margin-bottom:24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.topbar-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.topbar-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2}
-.topbar-info{flex:1}
-.topbar-title{color:#fff;font-size:16px;font-weight:600}
-.topbar-sub{color:rgba(255,255,255,.75);font-size:12px}
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;display:flex;flex-direction:column;gap:20px}
+.sidebar-brand{display:flex;align-items:center;gap:10px}
+.sidebar-brand .icon{width:36px;height:36px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-brand .icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
+.sidebar-brand img{max-height:36px;max-width:120px;border-radius:6px}
+.sidebar-brand-text{font-size:13px;font-weight:600;color:var(--text);line-height:1.3}
+.sidebar-brand-text small{display:block;font-size:11px;color:var(--text3);font-weight:400}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px}
+.sidebar-nav-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--r);font-size:13px;font-weight:500;color:var(--text2);background:var(--primary);color:#fff}
+.sidebar-section{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin:4px 0 2px}
+.sidebar-actions{display:flex;flex-direction:column;gap:2px}
+.sidebar-actions button{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);font-size:13px;color:var(--text2);background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;width:100%}
+.sidebar-actions button:hover{background:var(--surface2);color:var(--text)}
+.sidebar-footer{margin-top:auto;font-size:11px;color:var(--text3);line-height:1.6;border-top:1px solid var(--border);padding-top:12px}
+
+/* MAIN */
+.main{flex:1;min-width:0;padding:24px 28px 60px}
+.breadcrumb{font-size:12px;color:var(--text3);margin-bottom:6px}
+.page-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:18px}
 .btn{padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:none;transition:all .15s}
-.btn-white{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
-.btn-white:hover{background:rgba(255,255,255,.25)}
+.btn-white{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-white:hover{background:var(--border)}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-primary:hover{background:var(--primary-dark)}
 .btn-ghost{background:var(--surface);color:var(--text2);border:1px solid var(--border)}
@@ -41,12 +57,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
 .controls select,.controls input{padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);outline:none}
 .controls input{flex:1;min-width:180px}
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 table{width:100%;border-collapse:collapse}
 thead{background:var(--primary)}
 th{padding:12px 14px;text-align:left;font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
 td{padding:11px 14px;font-size:13px;color:var(--text);border-top:1px solid var(--border);vertical-align:top}
-tr:hover td{background:#F8FAFC}
+tr:hover td{background:var(--surface2)}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
 .empty{text-align:center;padding:60px 20px;color:var(--text3)}
 .empty svg{width:48px;height:48px;stroke:var(--border);fill:none;stroke-width:1.5;margin:0 auto 12px;display:block}
@@ -54,8 +70,8 @@ tr:hover td{background:#F8FAFC}
 .config-box h3{font-size:15px;font-weight:600;margin-bottom:14px;color:var(--text)}
 .field{margin-bottom:12px}
 .field label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
-.field input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none}
-.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,95,165,.1)}
+.field input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;outline:none;background:var(--surface2);color:var(--text)}
+.field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(15,92,86,.25)}
 .grid-config{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .card-view{display:none}
 .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
@@ -66,7 +82,7 @@ tr:hover td{background:#F8FAFC}
 .pcard-role{font-size:11px;color:var(--text3)}
 .pcard-body{padding:0 16px 14px}
 .pcard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.pcard-tip{font-size:12px;color:var(--text2);line-height:1.5;padding:8px 10px;background:var(--bg);border-radius:var(--r);border-left:3px solid var(--primary)}
+.pcard-tip{font-size:12px;color:var(--text2);line-height:1.5;padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--primary)}
 .view-toggle{display:flex;gap:6px}
 .view-btn{padding:7px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;color:var(--text2)}
 .view-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
@@ -74,16 +90,16 @@ tr:hover td{background:#F8FAFC}
 .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:16px}
 .chart-box h3{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px}
 .bar-row{display:flex;align-items:center;gap:8px;margin:0 -4px 8px;padding:2px 4px;border-radius:6px;cursor:pointer}
-.bar-row:hover{background:var(--bg)}
+.bar-row:hover{background:var(--surface2)}
 .bar-row.bar-ativa{background:var(--primary-light);box-shadow:inset 0 0 0 1px var(--primary)}
 .metric.clicavel{cursor:pointer}
 .metric.clicavel:hover{box-shadow:inset 0 0 0 1px var(--primary)}
 .metric.metric-ativa{box-shadow:inset 0 0 0 2px var(--primary)}
 .chips-row{display:none;flex-wrap:wrap;gap:8px;margin:0 0 16px}
-.chip-filtro{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;background:var(--primary-light);color:var(--primary-dark);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--primary)}
-.chip-filtro span{opacity:.6}
+.chip-filtro{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;background:var(--primary-light);color:#fff;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--primary)}
+.chip-filtro span{opacity:.7}
 .bar-label{flex:0 0 110px;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-track{flex:1;height:14px;background:var(--bg);border-radius:7px;overflow:hidden}
+.bar-track{flex:1;height:14px;background:var(--surface2);border-radius:7px;overflow:hidden}
 .bar-fill{height:100%;border-radius:7px;background:var(--primary);min-width:2px;transition:width .45s cubic-bezier(.22,.9,.36,1)}
 /* Entrada em cascata das linhas e cards ao (re)desenhar a lista. A partir da
    oitava linha o atraso é o mesmo — o efeito só precisa existir no topo. */
@@ -101,6 +117,13 @@ tr:hover td{background:#F8FAFC}
   .bar-fill{transition:none}
 }
 .bar-num{flex:0 0 24px;font-size:11px;color:var(--text3);text-align:right}
+@media(max-width:860px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;align-items:center;border-right:none;border-bottom:1px solid var(--border)}
+  .sidebar-nav,.sidebar-actions{flex-direction:row;flex-wrap:wrap}
+  .sidebar-footer{display:none}
+  .main{padding:20px 16px 40px}
+}
 @media(max-width:700px){
   .summary-grid{grid-template-columns:1fr 1fr 1fr}
   .charts-grid{grid-template-columns:1fr}
@@ -111,25 +134,40 @@ tr:hover td{background:#F8FAFC}
 </style>
 </head>
 <body>
-<div class="shell">
-
 <!-- CLIMA -->
 <div id="clima-topo" class="clima-topo"></div>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="topbar-icon" id="topbar-icon">
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="icon" id="topbar-icon">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <img id="topbar-logo" alt="Logo" style="display:none;max-height:36px;max-width:120px;background:#fff;border-radius:6px;padding:2px 5px">
+    <div class="sidebar-brand-text" id="dash-title-wrap"><span id="dash-title">Dashboard</span><small id="dash-sub">Perfis da Equipe</small></div>
   </div>
-  <img id="topbar-logo" alt="Logo" style="display:none;max-height:40px;max-width:120px;background:#fff;border-radius:8px;padding:3px 6px">
-  <div class="topbar-info">
-    <div class="topbar-title" id="dash-title">Dashboard — Perfis da Equipe</div>
-    <div class="topbar-sub" id="dash-sub">Visualização em tempo real dos resultados</div>
+
+  <nav class="sidebar-nav">
+    <div class="sidebar-nav-item">📊 Visão Geral</div>
+  </nav>
+
+  <div>
+    <div class="sidebar-section">Ações</div>
+    <div class="sidebar-actions">
+      <button onclick="toggleConfig()">⚙ Configurar</button>
+      <button onclick="carregarDados()">↻ Atualizar</button>
+      <button onclick="exportarCSV()">⬇ Exportar CSV</button>
+    </div>
   </div>
-  <button class="btn btn-white" onclick="toggleConfig()">⚙ Configurar</button>
-  <button class="btn btn-white" onclick="carregarDados()">↻ Atualizar</button>
-  <button class="btn btn-white" onclick="exportarCSV()">⬇ Exportar CSV</button>
-</div>
+
+  <div class="sidebar-footer" id="sidebar-footer">Colégio Mundo do Saber</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+<div class="breadcrumb">Perfil Comportamental / Visão Geral</div>
+<div class="page-title" id="page-title">Dashboard — Perfis da Equipe</div>
 
 <!-- CONFIG BOX -->
 <div class="config-box" id="config-box" style="display:none">
@@ -214,6 +252,7 @@ tr:hover td{background:#F8FAFC}
   <div class="card-grid" id="cards-container"></div>
 </div>
 
+</main>
 </div>
 <script>
 const CORES=[
@@ -289,7 +328,8 @@ function aplicarBrandingDash(){
   r.setProperty('--primary-dark',`color-mix(in srgb, ${CFG.cor} 72%, black)`);
   r.setProperty('--primary-light',`color-mix(in srgb, ${CFG.cor} 10%, white)`);
   document.title=`Dashboard — ${CFG.nome}`;
-  document.getElementById('dash-title').textContent=`Dashboard — ${CFG.nome}`;
+  document.getElementById('dash-title').textContent=CFG.nome;
+  document.getElementById('page-title').textContent=`Dashboard — ${CFG.nome}`;
   const logo=document.getElementById('topbar-logo');
   const icone=document.getElementById('topbar-icon');
   if(CFG.logoUrl){logo.src=CFG.logoUrl;logo.style.display='block';icone.style.display='none';}
