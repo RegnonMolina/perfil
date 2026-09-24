@@ -557,6 +557,18 @@ function setView(v){
 
 const LING_COLORS={'Palavras de afirmação':{bg:'#E6F1FB',c:'#0C447C'},'Tempo de qualidade':{bg:'#EAF3DE',c:'#27500A'},'Presentes / Mimos':{bg:'#FAEEDA',c:'#633806'},'Atos de serviço':{bg:'#EEEDFE',c:'#3C3489'},'Presença / Acolhimento':{bg:'#E1F5EE',c:'#085041'}};
 
+// Linha de apoio abaixo do eneagrama na tabela. Na v3 (Perfil Expresso) o
+// eneagrama é uma triagem: mostra a confiança e, quando as duas vias
+// divergiram, o tipo alternativo. Nas versões anteriores, o 2º lugar.
+function notaEneagrama(d){
+  const estilo='font-size:11px;color:var(--text3)';
+  if(d.eneagrama_confianca){
+    return `<br><span style="${estilo}">triagem · confiança ${esc(d.eneagrama_confianca)}</span>`+
+      (d.eneagrama_segundo?`<br><span style="${estilo}">alt.: ${esc(d.eneagrama_segundo)}</span>`:'');
+  }
+  return d.eneagrama_segundo?`<br><span style="${estilo}">2º: ${esc(d.eneagrama_segundo)}</span>`:'';
+}
+
 function renderTabela(){
   const tb=document.getElementById('tabela-body');
   if(!FILTRADOS.length){tb.innerHTML='<tr><td colspan="9"><div class="empty">Nenhum resultado encontrado</div></td></tr>';return;}
@@ -576,7 +588,7 @@ function renderTabela(){
       <td><span class="badge" style="background:#F1EFE8;color:#444441">${esc(d.setor)||'—'}</span></td>
       <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${esc(d.linguagem)||'—'}</span></td>
       <td>${esc(d.temperamento)||'—'}</td>
-      <td>${esc(d.eneagrama)||'—'}${d.eneagrama_segundo?`<br><span style="font-size:11px;color:var(--text3)">2º: ${esc(d.eneagrama_segundo)}</span>`:''}</td>
+      <td>${esc(d.eneagrama)||'—'}${notaEneagrama(d)}</td>
       <td>${esc(d.disc)||'—'}</td>
       <td style="max-width:200px;font-size:12px;color:var(--text2)">${esc(d.como_comunicar)||'—'}</td>
       <td>${vBadge}</td>
@@ -614,8 +626,9 @@ function renderCards(){
 
 function exportarCSV(){
   if(!FILTRADOS.length)return;
-  const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Eneagrama 2º lugar','Centro','Fichas escolhidas','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data'];
-  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_segundo,d.eneagrama_centro,d.eneagrama_fichas,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
+  // As duas últimas colunas só vêm preenchidas na v3 (Perfil Expresso).
+  const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Eneagrama 2º lugar','Centro','Fichas escolhidas','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data','Confiança eneagrama','Respostas item a item'];
+  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_segundo,d.eneagrama_centro,d.eneagrama_fichas,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data,d.eneagrama_confianca,d.respostas_itens].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
   const csv=[cols.join(','),...rows].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Perfis_${new Date().toISOString().slice(0,10)}.csv`;a.click();

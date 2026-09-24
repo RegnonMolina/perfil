@@ -52,7 +52,7 @@ test("A consulta de versão é pública e não devolve nenhum dado pessoal", () 
   post(a, envioValido());
   const r = get(a, { action: "versao" });
   assert.strictEqual(r.ok, true);
-  assert.strictEqual(r.versao, "v2.1");
+  assert.strictEqual(r.versao, "v3.0");
   assert.ok(!JSON.stringify(r).includes("maria@"), "a consulta de versão não pode expor dados");
   assert.strictEqual(r.rows, undefined);
 });
@@ -164,7 +164,7 @@ test("O teto diário de e-mails para o envio mas preserva a resposta", () => {
 test("A resposta do envio informa a versão do backend", () => {
   // É o que permite ao site detectar um backend desatualizado.
   const a = criarAmbiente();
-  assert.strictEqual(post(a, envioValido()).versao, "v2.1");
+  assert.strictEqual(post(a, envioValido()).versao, "v3.0");
 });
 
 // ============================================================
@@ -283,4 +283,102 @@ test("Sem PLANILHA_ID configurada, o script independente usa o ID padrão do CMS
   const r = post(a, envioValido());
   assert.strictEqual(r.ok, true, JSON.stringify(r));
   assert.match(a.__ultimoOpenById, /^1pQZ5/);
+});
+
+// ============================================================
+// PERFIL EXPRESSO (v3.0)
+// ============================================================
+
+function envioExpresso(extras = {}) {
+  return envioValido({
+    versao_instrumento: "v3.0",
+    linguagem: "Palavras de afirmação",
+    distribuicao_linguagem: { A: 4, B: 1, C: 0, D: 2, E: 3 },
+    temperamento: "Melancólico",
+    temperamento_secundario: "",
+    eneagrama: "Tipo 5 — Investigador",
+    eneagrama_segundo: "Tipo 1 — Perfeccionista",
+    eneagrama_centro: "Mental",
+    eneagrama_confianca: "média",
+    eneagrama_fichas: "convívio: retraido; reação: competencia; motivação: 1; desempate: 5",
+    scores_eneagrama: { estilo: 5, motivacao: 1, desempate: 5 },
+    disc: "C",
+    disc_dominante: "Conformidade",
+    disc_secundario: "",
+    scores_disc: { D: -3, I: -2, S: -2, C: 7 },
+    respostas_itens: "L:ACAEBDBDCE | D:CD CI CD CI CD CI CD CI | E:retraido,competencia,1/5",
+    ...extras
+  });
+}
+
+test("Envio da v3 vai para a aba Respostas v3, com confiança e respostas item a item", () => {
+  const a = criarAmbiente();
+  const r = post(a, envioExpresso());
+  assert.strictEqual(r.ok, true);
+
+  const aba = a.__abas.get("Respostas v3");
+  assert.ok(aba, "a aba Respostas v3 deveria ter sido criada");
+  assert.strictEqual(aba.getLastRow(), 2, "cabeçalho + 1 linha");
+  const cabecalho = aba.linhas[0];
+  const linha = aba.linhas[1];
+  assert.strictEqual(linha[cabecalho.indexOf("Versão")], "v3.0");
+  assert.strictEqual(linha[cabecalho.indexOf("Confiança eneagrama")], "média");
+  assert.match(linha[cabecalho.indexOf("Respostas item a item")], /^L:/);
+  assert.ok(!a.__abas.has("Respostas v2") || a.__abas.get("Respostas v2").getLastRow() <= 1,
+    "um envio v3 não pode cair na aba da v2");
+});
+
+test("Envio de versão anterior continua indo para a aba Respostas v2", () => {
+  const a = criarAmbiente();
+  post(a, envioValido({ versao_instrumento: "v2.1" }));
+  assert.strictEqual(a.__abas.get("Respostas v2").getLastRow(), 2);
+  assert.ok(!a.__abas.has("Respostas v3"));
+});
+
+test("Leitura traz v3, v2 e v1 juntas, com os campos da v3", () => {
+  const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN } });
+  post(a, envioValido({ email: "antigo@exemplo.com.br", versao_instrumento: "v2.1" }));
+  post(a, envioExpresso({ email: "novo@exemplo.com.br" }));
+  const r = get(a, { action: "read", token: TOKEN });
+  assert.strictEqual(r.ok, true);
+  const v3 = r.rows.find((x) => x.versao === "v3.0");
+  const v2 = r.rows.find((x) => x.versao === "v2.1");
+  assert.ok(v3 && v2, "as duas versões precisam aparecer no dashboard");
+  assert.strictEqual(v3.eneagrama_confianca, "média");
+  assert.strictEqual(v3.eneagrama, "Tipo 5 — Investigador");
+  assert.match(v3.respostas_itens, /^L:/);
+  assert.strictEqual(r.rows[0].versao, "v3.0", "a versão mais nova vem primeiro");
+});
+
+test("A leitura não cria a aba da v3 quando ainda não há envio v3", () => {
+  const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN } });
+  post(a, envioValido());
+  get(a, { action: "read", token: TOKEN });
+  assert.ok(!a.__abas.has("Respostas v3"));
+});
+
+test("Na v3, o respondente recebe o próprio resultado por e-mail, com a triagem explicada", () => {
+  const a = criarAmbiente();
+  post(a, envioExpresso());
+  const paraPessoa = a.__emails.find((m) => m.to === "maria@exemplo.com.br");
+  assert.ok(paraPessoa, "o respondente precisa receber o e-mail");
+  assert.match(paraPessoa.htmlBody, /Eneagrama \(triagem\)/);
+  assert.match(paraPessoa.htmlBody, /confiança média/);
+  assert.match(paraPessoa.htmlBody, /derivado do DISC/);
+  assert.match(paraPessoa.htmlBody, /não foi validado cientificamente/);
+});
+
+test("Na v3, a análise por IA recebe o aviso de triagem e a faixa de -8 a +8", () => {
+  const a = criarAmbiente({
+    propriedades: { ANTHROPIC_API_KEY: "sk-ant-teste" },
+    respostaHttp: { codigo: 500, corpo: "{}" } // força cair no banco de textos depois
+  });
+  post(a, envioExpresso());
+  const chamada = a.__http[0];
+  assert.ok(chamada, "a IA deveria ter sido chamada");
+  const prompt = JSON.parse(chamada.params.payload).messages[0].content;
+  assert.match(prompt, /triagem/);
+  assert.match(prompt, /-8 a \+8/);
+  assert.match(prompt, /derivado do DISC/);
+  assert.ok(!/somando 20/.test(prompt), "o prompt da v3 não pode descrever a tabulação da v2");
 });

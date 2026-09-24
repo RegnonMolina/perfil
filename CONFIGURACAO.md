@@ -8,15 +8,50 @@ Sistema de avaliação de perfil comportamental **white-label**: cada colégio c
 |---|---|
 | `config.js` | **Identidade da organização** — nome, logo, cores, URL do Apps Script, o vocabulário (`contexto`), a privacidade e o card de clima. O único arquivo que cada organização edita. |
 | `config.bni.js` | Exemplo de configuração para um grupo de networking, com outro vocabulário |
-| `instrumento.js` | **O questionário e o cálculo** — banco de itens dos quatro módulos e as funções de pontuação. Não edite sem rodar `npm test`. |
+| `expresso.js` | **O teste em uso (Perfil Expresso v3.0)**: roteiro das 21 perguntas, desempates e cálculo dos quatro resultados. Não edite sem rodar `npm test`. |
+| `instrumento.js` | **O banco de itens de origem**: o `expresso.js` lê daqui os pares de linguagem e os blocos de DISC. Também guarda o cálculo do questionário completo v2.1, arquivado. Não edite sem rodar `npm test`. |
+| `arquivo/teste-completo-v2.1.html` | O questionário completo anterior, **arquivado**: só para consulta, não recebe respostas |
 | `clima.js` | **Card de clima** exibido no topo das páginas (componente reaproveitável) |
 | `index.html` | O questionário que as pessoas respondem |
 | `dashboard.html` | O painel com todos os resultados e gráficos |
 | `apps-script/Codigo.gs` | O "servidor" (Google Apps Script): salva na planilha, gera a análise com IA (Claude) e envia os e-mails |
 | `tests/` | Testes automatizados que provam as propriedades do questionário |
-| `docs/` | Relatório da correção do instrumento e o convite para refazer o teste |
+| `docs/` | Relatórios do instrumento (inclusive o do Perfil Expresso) e o convite para refazer o teste |
 
-## O instrumento (v2.0)
+## O instrumento em uso: Perfil Expresso (v3.0)
+
+Desde setembro de 2026, o teste fixo é a versão curta: **21 perguntas, uma por
+tela, cerca de 4 minutos**. Entrega os mesmos quatro resultados de antes.
+
+| Módulo | Perguntas | Formato | O que devolve |
+|---|---|---|---|
+| Linguagens de Valorização | 10 pares (+1 se houver empate) | Escolha entre duas | As 5 notas de 0 a 4, principal e, quando se destaca, secundária |
+| DISC | 8 blocos | Palavra MAIS e MENOS | Score de −8 a +8 nos 4 fatores, dominante e, quando se destaca, secundário |
+| Temperamento | nenhuma | Derivado do DISC | Colérico = D, Sanguíneo = I, Fleumático = S, Melancólico = C |
+| Eneagrama | 3 (+1 se as vias divergirem) | Triagem | Um tipo, com confiança alta ou média e, na média, o tipo alternativo |
+
+Como funciona o eneagrama curto: duas perguntas cruzadas apontam um tipo pelo
+**estilo**, e uma terceira aponta outro pela **motivação**. Se os dois batem, a
+confiança é alta. Se divergem, uma quarta pergunta compara os dois candidatos
+pelo que mais incomoda cada tipo, e a confiança fica média. O resultado é
+sempre apresentado como **hipótese inicial**, nunca como veredito.
+
+Os desempates só aparecem quando as respostas pedem, então o total varia entre
+21 e 23 perguntas.
+
+O relatório com os motivos de cada escolha está em `docs/RELATORIO-EXPRESSO-V3.md`.
+
+> Teste curto: mostra tendências, não define quem a pessoa é, e **não foi
+> validado cientificamente**. Não é ferramenta de seleção, promoção ou avaliação
+> de desempenho.
+
+## O instrumento anterior (v2.1, arquivado)
+
+A seção abaixo descreve o questionário completo que ficou em uso até setembro
+de 2026. Ele está em `arquivo/teste-completo-v2.1.html`, só para consulta: o
+backend agora está na v3.0 e a trava de versão impede envios a partir dele. As
+respostas antigas continuam na aba "Respostas v2" e aparecem no dashboard com o
+selo da versão.
 
 São quatro módulos, 75 itens pontuados, cerca de 12 minutos:
 
@@ -231,13 +266,27 @@ No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `h
 1. Responda um teste completo no `index.html`.
 2. Confira: cards de análise da IA no resultado, linha nova na planilha, e-mails recebidos, botão **Baixar PDF** (escolha "Salvar como PDF" na impressão).
 3. Abra o `dashboard.html` → **Atualizar**: gráficos e tabela carregam. Se configurar senha, ela é pedida ao abrir e fica lembrada naquele navegador por 90 dias (ou até a senha ser trocada).
-4. Confira que a planilha ganhou a aba **"Respostas v2"** com o cabeçalho novo, e que a aba **"Respostas"** (histórico da versão anterior) continua intocada.
+4. Confira que a planilha ganhou a aba **"Respostas v3"**, com as colunas "Confiança eneagrama" e "Respostas item a item" no fim, e que as abas **"Respostas v2"** e **"Respostas"** (histórico) continuam intocadas.
 
 > As respostas da versão antiga do questionário aparecem no dashboard com o selo
 > `v1` e podem ser separadas pelo filtro de versões. Não misture `v1` e `v2` em
 > médias ou comparações: os questionários são diferentes. O relatório completo do
 > que mudou está em `docs/RELATORIO-INSTRUMENTO-V2.md`, e há um convite pronto para
 > pedir que as pessoas refaçam o teste em `docs/CONVITE-REFAZER-TESTE.md`.
+
+---
+
+## Acompanhar a equipe e o e-mail de quem responde
+
+- **Quem responde** recebe o próprio resultado no e-mail informado, logo após
+  enviar, com a análise escrita. A tela final avisa que a cópia foi enviada.
+- **Você acompanha a equipe** pelo `dashboard.html`: totais, gráficos de
+  distribuição de cada módulo (clique numa barra para filtrar), filtros por
+  setor e por versão, tabela ou cards, e exportação em CSV. Use o filtro de
+  versão para ver só a v3.0 quando quiser olhar apenas o teste atual.
+- **Cópia de cada resultado para quem lidera** é opcional: propriedade
+  `EMAIL_GESTOR` no Apps Script. Se usar, deixe isso claro no campo
+  `quemAcessa` do bloco `privacidade` do `config.js`.
 
 ---
 
@@ -262,7 +311,7 @@ Para que isso não dependa de ninguém lembrar, existem duas travas automáticas
   Se não for, o fluxo falha em vermelho em vez de dar por publicado.
 
 Ao mudar o formato dos dados, suba o `VERSAO_BACKEND` no `apps-script/Codigo.gs`
-junto com a `VERSAO` do `instrumento.js`.
+junto com a `VERSAO` do `expresso.js` (o teste em uso).
 
 ---
 

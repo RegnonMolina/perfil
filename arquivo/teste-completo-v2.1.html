@@ -10,13 +10,12 @@
     <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧠%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="config.js"></script>
-    <script src="instrumento.js"></script>
-    <script src="expresso.js"></script>
+    <script src="../config.js"></script>
+    <script src="../instrumento.js"></script>
     <script>window.MENUBAR_ATUAL = "Perfil Comportamental";</script>
-    <script src="menubar.js" defer></script>
-    <script src="clima.js" defer></script>
-    <script src="relogio.js" defer></script>
+    <script src="../menubar.js" defer></script>
+    <script src="../clima.js" defer></script>
+    <script src="../relogio.js" defer></script>
     <style>
         * {
             margin: 0;
@@ -627,88 +626,6 @@
             }
         }
 
-        /* ===== Perfil Expresso: uma pergunta por tela ===== */
-        .passo-topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            gap: 10px;
-            margin-bottom: 6px;
-            font-size: 12px;
-            color: #777;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .passo-modulo {
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            font-weight: 600;
-            color: var(--cor-secundaria-escura);
-        }
-
-        .passo-pergunta {
-            color: var(--cor-primaria);
-            font-size: 19px;
-            line-height: 1.35;
-            margin-bottom: 8px;
-        }
-
-        .passo-nota {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 16px;
-            line-height: 1.5;
-        }
-
-        .opcao {
-            display: block;
-            text-align: left;
-            font: inherit;
-            color: inherit;
-            background: white;
-            width: 100%;
-            line-height: 1.45;
-            min-height: 48px;
-        }
-
-        .opcao:focus-visible,
-        .disc-btn:focus-visible {
-            outline: 3px solid var(--cor-secundaria);
-            outline-offset: 2px;
-        }
-
-        .opcao-titulo {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .passo-disc .disc-btn {
-            min-width: 70px;
-            min-height: 40px;
-        }
-
-        .resultado-card .nota-card {
-            font-size: 12px;
-            color: #888;
-            margin-top: 8px;
-        }
-
-        .chips-alt {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
-        }
-
-        .chips-alt span {
-            font-size: 12px;
-            background: #f0f0f0;
-            color: #555;
-            border-radius: 99px;
-            padding: 3px 10px;
-        }
-
         /* ===== Caixa de consentimento ===== */
         .consentimento {
             display: flex;
@@ -861,6 +778,15 @@
                 <div class="progresso-barra" id="progressoBarra"></div>
             </div>
 
+            <!-- VERSÃO ARQUIVADA: este é o questionário completo v2.1, substituído
+                 pelo Perfil Expresso v3.0 (index.html). Fica guardado só para
+                 consulta. O backend está na v3.0, então a conferência de versão
+                 abaixo bloqueia qualquer envio a partir desta página. -->
+            <div class="bloqueio-versao" style="display:block">
+                <strong>Versão arquivada.</strong> Este é o questionário completo anterior (v2.1),
+                mantido apenas para consulta. Ele não recebe mais respostas. O teste em uso
+                fica na <a href="../index.html">página principal</a>.
+            </div>
             <div class="bloqueio-versao" id="bloqueio-versao" style="display:none"></div>
 
             <div class="retomar" id="retomar" style="display:none">
@@ -874,9 +800,9 @@
             <div class="tela ativa" id="tela1">
                 <h2>1. Identificação</h2>
                 <div class="modulo-intro">
-                    São <strong>21 perguntas rápidas</strong>, uma por tela, em cerca de <strong>4 minutos</strong>.
-                    Não existe resposta certa ou errada: responda pensando em como você <strong>realmente</strong> é,
-                    não em como gostaria de ser. Ao final, você vê o resultado na tela e recebe uma cópia por e-mail.
+                    São 4 blocos de perguntas, cerca de 12 minutos no total. Não existe resposta certa ou errada —
+                    responda pensando em como você <strong>realmente</strong> é, não em como gostaria de ser.
+                    Suas respostas ficam salvas neste navegador enquanto você responde, então dá para pausar e voltar.
                 </div>
                 <div class="form-group">
                     <label>Nome Completo *</label>
@@ -907,13 +833,128 @@
                 </div>
             </div>
 
-            <!-- TELA 2: Perfil Expresso, uma pergunta por vez.
-                 O conteúdo é montado por renderizarPasso() a partir de expresso.js. -->
+            <!-- TELA 2: Linguagens de Valorização, itens 1 a 10 -->
             <div class="tela" id="tela2">
-                <div id="passo" aria-live="polite"></div>
+                <h2>2. Linguagens de Valorização (1/2)</h2>
+                <div class="modulo-intro">
+                    Em cada par, escolha a opção que <strong>mais</strong> combina com você.
+                    As duas podem parecer boas: escolha a que pesa mais.
+                </div>
+                <div id="perguntas-ling-1"></div>
                 <div class="botoes">
-                    <button class="btn btn-secundario" onclick="voltarPasso()">← Anterior</button>
-                    <button class="btn btn-primario" id="btn-avancar" onclick="avancarPasso()">Próximo →</button>
+                    <button class="btn btn-secundario" onclick="irParaTela(1)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(3)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 3: Linguagens de Valorização, itens 11 a 20 -->
+            <div class="tela" id="tela3">
+                <h2>2. Linguagens de Valorização (2/2)</h2>
+                <div class="modulo-intro">
+                    Continue escolhendo a opção que <strong>mais</strong> combina com você.
+                </div>
+                <div id="perguntas-ling-2"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(2)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(4)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 4: Temperamento -->
+            <div class="tela" id="tela4">
+                <h2>3. Temperamento</h2>
+                <div class="modulo-intro">
+                    Dê uma nota de <strong>1 (não tem nada a ver comigo)</strong> a
+                    <strong>5 (tem tudo a ver comigo)</strong> para cada afirmação.
+                </div>
+                <div id="perguntas-temp"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(3)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(5)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 5: Eneagrama, fatores 1 e 2 -->
+            <div class="tela" id="tela5">
+                <h2>4. Eneagrama (1/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-0"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(4)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(6)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 6: Eneagrama, fatores 3 e 4 -->
+            <div class="tela" id="tela6">
+                <h2>4. Eneagrama (2/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-1"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(5)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(7)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 7: Eneagrama, fatores 5 e 6 -->
+            <div class="tela" id="tela7">
+                <h2>4. Eneagrama (3/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-2"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(6)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(8)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 8: Eneagrama, fatores 7 e 8 -->
+            <div class="tela" id="tela8">
+                <h2>4. Eneagrama (4/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-3"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(7)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(9)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 9: Eneagrama, fatores 9 e 10 -->
+            <div class="tela" id="tela9">
+                <h2>4. Eneagrama (5/5)</h2>
+                <div class="modulo-intro">
+                    Em cada grupo, escolha as <strong>duas</strong> afirmativas que mais têm a ver
+                    com o seu modo de pensar e agir. Se marcar uma terceira, a mais antiga é liberada.
+                </div>
+                <div id="eneagrama-4"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(8)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="irParaTela(10)">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- TELA 10: DISC -->
+            <div class="tela" id="tela10">
+                <h2>5. DISC</h2>
+                <div class="modulo-intro">
+                    Em cada bloco de 4 palavras, marque <strong>MAIS</strong> na que mais tem a ver com você e
+                    <strong>MENOS</strong> na que menos tem a ver. As outras duas ficam sem marcação.
+                </div>
+                <div id="blocos-disc"></div>
+                <div class="botoes">
+                    <button class="btn btn-secundario" onclick="irParaTela(9)">← Anterior</button>
+                    <button class="btn btn-primario" onclick="enviarFormulario()">Enviar →</button>
                 </div>
             </div>
 
@@ -992,35 +1033,34 @@
 
     <script>
         // ============================================================
-        //  PERFIL COMPORTAMENTAL: PERFIL EXPRESSO v3.0
+        //  PERFIL COMPORTAMENTAL — v2.0
         // ============================================================
         //
-        // O banco de itens e todo o cálculo ficam em expresso.js (que lê os
-        // itens de instrumento.js), testados por tests/expresso.test.js. Este
-        // arquivo cuida apenas da tela: mostrar uma pergunta por vez, guardar
-        // as respostas, enviar e exibir.
+        // O banco de itens e todo o cálculo ficam em instrumento.js, testados
+        // por tests/instrumento.test.js. Este arquivo cuida apenas da tela:
+        // renderizar as perguntas, guardar as respostas, enviar e exibir.
         //
-        // O questionário completo anterior (v2.1) está arquivado em
-        // arquivo/teste-completo-v2.1.html.
+        // Módulos: Linguagens de Valorização, Temperamento, Eneagrama e DISC.
 
-        const EXP = window.EXPRESSO;
+        const INST = window.INSTRUMENTO;
         const TOTAL_TELAS = 12;
+        // Telas 5 a 9 são o eneagrama, dois fatores em cada.
+        const TELA_PRIMEIRO_FATOR = 5;
         const CHAVE_RASCUNHO = "perfilRascunho";
 
         let dadosFormulario = {
-            versao: EXP.VERSAO,
+            versao: INST.VERSAO,
             nome: "",
             email: "",
             setor: "",
             respostas_linguagem: [],    // { item, letra }
-            desempate_linguagem: null,  // "A".."E", só quando há empate
+            respostas_temperamento: [], // { item, valor }
+            respostas_eneagrama: [],    // { item, valor }
             respostas_disc: [],         // { bloco, mais, menos }
-            respostas_eneagrama: {},    // { convivio, reacao, motivacao }
-            desempate_eneagrama: null,  // 1..9, só quando estilo e motivação divergem
-            passo: 0,
+            resposta_atencao: null,
             consentimento: false,
             consentimento_em: "",
-            inicio: null,
+            inicio: Date.now(),
             perfil: null,
             analise_ia: {}
         };
@@ -1207,10 +1247,10 @@
                         );
                         return;
                     }
-                    if (versaoPrincipal(d.versao) !== versaoPrincipal(EXP.VERSAO)) {
+                    if (versaoPrincipal(d.versao) !== versaoPrincipal(INST.VERSAO)) {
                         bloquearPorVersao(
                             "<strong>Sistema em atualização.</strong> Este questionário está na versão " +
-                            escaparHtml(EXP.VERSAO) + ", mas o servidor ainda está na " + escaparHtml(d.versao) + ". " +
+                            escaparHtml(INST.VERSAO) + ", mas o servidor ainda está na " + escaparHtml(d.versao) + ". " +
                             "Responder agora gravaria um resultado incompleto. Avise a coordenação e tente mais tarde."
                         );
                     }
@@ -1232,180 +1272,120 @@
             carregarBranding();
             aplicarBranding();
             aplicarPrivacidade();
+            renderizarTudo();
             verificarRascunho();
             atualizarProgresso();
             conferirVersaoDoServidor();
         });
 
-        // ===== ROTEIRO DO QUESTIONÁRIO =====
-        // Uma pergunta por tela. Os dois desempates só entram no roteiro quando
-        // as respostas pedem: empate nas linguagens, ou estilo e motivação do
-        // eneagrama apontando tipos diferentes.
-        const PASSOS = []
-            .concat(EXP.PARES.map(function (p, i) { return { tipo: "par", i: i }; }))
-            .concat([{ tipo: "desempateLinguagem" }])
-            .concat(EXP.BLOCOS_DISC.map(function (b, i) { return { tipo: "disc", i: i }; }))
-            .concat(EXP.PERGUNTAS_ENEAGRAMA.map(function (q, i) { return { tipo: "eneagrama", i: i }; }))
-            .concat([{ tipo: "desempateEneagrama" }]);
-
-        function passoAtivo(p) {
-            if (p.tipo === "desempateLinguagem") return EXP.linguagensEmpatadas(dadosFormulario.respostas_linguagem).length > 1;
-            if (p.tipo === "desempateEneagrama") return EXP.eneagramaDivergente(dadosFormulario.respostas_eneagrama).length > 1;
-            return true;
+        // ===== RENDERIZAÇÃO =====
+        function renderizarTudo() {
+            renderizarLinguagem("perguntas-ling-1", 0, 10);
+            renderizarLinguagem("perguntas-ling-2", 10, 20);
+            renderizarTemperamento();
+            for (var i = 0; i < 5; i++) renderizarEneagrama(i);
+            renderizarDisc();
         }
 
-        function passosAtivos() {
-            return PASSOS.filter(passoAtivo);
-        }
-
-        // Tempo estimado por tipo de pergunta, para o "faltam ~X".
-        const SEGUNDOS_POR_PASSO = { par: 6, desempateLinguagem: 8, disc: 12, eneagrama: 25, desempateEneagrama: 10 };
-
-        const ROTULO_MODULO = {
-            par: "Valorização", desempateLinguagem: "Valorização · desempate",
-            disc: "Estilo", eneagrama: "Eneagrama", desempateEneagrama: "Eneagrama · desempate"
-        };
-
-        function opcaoHtml(selecionada, dados, titulo, texto) {
-            return `<button type="button" class="opcao${selecionada ? " selecionada" : ""}" ${dados}
-                aria-pressed="${selecionada ? "true" : "false"}">
-                ${titulo ? `<span class="opcao-titulo">${escaparHtml(titulo)}</span>` : ""}
-                <span class="opcao-texto">${escaparHtml(texto)}</span>
-            </button>`;
-        }
-
-        function renderizarPasso() {
-            const ativos = passosAtivos();
-            let n = Math.min(Math.max(0, dadosFormulario.passo), PASSOS.length - 1);
-            // Se o passo guardado deixou de valer (um empate que sumiu), anda para o próximo válido.
-            while (n < PASSOS.length && !passoAtivo(PASSOS[n])) n++;
-            dadosFormulario.passo = n;
-            const p = PASSOS[n];
-            const posicao = ativos.indexOf(p) + 1;
-
-            let restante = 0;
-            for (let k = n; k < PASSOS.length; k++) {
-                if (passoAtivo(PASSOS[k])) restante += SEGUNDOS_POR_PASSO[PASSOS[k].tipo] || 0;
-            }
-            const tempo = restante < 60 ? "falta menos de 1 min" : "faltam ~" + Math.round(restante / 60) + " min";
-
-            let corpo = "";
-            if (p.tipo === "par") {
-                const par = EXP.PARES[p.i];
-                const r = dadosFormulario.respostas_linguagem.filter(function (x) { return x.item === par.id; })[0];
-                corpo = `<h2 class="passo-pergunta">Qual das duas tem mais a ver com você?</h2>
-                    <p class="passo-nota">As duas podem parecer boas: escolha a que pesa mais.</p>
-                    <div class="opcoes">
-                        ${["a", "b"].map(function (lado) {
-                            return opcaoHtml(r && r.letra === par[lado].letra, `data-letra="${par[lado].letra}"`, "", par[lado].texto);
-                        }).join("")}
-                    </div>`;
-            } else if (p.tipo === "desempateLinguagem") {
-                const empatadas = EXP.linguagensEmpatadas(dadosFormulario.respostas_linguagem);
-                corpo = `<h2 class="passo-pergunta">Deu empate. Se tivesse que escolher só uma, qual pesa mais?</h2>
-                    <div class="opcoes">
-                        ${empatadas.map(function (l) {
-                            return opcaoHtml(dadosFormulario.desempate_linguagem === l, `data-letra="${l}"`, EXP.LINGUAGENS[l], EXP.DESCRICAO_LINGUAGEM[l]);
-                        }).join("")}
-                    </div>`;
-            } else if (p.tipo === "disc") {
-                const bloco = EXP.BLOCOS_DISC[p.i];
-                const r = dadosFormulario.respostas_disc.filter(function (x) { return x.bloco === bloco.id; })[0] || {};
-                corpo = `<h2 class="passo-pergunta">Qual palavra MAIS e qual MENOS descreve você?</h2>
-                    <p class="passo-nota">Marque uma de cada. A tela avança sozinha.</p>
-                    <div class="passo-disc">
-                        ${bloco.opcoes.map(function (op) {
-                            return `<div class="disc-linha">
-                                <span class="disc-palavra">${escaparHtml(op.palavra)}</span>
-                                <button type="button" class="disc-btn${r.mais === op.fator ? " mais-ativo" : ""}" data-fator="${op.fator}" data-tipo="mais"
-                                    aria-pressed="${r.mais === op.fator}" aria-label="${escaparHtml(op.palavra)}: mais">MAIS</button>
-                                <button type="button" class="disc-btn${r.menos === op.fator ? " menos-ativo" : ""}" data-fator="${op.fator}" data-tipo="menos"
-                                    aria-pressed="${r.menos === op.fator}" aria-label="${escaparHtml(op.palavra)}: menos">MENOS</button>
-                            </div>`;
-                        }).join("")}
-                    </div>`;
-            } else if (p.tipo === "eneagrama") {
-                const q = EXP.PERGUNTAS_ENEAGRAMA[p.i];
-                const atual = dadosFormulario.respostas_eneagrama[q.id];
-                corpo = `<h2 class="passo-pergunta">${escaparHtml(q.pergunta)}</h2>
-                    <p class="passo-nota">${escaparHtml(q.nota)}</p>
-                    <div class="opcoes">
-                        ${q.opcoes.map(function (o) {
-                            return opcaoHtml(atual === o.k, `data-k="${o.k}"`, o.titulo, o.texto);
-                        }).join("")}
-                    </div>`;
-            } else if (p.tipo === "desempateEneagrama") {
-                const candidatos = EXP.eneagramaDivergente(dadosFormulario.respostas_eneagrama);
-                corpo = `<h2 class="passo-pergunta">Entre estas duas situações, qual incomoda você mais?</h2>
-                    <p class="passo-nota">Responda pelo que você sente por dentro, mesmo que não demonstre.</p>
-                    <div class="opcoes">
-                        ${candidatos.map(function (t) {
-                            return opcaoHtml(Number(dadosFormulario.desempate_eneagrama) === t, `data-tipo-en="${t}"`, "", EXP.INCOMODO[t]);
-                        }).join("")}
-                    </div>`;
-            }
-
-            document.getElementById("passo").innerHTML = `
-                <div class="passo-topo">
-                    <span class="passo-modulo">${escaparHtml(ROTULO_MODULO[p.tipo])}</span>
-                    <span>Pergunta ${posicao} de ${ativos.length} · ${tempo}</span>
-                </div>
-                ${corpo}`;
-
-            ligarPasso(p);
-            const ultimo = ativos[ativos.length - 1] === p;
-            document.getElementById("btn-avancar").textContent = ultimo ? "Enviar →" : "Próximo →";
-            atualizarProgresso();
-        }
-
-        function ligarPasso(p) {
-            const raiz = document.getElementById("passo");
-            if (p.tipo === "disc") {
-                raiz.querySelectorAll(".disc-btn").forEach(function (b) {
-                    b.addEventListener("click", function () {
-                        selecionarDisc(EXP.BLOCOS_DISC[p.i].id, b.dataset.fator, b.dataset.tipo);
-                    });
-                });
-                return;
-            }
-            raiz.querySelectorAll(".opcao").forEach(function (b) {
-                b.addEventListener("click", function () {
-                    if (p.tipo === "par") {
-                        guardarResposta(dadosFormulario.respostas_linguagem, "item", EXP.PARES[p.i].id,
-                            { item: EXP.PARES[p.i].id, letra: b.dataset.letra });
-                        // Mudou um par: um desempate antigo pode não valer mais.
-                        dadosFormulario.desempate_linguagem = null;
-                    } else if (p.tipo === "desempateLinguagem") {
-                        dadosFormulario.desempate_linguagem = b.dataset.letra;
-                    } else if (p.tipo === "eneagrama") {
-                        dadosFormulario.respostas_eneagrama[EXP.PERGUNTAS_ENEAGRAMA[p.i].id] = b.dataset.k;
-                        dadosFormulario.desempate_eneagrama = null;
-                    } else if (p.tipo === "desempateEneagrama") {
-                        dadosFormulario.desempate_eneagrama = Number(b.dataset.tipoEn);
-                    }
-                    salvarRascunho();
-                    raiz.querySelectorAll(".opcao").forEach(function (x) {
-                        x.classList.toggle("selecionada", x === b);
-                        x.setAttribute("aria-pressed", x === b ? "true" : "false");
-                    });
-                    avancarDepois();
-                });
+        // Módulo 1 — pares de escolha forçada.
+        function renderizarLinguagem(containerId, de, ate) {
+            let html = "";
+            INST.ITENS_LINGUAGEM.slice(de, ate).forEach(function (item) {
+                html += `
+                    <div class="form-group">
+                        <label>${item.id}. Qual opção mais combina com você?</label>
+                        <div class="opcoes">
+                            <div class="opcao" id="ling-${item.id}-a" onclick="selecionarLinguagem(${item.id}, 'a')">
+                                <input type="radio" name="ling${item.id}" value="a">
+                                <span class="opcao-texto">${escaparHtml(item.a.texto)}</span>
+                            </div>
+                            <div class="opcao" id="ling-${item.id}-b" onclick="selecionarLinguagem(${item.id}, 'b')">
+                                <input type="radio" name="ling${item.id}" value="b">
+                                <span class="opcao-texto">${escaparHtml(item.b.texto)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
+            document.getElementById(containerId).innerHTML = html;
         }
 
-        // Pequena pausa para a pessoa ver a marcação antes de a tela trocar.
-        // O contador descarta avanços agendados por cliques anteriores.
-        // Na última pergunta não há avanço automático: o envio fica no botão
-        // "Enviar", para um toque acidental não mandar o teste antes da hora.
-        let agendamento = 0;
-        function avancarDepois() {
-            const ativos = passosAtivos();
-            if (ativos[ativos.length - 1] === PASSOS[dadosFormulario.passo]) {
-                atualizarProgresso();
-                return;
-            }
-            const meu = ++agendamento;
-            setTimeout(function () { if (meu === agendamento) avancarPasso(); }, 260);
+        // Módulo 2 — escala de 1 a 5.
+        function renderizarTemperamento() {
+            let html = "";
+            INST.ITENS_TEMPERAMENTO.forEach(function (item) {
+                html += blocoEscalaHtml("temp", item.id, item.id + ". " + escaparHtml(item.texto), "selecionarTemperamento", false);
+            });
+            // O item de atenção vive aqui: é o único módulo com escala de concordância.
+            var at = INST.ITEM_ATENCAO;
+            html += blocoEscalaHtml("atencao", at.id, escaparHtml(at.texto), "selecionarAtencao", true);
+            document.getElementById("perguntas-temp").innerHTML = html;
+        }
+
+        // Módulo 3 — os 10 fatores do eneagrama, dois por tela.
+        // Em cada fator a pessoa escolhe DUAS das nove alternativas.
+        function renderizarEneagrama(tela) {
+            var html = "";
+            INST.BLOCOS_ENEAGRAMA.slice(tela * 2, tela * 2 + 2).forEach(function (bloco, pos) {
+                var f = tela * 2 + pos;
+                var opcoes = bloco.opcoes.map(function (o) {
+                    return `
+                        <button type="button" class="ficha-opcao" id="ficha-${o.ficha}"
+                            onclick="selecionarFicha(${f}, ${o.ficha})">
+                            <span class="ficha-numero">${o.ficha}</span>
+                            <span>${escaparHtml(o.texto)}</span>
+                        </button>`;
+                }).join("");
+
+                html += `
+                    <div class="fator">
+                        <div class="fator-cabeca">
+                            <h4>${f + 1}. ${escaparHtml(bloco.fator)}</h4>
+                            <span class="fator-contagem" id="contagem-fator-${f}">0 de 2</span>
+                        </div>
+                        ${opcoes}
+                    </div>
+                `;
+            });
+            document.getElementById("eneagrama-" + tela).innerHTML = html;
+        }
+
+        function blocoEscalaHtml(prefixo, id, rotulo, funcao, destacado) {
+            const botoes = [1, 2, 3, 4, 5].map(function (v) {
+                return `<button class="escala-btn" id="${prefixo}-${id}-${v}" onclick="${funcao}(${id}, ${v})">${v}</button>`;
+            }).join("");
+            return `
+                <div class="blocos-eneagrama ${destacado ? "item-atencao" : ""}">
+                    <p style="margin-bottom: 10px; font-weight: 500;">${rotulo}</p>
+                    <div class="escala-container" id="${prefixo}-${id}">${botoes}</div>
+                </div>
+            `;
+        }
+
+        // Módulo 4 — tétrades: uma palavra MAIS e uma MENOS por bloco.
+        function renderizarDisc() {
+            let html = "";
+            INST.BLOCOS_DISC.forEach(function (bloco, idx) {
+                const linhas = bloco.opcoes.map(function (op) {
+                    return `
+                        <div class="disc-linha">
+                            <span class="disc-palavra">${escaparHtml(op.palavra)}</span>
+                            <button class="disc-btn" id="disc-${bloco.id}-${op.fator}-mais"
+                                onclick="selecionarDisc(${bloco.id}, '${op.fator}', 'mais')">MAIS</button>
+                            <button class="disc-btn" id="disc-${bloco.id}-${op.fator}-menos"
+                                onclick="selecionarDisc(${bloco.id}, '${op.fator}', 'menos')">MENOS</button>
+                        </div>
+                    `;
+                }).join("");
+                html += `
+                    <div class="disc-bloco">
+                        <h4>Bloco ${idx + 1} de ${INST.BLOCOS_DISC.length}</h4>
+                        <p class="disc-legenda">Marque uma palavra como MAIS e outra como MENOS.</p>
+                        ${linhas}
+                    </div>
+                `;
+            });
+            document.getElementById("blocos-disc").innerHTML = html;
         }
 
         // ===== SELEÇÃO DE RESPOSTAS =====
@@ -1416,6 +1396,75 @@
             salvarRascunho();
         }
 
+        function selecionarLinguagem(itemId, lado) {
+            const item = INST.ITENS_LINGUAGEM.filter(function (i) { return i.id === itemId; })[0];
+            if (!item) return;
+            const letra = lado === "a" ? item.a.letra : item.b.letra;
+
+            guardarResposta(dadosFormulario.respostas_linguagem, "item", itemId, { item: itemId, letra: letra });
+
+            document.getElementById("ling-" + itemId + "-a").classList.toggle("selecionada", lado === "a");
+            document.getElementById("ling-" + itemId + "-b").classList.toggle("selecionada", lado === "b");
+            const radio = document.querySelector('input[name="ling' + itemId + '"][value="' + lado + '"]');
+            if (radio) radio.checked = true;
+        }
+
+        function selecionarTemperamento(itemId, valor) {
+            guardarResposta(dadosFormulario.respostas_temperamento, "item", itemId, { item: itemId, valor: valor });
+            marcarEscala("temp", itemId, valor);
+        }
+
+        // Escolha de duas fichas por fator. Clicar numa já marcada desmarca;
+        // clicar numa terceira libera a mais antiga, para nunca travar a pessoa.
+        function selecionarFicha(fator, ficha) {
+            var registro = dadosFormulario.respostas_eneagrama.filter(function (r) { return r.fator === fator; })[0];
+            if (!registro) {
+                registro = { fator: fator, fichas: [] };
+                dadosFormulario.respostas_eneagrama.push(registro);
+            }
+
+            var pos = registro.fichas.indexOf(ficha);
+            if (pos !== -1) {
+                registro.fichas.splice(pos, 1);
+            } else {
+                registro.fichas.push(ficha);
+                if (registro.fichas.length > INST.ESCOLHAS_POR_FATOR) registro.fichas.shift();
+            }
+
+            salvarRascunho();
+            marcarFator(fator);
+        }
+
+        function marcarFator(fator) {
+            var registro = dadosFormulario.respostas_eneagrama.filter(function (r) { return r.fator === fator; })[0] || { fichas: [] };
+            var bloco = INST.BLOCOS_ENEAGRAMA[fator];
+            if (!bloco) return;
+
+            bloco.opcoes.forEach(function (o) {
+                var el = document.getElementById("ficha-" + o.ficha);
+                if (el) el.classList.toggle("selecionada", registro.fichas.indexOf(o.ficha) !== -1);
+            });
+
+            var contagem = document.getElementById("contagem-fator-" + fator);
+            if (contagem) {
+                contagem.textContent = registro.fichas.length + " de " + INST.ESCOLHAS_POR_FATOR;
+                contagem.classList.toggle("completo", registro.fichas.length === INST.ESCOLHAS_POR_FATOR);
+            }
+        }
+
+        function selecionarAtencao(itemId, valor) {
+            dadosFormulario.resposta_atencao = valor;
+            salvarRascunho();
+            marcarEscala("atencao", itemId, valor);
+        }
+
+        function marcarEscala(prefixo, id, valor) {
+            [1, 2, 3, 4, 5].forEach(function (v) {
+                const btn = document.getElementById(prefixo + "-" + id + "-" + v);
+                if (btn) btn.classList.toggle("selecionado", v === valor);
+            });
+        }
+
         // MAIS e MENOS não podem cair na mesma palavra: marcar uma limpa a outra.
         function selecionarDisc(blocoId, fator, tipo) {
             let registro = dadosFormulario.respostas_disc.filter(function (r) { return r.bloco === blocoId; })[0];
@@ -1423,73 +1472,34 @@
                 registro = { bloco: blocoId, mais: null, menos: null };
                 dadosFormulario.respostas_disc.push(registro);
             }
+
             const oposto = tipo === "mais" ? "menos" : "mais";
             if (registro[oposto] === fator) registro[oposto] = null;
             registro[tipo] = registro[tipo] === fator ? null : fator;
-            salvarRascunho();
 
-            document.querySelectorAll("#passo .disc-btn").forEach(function (b) {
-                const ativo = registro[b.dataset.tipo] === b.dataset.fator;
-                b.classList.toggle(b.dataset.tipo === "mais" ? "mais-ativo" : "menos-ativo", ativo);
-                b.setAttribute("aria-pressed", ativo ? "true" : "false");
+            salvarRascunho();
+            marcarDisc(blocoId);
+        }
+
+        function marcarDisc(blocoId) {
+            const registro = dadosFormulario.respostas_disc.filter(function (r) { return r.bloco === blocoId; })[0] || {};
+            const bloco = INST.BLOCOS_DISC.filter(function (b) { return b.id === blocoId; })[0];
+            if (!bloco) return;
+            bloco.opcoes.forEach(function (op) {
+                const btnMais = document.getElementById("disc-" + blocoId + "-" + op.fator + "-mais");
+                const btnMenos = document.getElementById("disc-" + blocoId + "-" + op.fator + "-menos");
+                if (btnMais) btnMais.classList.toggle("mais-ativo", registro.mais === op.fator);
+                if (btnMenos) btnMenos.classList.toggle("menos-ativo", registro.menos === op.fator);
             });
-            if (registro.mais && registro.menos) avancarDepois();
-        }
-
-        // ===== NAVEGAÇÃO ENTRE PERGUNTAS =====
-        function passoRespondido(p) {
-            if (p.tipo === "par") {
-                const id = EXP.PARES[p.i].id;
-                return dadosFormulario.respostas_linguagem.some(function (r) { return r.item === id; });
-            }
-            if (p.tipo === "desempateLinguagem") return !!dadosFormulario.desempate_linguagem;
-            if (p.tipo === "disc") {
-                const id = EXP.BLOCOS_DISC[p.i].id;
-                const r = dadosFormulario.respostas_disc.filter(function (x) { return x.bloco === id; })[0];
-                return !!(r && r.mais && r.menos);
-            }
-            if (p.tipo === "eneagrama") return !!dadosFormulario.respostas_eneagrama[EXP.PERGUNTAS_ENEAGRAMA[p.i].id];
-            if (p.tipo === "desempateEneagrama") return !!dadosFormulario.desempate_eneagrama;
-            return true;
-        }
-
-        function avancarPasso() {
-            const p = PASSOS[dadosFormulario.passo];
-            if (!passoRespondido(p)) {
-                mostrarMensagem(p.tipo === "disc" ? "Marque uma palavra como MAIS e outra como MENOS." : "Escolha uma opção para continuar.", "erro");
-                return;
-            }
-            let n = dadosFormulario.passo + 1;
-            while (n < PASSOS.length && !passoAtivo(PASSOS[n])) n++;
-            if (n >= PASSOS.length) {
-                enviarFormulario();
-                return;
-            }
-            dadosFormulario.passo = n;
-            salvarRascunho();
-            renderizarPasso();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-
-        function voltarPasso() {
-            agendamento++; // cancela um avanço automático pendente
-            let n = dadosFormulario.passo - 1;
-            while (n >= 0 && !passoAtivo(PASSOS[n])) n--;
-            if (n < 0) {
-                irParaTela(1);
-                return;
-            }
-            dadosFormulario.passo = n;
-            salvarRascunho();
-            renderizarPasso();
         }
 
         // ===== RASCUNHO (salvar e retomar neste navegador) =====
-        // O rascunho fica só neste navegador e só vale para a mesma versão.
+        // Com 75 itens, perder tudo por um fechamento acidental de aba é
+        // desistência garantida. O rascunho fica só neste navegador.
         function salvarRascunho() {
             try {
                 localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify({
-                    versao: EXP.VERSAO,
+                    versao: INST.VERSAO,
                     dados: dadosFormulario,
                     salvoEm: Date.now()
                 }));
@@ -1501,7 +1511,7 @@
                 const bruto = JSON.parse(localStorage.getItem(CHAVE_RASCUNHO) || "null");
                 // Rascunho de uma versão anterior do instrumento não serve:
                 // os itens mudaram e as respostas não são comparáveis.
-                if (!bruto || bruto.versao !== EXP.VERSAO) return null;
+                if (!bruto || bruto.versao !== INST.VERSAO) return null;
                 return bruto;
             } catch (e) {
                 return null;
@@ -1513,8 +1523,9 @@
             if (!rascunho) return;
             const d = rascunho.dados || {};
             const respondidas = (d.respostas_linguagem || []).length +
-                (d.respostas_disc || []).length +
-                Object.keys(d.respostas_eneagrama || {}).length;
+                (d.respostas_temperamento || []).length +
+                (d.respostas_eneagrama || []).length +
+                (d.respostas_disc || []).length;
             if (respondidas > 0) document.getElementById("retomar").style.display = "block";
         }
 
@@ -1522,6 +1533,8 @@
             const rascunho = lerRascunho();
             if (!rascunho) return;
             dadosFormulario = { ...dadosFormulario, ...rascunho.dados };
+            // O cronômetro continua do início original, para o controle de tempo.
+            if (!dadosFormulario.inicio) dadosFormulario.inicio = Date.now();
 
             document.getElementById("nome").value = dadosFormulario.nome || "";
             document.getElementById("email").value = dadosFormulario.email || "";
@@ -1533,8 +1546,9 @@
                 document.getElementById("caixa-consentimento").classList.add("marcado");
             }
 
+            restaurarSelecoes();
             document.getElementById("retomar").style.display = "none";
-            mostrarMensagem("Respostas anteriores restauradas. Clique em Próximo para continuar.", "sucesso");
+            mostrarMensagem("Respostas anteriores restauradas.", "sucesso");
         }
 
         function descartarRascunho() {
@@ -1542,17 +1556,31 @@
             document.getElementById("retomar").style.display = "none";
         }
 
-        // ===== NAVEGAÇÃO ENTRE TELAS =====
+        function restaurarSelecoes() {
+            (dadosFormulario.respostas_linguagem || []).forEach(function (r) {
+                const item = INST.ITENS_LINGUAGEM.filter(function (i) { return i.id === r.item; })[0];
+                if (!item) return;
+                const lado = item.a.letra === r.letra ? "a" : "b";
+                const el = document.getElementById("ling-" + r.item + "-" + lado);
+                if (el) el.classList.add("selecionada");
+            });
+            (dadosFormulario.respostas_temperamento || []).forEach(function (r) { marcarEscala("temp", r.item, r.valor); });
+            (dadosFormulario.respostas_eneagrama || []).forEach(function (r) { marcarFator(r.fator); });
+            if (dadosFormulario.resposta_atencao) marcarEscala("atencao", INST.ITEM_ATENCAO.id, dadosFormulario.resposta_atencao);
+            (dadosFormulario.respostas_disc || []).forEach(function (r) { marcarDisc(r.bloco); });
+        }
+
+        // ===== NAVEGAÇÃO =====
         function irParaTela(n) {
             if (n === 2 && !validarTela1()) return;
+            if (n === 3 && !validarLinguagem(1, 10)) return;
+            if (n === 4 && !validarLinguagem(11, 20)) return;
+            if (n === 5 && !validarTemperamento()) return;
+            // Ao sair de cada tela do eneagrama, confere os dois fatores dela.
+            if (n >= 6 && n <= 10 && !validarTelaEneagrama(n - 1 - TELA_PRIMEIRO_FATOR)) return;
 
             document.querySelectorAll(".tela").forEach(function (t) { t.classList.remove("ativa"); });
             document.getElementById("tela" + n).classList.add("ativa");
-            if (n === 2) {
-                // O cronômetro começa na primeira pergunta, não na identificação.
-                if (!dadosFormulario.inicio) dadosFormulario.inicio = Date.now();
-                renderizarPasso();
-            }
             window.scrollTo({ top: 0, behavior: "smooth" });
             atualizarProgresso();
         }
@@ -1560,13 +1588,7 @@
         function atualizarProgresso() {
             const telaAtual = document.querySelector(".tela.ativa");
             const telaNum = parseInt(telaAtual.id.replace("tela", ""));
-            let fracao = telaNum >= 11 ? 1 : 0;
-            if (telaNum === 2) {
-                const ativos = passosAtivos();
-                const feitos = ativos.filter(passoRespondido).length;
-                fracao = feitos / (ativos.length + 1); // +1: a identificação conta como etapa
-            }
-            document.getElementById("progressoBarra").style.width = (fracao * 100) + "%";
+            document.getElementById("progressoBarra").style.width = ((telaNum / TOTAL_TELAS) * 100) + "%";
         }
 
         // ===== VALIDAÇÃO =====
@@ -1579,10 +1601,6 @@
                 mostrarMensagem("Por favor, preencha seu e-mail.", "erro");
                 return false;
             }
-            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(document.getElementById("email").value.trim())) {
-                mostrarMensagem("Confira o e-mail: é para ele que o resultado será enviado.", "erro");
-                return false;
-            }
             if (!document.getElementById("setor").value) {
                 mostrarMensagem("Por favor, selecione uma opção.", "erro");
                 return false;
@@ -1592,46 +1610,94 @@
                 document.getElementById("caixa-consentimento").scrollIntoView({ behavior: "smooth", block: "center" });
                 return false;
             }
-            dadosFormulario.nome = document.getElementById("nome").value.trim();
-            dadosFormulario.email = document.getElementById("email").value.trim();
+            dadosFormulario.nome = document.getElementById("nome").value;
+            dadosFormulario.email = document.getElementById("email").value;
             dadosFormulario.setor = document.getElementById("setor").value;
             salvarRascunho();
             return true;
         }
 
-        // ===== CÁLCULO =====
-        function entradaDoCalculo() {
-            return {
-                linguagem: dadosFormulario.respostas_linguagem,
-                desempateLinguagem: dadosFormulario.desempate_linguagem,
-                disc: dadosFormulario.respostas_disc,
-                eneagrama: dadosFormulario.respostas_eneagrama,
-                desempateEneagrama: dadosFormulario.desempate_eneagrama,
-                segundos: dadosFormulario.inicio ? Math.round((Date.now() - dadosFormulario.inicio) / 1000) : 0
-            };
+        function validarLinguagem(de, ate) {
+            const respondidas = dadosFormulario.respostas_linguagem.filter(function (r) {
+                return r.item >= de && r.item <= ate;
+            }).length;
+            if (respondidas < (ate - de + 1)) {
+                mostrarMensagem("Faltam " + ((ate - de + 1) - respondidas) + " pergunta(s) nesta tela.", "erro");
+                return false;
+            }
+            return true;
         }
 
+        function validarTemperamento() {
+            const faltam = INST.ITENS_TEMPERAMENTO.length - dadosFormulario.respostas_temperamento.length;
+            if (faltam > 0) {
+                mostrarMensagem("Faltam " + faltam + " afirmação(ões) nesta tela.", "erro");
+                return false;
+            }
+            if (dadosFormulario.resposta_atencao === null) {
+                mostrarMensagem("Falta responder a última afirmação desta tela.", "erro");
+                return false;
+            }
+            return true;
+        }
+
+        // Cada tela do eneagrama traz dois fatores; ambos precisam de duas escolhas.
+        function validarTelaEneagrama(tela) {
+            const fatores = [tela * 2, tela * 2 + 1].filter(function (f) {
+                return f < INST.BLOCOS_ENEAGRAMA.length;
+            });
+
+            const incompletos = fatores.filter(function (f) {
+                const r = dadosFormulario.respostas_eneagrama.filter(function (x) { return x.fator === f; })[0];
+                return !r || r.fichas.length !== INST.ESCOLHAS_POR_FATOR;
+            });
+
+            if (incompletos.length) {
+                const nome = INST.BLOCOS_ENEAGRAMA[incompletos[0]].fator;
+                mostrarMensagem("Escolha duas afirmativas em " + nome + ".", "erro");
+                const alvo = document.getElementById("contagem-fator-" + incompletos[0]);
+                if (alvo) alvo.scrollIntoView({ behavior: "smooth", block: "center" });
+                return false;
+            }
+            return true;
+        }
+
+        function validarDisc() {
+            const incompletos = INST.BLOCOS_DISC.filter(function (b) {
+                const r = dadosFormulario.respostas_disc.filter(function (x) { return x.bloco === b.id; })[0];
+                return !r || !r.mais || !r.menos;
+            });
+            if (incompletos.length > 0) {
+                mostrarMensagem("Marque MAIS e MENOS em todos os blocos. Faltam " + incompletos.length + ".", "erro");
+                return false;
+            }
+            return true;
+        }
+
+        // ===== CÁLCULO =====
         function calcularPerfil() {
-            return EXP.calcularPerfil(entradaDoCalculo());
+            return INST.calcularPerfilCompleto({
+                linguagem: dadosFormulario.respostas_linguagem,
+                temperamento: dadosFormulario.respostas_temperamento,
+                eneagrama: dadosFormulario.respostas_eneagrama,
+                disc: dadosFormulario.respostas_disc,
+                respostaAtencao: dadosFormulario.resposta_atencao,
+                segundos: Math.round((Date.now() - dadosFormulario.inicio) / 1000)
+            });
         }
 
         // ===== ENVIO =====
         function enviarFormulario() {
-            // Rede de segurança: nenhuma pergunta ativa pode ter ficado sem resposta.
-            const pendente = passosAtivos().filter(function (p) { return !passoRespondido(p); })[0];
-            if (pendente) {
-                dadosFormulario.passo = PASSOS.indexOf(pendente);
-                renderizarPasso();
-                mostrarMensagem("Falta responder esta pergunta.", "erro");
-                return;
+            if (!validarDisc()) return;
+            // Rede de segurança: os 10 fatores precisam somar 20 escolhas.
+            for (var tela = 0; tela < 5; tela++) {
+                if (!validarTelaEneagrama(tela)) { irParaTela(TELA_PRIMEIRO_FATOR + tela); return; }
             }
 
             irParaTela(11);
 
-            const entrada = entradaDoCalculo();
-            const perfil = EXP.calcularPerfil(entrada);
+            const perfil = calcularPerfil();
             dadosFormulario.perfil = perfil;
-            const en = perfil.eneagrama;
 
             const ctx = branding.contexto || {};
             const payload = {
@@ -1649,37 +1715,35 @@
                 // Campo-armadilha: só um robô preencheria isto.
                 confirmacao: (document.getElementById("confirmacao") || {}).value || "",
 
-                // Linguagens de valorização
+                // Módulo 1
                 linguagem: perfil.linguagem.principalNome,
                 linguagem_secundaria: perfil.linguagem.secundariaNome,
                 distribuicao_linguagem: perfil.linguagem.contagem,
 
-                // Temperamento (derivado do DISC)
+                // Módulo 2
                 temperamento: perfil.temperamento.principalNome,
                 temperamento_secundario: perfil.temperamento.secundarioNome,
+                scores_temperamento: perfil.temperamento.bruto,
+                percentual_temperamento: perfil.temperamento.percentual,
 
-                // Eneagrama (triagem)
-                eneagrama: en.nome,
-                eneagrama_segundo: en.alternativoNome,
-                eneagrama_centro: en.centro,
-                eneagrama_confianca: en.confianca,
-                eneagrama_fichas: "convívio: " + (entrada.eneagrama.convivio || "") +
-                    "; reação: " + (entrada.eneagrama.reacao || "") +
-                    "; motivação: " + (entrada.eneagrama.motivacao || "") +
-                    (en.desempate ? "; desempate: " + en.desempate : ""),
-                scores_eneagrama: { estilo: en.estilo, motivacao: en.motivacao, desempate: en.desempate || "" },
+                // Módulo 3
+                eneagrama: perfil.eneagrama.primeiroNome,
+                eneagrama_segundo: perfil.eneagrama.segundoNome,
+                eneagrama_centro: perfil.eneagrama.centro,
+                eneagrama_fichas: perfil.eneagrama.fichas.join(", "),
+                scores_eneagrama: perfil.eneagrama.bruto,
 
-                // DISC
+                // Módulo 4
                 disc: perfil.disc.perfil,
                 disc_dominante: perfil.disc.dominanteNome,
                 disc_secundario: perfil.disc.secundarioNome,
                 scores_disc: perfil.disc.score,
+                intensidade_disc: perfil.disc.intensidade,
 
-                // Controle de qualidade e respostas item a item (para validação futura)
+                // Controle de qualidade da resposta
                 qualidade_status: perfil.qualidade.status,
                 qualidade_alertas: perfil.qualidade.alertas.join("; "),
                 duracao_segundos: perfil.qualidade.segundos,
-                respostas_itens: EXP.respostasCompactas(entrada),
 
                 // Identidade e vocabulário da organização (usados pela IA e pelo e-mail)
                 escola: branding.nome,
@@ -1690,7 +1754,7 @@
                 logo_url: branding.logoUrl || ""
             };
 
-            // O Apps Script salva na planilha, gera a análise e envia os e-mails.
+            // O Apps Script salva na planilha, gera a análise com IA (Claude) e envia os e-mails.
             fetch(branding.urlAppsScript, {
                 method: "POST",
                 body: JSON.stringify(payload)
@@ -1703,12 +1767,12 @@
                 if (data && data.ok) {
                     // Só descarta o rascunho depois da confirmação de que salvou.
                     descartarRascunho();
-                    dadosFormulario.enviado = true;
-                    if (data.versao && versaoPrincipal(data.versao) !== versaoPrincipal(EXP.VERSAO)) {
+                    // Confere no envio se o servidor está na versão esperada.
+                    if (data.versao && versaoPrincipal(data.versao) !== versaoPrincipal(INST.VERSAO)) {
                         dadosFormulario.falhaEnvio = true;
                         dadosFormulario.erroEnvio =
                             "O servidor está na versão " + data.versao + " e este questionário na " +
-                            EXP.VERSAO + ". Parte do seu resultado pode não ter sido gravada.";
+                            INST.VERSAO + ". Parte do seu resultado pode não ter sido gravada.";
                     }
                 } else {
                     dadosFormulario.falhaEnvio = true;
@@ -1729,10 +1793,9 @@
 
         // ===== EXIBIÇÃO =====
         function miniBarrasHtml(pares) {
-            const minimo = Math.min.apply(null, pares.map(function (p) { return p.min !== undefined ? p.min : 0; }));
-            const max = Math.max.apply(null, pares.map(function (p) { return p.max !== undefined ? p.max : p.valor; }).concat([1]));
+            const max = Math.max.apply(null, pares.map(function (p) { return p.valor; }).concat([1]));
             return '<div class="mini-barras">' + pares.map(function (p) {
-                const largura = Math.max(0, Math.round((p.valor - minimo) / (max - minimo) * 100));
+                const largura = Math.max(0, Math.round(p.valor / max * 100));
                 return `
                 <div class="mini-barra-linha">
                     <div class="mini-barra-nome">${escaparHtml(p.nome)}</div>
@@ -1742,44 +1805,47 @@
             }).join("") + "</div>";
         }
 
-        function paresLinguagem(ling) {
-            return Object.keys(EXP.LINGUAGENS)
-                .sort(function (x, y) { return ling.contagem[y] - ling.contagem[x]; })
-                .map(function (l) {
-                    return { nome: EXP.LINGUAGENS[l], valor: ling.contagem[l] || 0, max: ling.maximo, rotulo: (ling.contagem[l] || 0) + "/" + ling.maximo };
-                });
-        }
-
-        function paresDisc(disc) {
-            return Object.keys(EXP.FATORES_DISC).map(function (f) {
-                const v = disc.score[f];
-                return { nome: f + " · " + EXP.FATORES_DISC[f], valor: v, min: disc.minimo, max: disc.maximo, rotulo: (v > 0 ? "+" : "") + v };
+        function paresLinguagem(perfil) {
+            return Object.keys(INST.LINGUAGENS).map(function (l) {
+                return { nome: INST.LINGUAGENS[l], valor: perfil.contagem[l] || 0 };
             });
         }
 
-        function textoLinguagem(ling) {
-            let t = "<strong>" + escaparHtml(ling.principalNome) + "</strong>";
-            if (ling.viaDesempate) t += " · definida no desempate";
-            if (ling.secundariaNome) t += " · secundária: " + escaparHtml(ling.secundariaNome);
-            return t;
+        function paresTemperamento(perfil) {
+            return Object.keys(INST.TEMPERAMENTOS).map(function (t) {
+                return {
+                    nome: INST.TEMPERAMENTOS[t],
+                    valor: perfil.percentual[t] || 0,
+                    rotulo: (perfil.percentual[t] || 0) + "%"
+                };
+            });
         }
 
-        function textoTemperamento(temp) {
-            return "<strong>" + escaparHtml(temp.principalNome) + "</strong>" +
-                (temp.secundarioNome ? " · secundário: " + escaparHtml(temp.secundarioNome) : "");
+        function paresEneagrama(perfil) {
+            // Ordena do mais escolhido para o menos, que é como a folha é lida.
+            return perfil.ordem.map(function (t) {
+                return {
+                    nome: INST.TIPOS_ENEAGRAMA[t].nome,
+                    valor: perfil.bruto[t] || 0,
+                    rotulo: (perfil.bruto[t] || 0) + "/10"
+                };
+            });
         }
 
-        function textoConfiancaEneagrama(en) {
-            return en.concordam
-                ? "Confiança alta: estilo e motivação apontaram o mesmo tipo."
-                : "Confiança média: estilo e motivação divergiram e o tipo foi definido no desempate.";
+        function paresDisc(perfil) {
+            return Object.keys(INST.FATORES_DISC).map(function (f) {
+                return {
+                    nome: f + " — " + INST.FATORES_DISC[f],
+                    valor: perfil.intensidade[f] || 0,
+                    rotulo: (perfil.score[f] > 0 ? "+" : "") + perfil.score[f]
+                };
+            });
         }
 
         function exibirResultado() {
             const perfil = dadosFormulario.perfil || calcularPerfil();
             const ia = dadosFormulario.analise_ia || {};
             const ctx = branding.contexto || {};
-            const en = perfil.eneagrama;
 
             let html = '<div class="resultado">';
 
@@ -1787,15 +1853,9 @@
                 html += `
                     <div class="alerta-qualidade">
                         Não conseguimos confirmar o envio das suas respostas ao servidor. O resultado abaixo foi
-                        calculado neste navegador e suas respostas continuam salvas aqui. Avise
+                        calculado neste navegador e suas respostas continuam salvas aqui — avise
                         ${escaparHtml(ctx.termoLider || "o gestor")} para que o envio seja refeito.
                         ${dadosFormulario.erroEnvio ? "<br><br><strong>Motivo:</strong> " + escaparHtml(dadosFormulario.erroEnvio) : ""}
-                    </div>`;
-            } else if (dadosFormulario.enviado) {
-                html += `
-                    <div class="modulo-intro">
-                        Resultado registrado. Uma cópia foi enviada para <strong>${escaparHtml(dadosFormulario.email)}</strong>.
-                        Se não aparecer em alguns minutos, confira a caixa de spam.
                     </div>`;
             }
 
@@ -1803,7 +1863,7 @@
                 html += `
                     <div class="alerta-qualidade">
                         <strong>Leia com atenção:</strong> ${escaparHtml(perfil.qualidade.alertas.join(". "))}.
-                        Respostas dadas muito rápido ou sempre do mesmo lado reduzem a precisão do resultado.
+                        Respostas dadas muito rápido ou sempre com a mesma nota reduzem a precisão do resultado.
                         Se quiser, refaça o teste com calma.
                     </div>`;
             }
@@ -1815,31 +1875,29 @@
                 </div>
 
                 <div class="resultado-card">
-                    <h3>Estilo comportamental (DISC)</h3>
-                    <p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " · dominante: " + escaparHtml(perfil.disc.dominanteNome) : ""} · secundário: ${perfil.disc.secundarioNome ? escaparHtml(perfil.disc.secundarioNome) : "sem definição clara"}</p>
-                    ${miniBarrasHtml(paresDisc(perfil.disc))}
-                    <p class="nota-card">Escala de −8 a +8: vezes escolhida como MAIS menos vezes como MENOS.</p>
+                    <h3>Linguagem de Valorização</h3>
+                    <p><strong>${escaparHtml(perfil.linguagem.principalNome)}</strong>${perfil.linguagem.secundariaNome ? " · secundária: " + escaparHtml(perfil.linguagem.secundariaNome) : ""}</p>
+                    ${miniBarrasHtml(paresLinguagem(perfil.linguagem))}
                 </div>
 
                 <div class="resultado-card">
                     <h3>Temperamento</h3>
-                    <p>${textoTemperamento(perfil.temperamento)}</p>
-                    <p class="nota-card">Derivado do DISC: Colérico = D · Sanguíneo = I · Fleumático = S · Melancólico = C. Os quatro temperamentos são um modelo histórico, usado aqui como linguagem para conversa.</p>
+                    <p><strong>${escaparHtml(perfil.temperamento.principalNome)}</strong>${perfil.temperamento.secundarioNome ? " · secundário: " + escaparHtml(perfil.temperamento.secundarioNome) : ""}</p>
+                    ${miniBarrasHtml(paresTemperamento(perfil.temperamento))}
                 </div>
 
                 <div class="resultado-card">
-                    <h3>Linguagem de Valorização</h3>
-                    <p>${textoLinguagem(perfil.linguagem)}</p>
-                    ${miniBarrasHtml(paresLinguagem(perfil.linguagem))}
-                    <p class="nota-card">De 0 a 4: cada linguagem foi comparada uma vez com cada uma das outras.</p>
+                    <h3>Eneagrama</h3>
+                    <p><strong>${escaparHtml(perfil.eneagrama.primeiroNome)}</strong> · centro ${escaparHtml(perfil.eneagrama.centro)}</p>
+                    <p style="font-size:13px">Segundo lugar: ${escaparHtml(perfil.eneagrama.segundoNome)}${perfil.eneagrama.empate ? " · <strong>houve empate no primeiro lugar</strong>: leia os dois e veja qual você reconhece." : ""}</p>
+                    ${miniBarrasHtml(paresEneagrama(perfil.eneagrama))}
+                    <p style="font-size:12px;color:#666;margin-top:8px">Suas fichas: ${escaparHtml(perfil.eneagrama.fichas.join(", "))} — ${perfil.eneagrama.total} de 20 escolhas.</p>
                 </div>
 
                 <div class="resultado-card">
-                    <h3>Eneagrama (triagem)</h3>
-                    <p><strong>${escaparHtml(en.nome)}</strong>${en.centro ? " · centro " + escaparHtml(en.centro) : ""}</p>
-                    <p style="font-size:13px">${textoConfiancaEneagrama(en)}</p>
-                    ${en.concordam ? "" : `<div class="chips-alt"><span>Estilo: ${escaparHtml(EXP.TIPOS_ENEAGRAMA[en.estilo].nome)}</span><span>Motivação: ${escaparHtml(EXP.TIPOS_ENEAGRAMA[en.motivacao].nome)}</span></div>`}
-                    <p class="nota-card">Hipótese inicial, não veredito: três perguntas não definem um tipo entre nove. Se não soar como você, vale uma conversa ou o instrumento completo.</p>
+                    <h3>DISC</h3>
+                    <p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " · dominante: " + escaparHtml(perfil.disc.dominanteNome) : ""}${perfil.disc.secundarioNome ? " · secundário: " + escaparHtml(perfil.disc.secundarioNome) : ""}</p>
+                    ${miniBarrasHtml(paresDisc(perfil.disc))}
                 </div>
             `;
 
@@ -1855,15 +1913,14 @@
             } else {
                 html += `
                     <div class="resultado-card">
-                        <p style="font-size: 13px; color: #666;">A análise escrita não pôde ser gerada agora, mas suas respostas foram registradas normalmente.</p>
+                        <p style="font-size: 13px; color: #666;">A análise personalizada por IA não pôde ser gerada agora, mas suas respostas foram registradas normalmente.</p>
                     </div>
                 `;
             }
 
             html += `
                 <p class="aviso-instrumento">
-                    Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Teste curto: mostra tendências,
-                    não define quem você é e não foi validado cientificamente. Não é ferramenta de seleção,
+                    Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Não é ferramenta de seleção,
                     não constitui diagnóstico clínico e não substitui avaliação profissional.
                 </p>
             </div>`;
@@ -1879,9 +1936,7 @@
                     setor: dadosFormulario.setor,
                     linguagem: perfil.linguagem.principalNome,
                     temperamento: perfil.temperamento.principalNome,
-                    eneagrama: en.nome,
-                    eneagrama_segundo: en.alternativoNome,
-                    eneagrama_confianca: en.confianca,
+                    eneagrama: perfil.eneagrama.primeiroNome,
                     disc: perfil.disc.perfil,
                     versao: perfil.versao,
                     como_comunicar: ia.como_comunicar || ""
@@ -1951,7 +2006,6 @@
         function baixarPDF() {
             const perfil = dadosFormulario.perfil || calcularPerfil();
             const ia = dadosFormulario.analise_ia || {};
-            const en = perfil.eneagrama;
 
             const secoesIA = ia.quem_e ? `
                 <h2>Quem é você</h2><p>${escaparHtml(ia.quem_e)}</p>
@@ -1967,9 +2021,11 @@
                 return;
             }
             const cor = branding.corPrimaria;
-            const logoHtml = branding.logoUrl ? `<img src="${escaparHtml(branding.logoUrl)}" alt="Logo" style="max-height:56px;max-width:200px;margin-bottom:8px">` : "";
+            const logoHtml = branding.logoUrl ? `<img src="${branding.logoUrl}" alt="Logo" style="max-height:56px;max-width:200px;margin-bottom:8px">` : "";
 
-            const listaLing = paresLinguagem(perfil.linguagem).map(function (p) { return p.nome + ": " + p.rotulo; }).join(" · ");
+            const listaLing = paresLinguagem(perfil.linguagem).map(function (p) { return p.nome + ": " + p.valor; }).join(" · ");
+            const listaTemp = paresTemperamento(perfil.temperamento).map(function (p) { return p.nome + ": " + p.rotulo; }).join(" · ");
+            const listaEnea = paresEneagrama(perfil.eneagrama).map(function (p) { return p.nome.replace(/^Tipo /, "") + ": " + p.valor; }).join(" · ");
             const listaDisc = paresDisc(perfil.disc).map(function (p) { return p.nome + ": " + p.rotulo; }).join(" · ");
 
             win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
@@ -1986,14 +2042,14 @@
                     .rodape-aviso { font-size: 10px; color: #888; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; line-height: 1.6; }
                     @media print { body { margin: 10mm auto; } }
                 </style></head><body>
-                <div class="topo">${logoHtml}<h1>Perfil Comportamental</h1><p>${escaparHtml(branding.nome)} · ${new Date().toLocaleDateString("pt-BR")}</p></div>
+                <div class="topo">${logoHtml}<h1>Perfil Comportamental</h1><p>${escaparHtml(branding.nome)} — ${new Date().toLocaleDateString("pt-BR")}</p></div>
                 <div class="dados"><strong>Nome:</strong> ${escaparHtml(dadosFormulario.nome)}<br><strong>E-mail:</strong> ${escaparHtml(dadosFormulario.email)}<br><strong>${escaparHtml((branding.contexto || {}).termoGrupo || "Setor")}:</strong> ${escaparHtml(dadosFormulario.setor)}</div>
-                <h2>Estilo comportamental (DISC)</h2><p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " · dominante " + escaparHtml(perfil.disc.dominanteNome) : ""} · secundário: ${perfil.disc.secundarioNome ? escaparHtml(perfil.disc.secundarioNome) : "sem definição clara"}<br><span class="detalhe">${escaparHtml(listaDisc)} (escala de −8 a +8)</span></p>
-                <h2>Temperamento</h2><p>${textoTemperamento(perfil.temperamento)}<br><span class="detalhe">Derivado do DISC. Modelo histórico, usado como linguagem para conversa.</span></p>
-                <h2>Linguagem de Valorização</h2><p>${textoLinguagem(perfil.linguagem)}<br><span class="detalhe">${escaparHtml(listaLing)}</span></p>
-                <h2>Eneagrama (triagem)</h2><p><strong>${escaparHtml(en.nome)}</strong>${en.centro ? " · centro " + escaparHtml(en.centro) : ""}<br>${escaparHtml(textoConfiancaEneagrama(en))}${en.alternativoNome ? "<br>Tipo alternativo: " + escaparHtml(en.alternativoNome) : ""}</p>
+                <h2>Linguagem de Valorização</h2><p><strong>${escaparHtml(perfil.linguagem.principalNome)}</strong>${perfil.linguagem.secundariaNome ? " (secundária: " + escaparHtml(perfil.linguagem.secundariaNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaLing)}</span></p>
+                <h2>Temperamento</h2><p><strong>${escaparHtml(perfil.temperamento.principalNome)}</strong>${perfil.temperamento.secundarioNome ? " (secundário: " + escaparHtml(perfil.temperamento.secundarioNome) + ")" : ""}<br><span class="detalhe">${escaparHtml(listaTemp)}</span></p>
+                <h2>Eneagrama</h2><p><strong>${escaparHtml(perfil.eneagrama.primeiroNome)}</strong> — centro ${escaparHtml(perfil.eneagrama.centro)}<br>Segundo lugar: ${escaparHtml(perfil.eneagrama.segundoNome)}<br><span class="detalhe">${escaparHtml(listaEnea)}</span></p>
+                <h2>DISC</h2><p><strong>${escaparHtml(perfil.disc.perfil)}</strong>${perfil.disc.dominanteNome ? " — dominante " + escaparHtml(perfil.disc.dominanteNome) : ""}${perfil.disc.secundarioNome ? ", secundário " + escaparHtml(perfil.disc.secundarioNome) : ""}<br><span class="detalhe">${escaparHtml(listaDisc)}</span></p>
                 ${secoesIA}
-                <p class="rodape-aviso">Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Teste curto: mostra tendências, não define quem você é e não foi validado cientificamente. Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional.</p>
+                <p class="rodape-aviso">Instrumento de autoconhecimento e desenvolvimento (${perfil.versao}). Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional.</p>
                 </body></html>`);
             win.document.close();
             win.focus();
