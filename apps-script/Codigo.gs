@@ -12,6 +12,12 @@
  * INSTRUMENTO v2.0 — quatro módulos:
  *   Linguagens de Valorização, Temperamento, Eneagrama (9 tipos) e DISC.
  *
+ * INSTRUMENTO v3.0 (Perfil Expresso), o teste em uso a partir de 09/2026:
+ *   os mesmos quatro resultados com 21 decisões. O temperamento é derivado do
+ *   DISC e o eneagrama é uma triagem com nível de confiança. Vai para a aba
+ *   "Respostas v3", que tem as colunas da v2 mais a confiança do eneagrama e
+ *   as respostas item a item. O questionário v2.1 foi arquivado.
+ *
  * SOBRE AS DUAS ABAS
  *  A aba "Respostas" guarda o histórico da v1 e NÃO é mais escrita nem alterada.
  *  As respostas novas vão para "Respostas v2", que tem colunas a mais (DISC,
@@ -39,12 +45,16 @@
 // se o site já estiver na v2 e o Apps Script ainda estiver na v1, o envio é
 // bloqueado com uma mensagem clara, em vez de gravar dados incompletos na aba
 // errada. Ao alterar o formato dos dados, suba esta versão junto.
-var VERSAO_BACKEND = "v2.1";
+var VERSAO_BACKEND = "v3.0";
 
 var NOME_ABA = "Respostas";
 
 // Aba do instrumento v2 — onde as respostas novas são gravadas.
 var NOME_ABA_V2 = "Respostas v2";
+
+// Aba do Perfil Expresso (v3.0). As abas anteriores não recebem mais linhas
+// novas de um formulário atualizado: continuam só para leitura do histórico.
+var NOME_ABA_V3 = "Respostas v3";
 
 // Cabeçalho da v1, mantido para conseguir ler as linhas antigas.
 var CABECALHO = [
@@ -64,6 +74,21 @@ var CABECALHO_V2 = [
   "Quem é", "Pontos fortes", "Pontos a desenvolver",
   "Como comunicar", "Como motivar", "Evitar atrito"
 ];
+
+// v3: as mesmas colunas da v2, na mesma ordem (o que mantém a leitura igual),
+// mais duas no fim. Na v3, as colunas herdadas mudam de sentido assim:
+//   "Eneagrama 2º lugar"  -> tipo alternativo, quando estilo e motivação divergem
+//   "Fichas escolhidas"   -> respostas da triagem do eneagrama
+//   "Scores eneagrama"    -> tipo apontado por cada via (estilo, motivação, desempate)
+//   "Percentual temperamento" fica vazio: o temperamento é derivado do DISC.
+var CABECALHO_V3 = CABECALHO_V2.concat([
+  "Confiança eneagrama", "Respostas item a item"
+]);
+
+// O formulário v3 marca o envio com versao_instrumento "v3.x".
+function ehExpresso(dados) {
+  return /^v3/.test(String((dados && dados.versao_instrumento) || ""));
+}
 
 // ===== SEGURANÇA E LIMITES =====
 //
@@ -287,18 +312,26 @@ function obterAba() {
   return aba;
 }
 
-function obterAbaV2() {
+function obterAbaComCabecalho(nome, cabecalho) {
   var planilha = obterPlanilha();
-  var aba = planilha.getSheetByName(NOME_ABA_V2);
+  var aba = planilha.getSheetByName(nome);
   if (!aba) {
-    aba = planilha.insertSheet(NOME_ABA_V2);
+    aba = planilha.insertSheet(nome);
   }
   if (aba.getLastRow() === 0) {
-    aba.appendRow(CABECALHO_V2);
-    aba.getRange(1, 1, 1, CABECALHO_V2.length).setFontWeight("bold");
+    aba.appendRow(cabecalho);
+    aba.getRange(1, 1, 1, cabecalho.length).setFontWeight("bold");
     aba.setFrozenRows(1);
   }
   return aba;
+}
+
+function obterAbaV2() {
+  return obterAbaComCabecalho(NOME_ABA_V2, CABECALHO_V2);
+}
+
+function obterAbaV3() {
+  return obterAbaComCabecalho(NOME_ABA_V3, CABECALHO_V3);
 }
 
 // ===== SANEAMENTO DE SAÍDA =====
@@ -355,7 +388,7 @@ function salvarNaPlanilha(dados, analise) {
   var a = analise || {};
   var t = textoParaPlanilha; // atalho: toda célula de texto passa por aqui
 
-  obterAbaV2().appendRow([
+  var linha = [
     Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM/yyyy HH:mm"),
     dados.versao_instrumento || "v2.0",
     t(dados.nome),
@@ -392,13 +425,39 @@ function salvarNaPlanilha(dados, analise) {
     t(a.como_comunicar),
     t(a.como_motivar),
     t(a.evitar_atrito)
-  ]);
+  ];
+
+  if (ehExpresso(dados)) {
+    obterAbaV3().appendRow(linha.concat([
+      t(dados.eneagrama_confianca),
+      t(dados.respostas_itens)
+    ]));
+    return;
+  }
+  obterAbaV2().appendRow(linha);
 }
 
-// Lê as duas abas e devolve tudo com a versão marcada.
-// As linhas da v1 vêm com os campos novos vazios — o dashboard sabe lidar.
+// Lê as abas e devolve tudo com a versão marcada, da mais nova para a mais
+// antiga. As linhas antigas vêm com os campos novos vazios; o dashboard sabe lidar.
 function lerRespostas() {
-  return lerRespostasV2().concat(lerRespostasV1());
+  return lerRespostasV3().concat(lerRespostasV2()).concat(lerRespostasV1());
+}
+
+function lerRespostasV3() {
+  var planilha = obterPlanilha();
+  // Só lê se a aba existir: a leitura não deve criar abas vazias.
+  var aba = planilha.getSheetByName(NOME_ABA_V3);
+  if (!aba || aba.getLastRow() < 2) return [];
+
+  var valores = aba.getRange(2, 1, aba.getLastRow() - 1, CABECALHO_V3.length).getValues();
+  var base = CABECALHO_V2.length;
+  return valores.map(function (linha) {
+    var registro = linhaV2ParaObjeto(linha);
+    registro.versao = linha[1] || "v3.0";
+    registro.eneagrama_confianca = linha[base];
+    registro.respostas_itens = linha[base + 1];
+    return registro;
+  }).reverse(); // mais recentes primeiro
 }
 
 function lerRespostasV1() {
@@ -441,7 +500,12 @@ function lerRespostasV2() {
   if (aba.getLastRow() < 2) return [];
 
   var valores = aba.getRange(2, 1, aba.getLastRow() - 1, CABECALHO_V2.length).getValues();
-  return valores.map(function (linha) {
+  return valores.map(linhaV2ParaObjeto).reverse(); // mais recentes primeiro
+}
+
+// Converte uma linha no layout da v2 (que a v3 também usa nas primeiras
+// colunas) no objeto que o dashboard espera.
+function linhaV2ParaObjeto(linha) {
     return {
       data: String(linha[0]),
       versao: linha[1] || "v2.0",
@@ -474,7 +538,6 @@ function lerRespostasV2() {
       como_motivar: linha[28],
       evitar_atrito: linha[29]
     };
-  }).reverse(); // mais recentes primeiro
 }
 
 // ===== ANÁLISE COM IA (CLAUDE) =====
@@ -503,6 +566,67 @@ function gerarAnaliseIA(dados) {
   var t = dados.percentual_temperamento || dados.scores_temperamento || {};
   var en = dados.scores_eneagrama || {};
   var di = dados.scores_disc || {};
+  var expresso = ehExpresso(dados);
+
+  var distribuicaoLinguagem =
+    "Palavras de afirmação=" + (d.A || 0) +
+    ", Tempo de qualidade=" + (d.B || 0) +
+    ", Presentes/Mimos=" + (d.C || 0) +
+    ", Atos de serviço=" + (d.D || 0) +
+    ", Presença/Acolhimento=" + (d.E || 0);
+
+  // O Perfil Expresso (v3) mede com menos itens: o temperamento é derivado do
+  // DISC e o eneagrama é uma triagem. A IA precisa saber disso para não
+  // escrever com mais certeza do que o dado permite.
+  var blocoDados = expresso
+    ? "- Linguagem de valorização principal: " + dados.linguagem +
+      (dados.linguagem_secundaria ? " (secundária: " + dados.linguagem_secundaria + ")" : "") +
+      "; vitórias em 10 pares, de 0 a 4 cada: " + distribuicaoLinguagem + "\n" +
+
+      "- Temperamento: " + dados.temperamento +
+      (dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "") +
+      "; derivado do DISC pela correspondência clássica, sem perguntas próprias\n" +
+
+      "- Eneagrama (triagem de 3 perguntas): " + dados.eneagrama +
+      ", confiança " + (dados.eneagrama_confianca || "não informada") +
+      (dados.eneagrama_segundo ? " (tipo alternativo apontado: " + dados.eneagrama_segundo + ")" : "") +
+      (dados.eneagrama_centro ? ", centro de inteligência " + dados.eneagrama_centro : "") + "\n" +
+
+      "- DISC: " + (dados.disc || "não informado") +
+      (dados.disc_dominante ? "; fator dominante " + dados.disc_dominante : "") +
+      (dados.disc_secundario ? ", secundário " + dados.disc_secundario : ", sem secundário definido") +
+      "; scores (faixa de -8 a +8): " + formatarScores(di) + "\n\n"
+
+    : "- Linguagem de valorização principal: " + dados.linguagem +
+      (dados.linguagem_secundaria ? " (secundária: " + dados.linguagem_secundaria + ")" : "") +
+      " — distribuição: " + distribuicaoLinguagem + "\n" +
+
+      "- Temperamento predominante: " + dados.temperamento +
+      (dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "") +
+      " — percentuais: Colérico=" + (t.colerico || 0) +
+      ", Sanguíneo=" + (t.sanguineo || 0) +
+      ", Melancólico=" + (t.melancol || 0) +
+      ", Fleumático=" + (t.fleumatico || 0) + "\n" +
+
+      "- Eneagrama: " + dados.eneagrama +
+      (dados.eneagrama_segundo ? " (segundo lugar: " + dados.eneagrama_segundo + ")" : "") +
+      (dados.eneagrama_centro ? ", centro de inteligência " + dados.eneagrama_centro : "") +
+      " — escolhas por tipo, de 0 a 10, somando 20: " + formatarScores(en) + "\n" +
+
+      "- DISC: " + (dados.disc || "não informado") +
+      (dados.disc_dominante ? " — fator dominante " + dados.disc_dominante : "") +
+      (dados.disc_secundario ? ", secundário " + dados.disc_secundario : "") +
+      " — scores (faixa de -12 a +12): " + formatarScores(di) + "\n\n";
+
+  var instrucaoEneagrama = expresso
+    ? "- O eneagrama veio de uma triagem curta: trate o tipo como hipótese a " +
+      "confirmar, não como conclusão. Se a confiança for média, mencione o tipo " +
+      "alternativo com naturalidade. NÃO mencione asa.\n" +
+      "- O temperamento foi derivado do DISC: não o trate como uma segunda " +
+      "medida independente que confirma o DISC.\n"
+    : "- No eneagrama, trabalhe com o primeiro e o segundo lugar. NÃO mencione " +
+      "asa: o instrumento usado não mede isso, e o segundo colocado não é " +
+      "necessariamente um tipo vizinho.\n";
 
   var prompt =
     "Analise o perfil comportamental desta pessoa e escreva em português do Brasil, " +
@@ -518,30 +642,7 @@ function gerarAnaliseIA(dados) {
 
     "DADOS\n" +
     "- Nome: " + dados.nome + "\n" +
-    "- Linguagem de valorização principal: " + dados.linguagem +
-    (dados.linguagem_secundaria ? " (secundária: " + dados.linguagem_secundaria + ")" : "") +
-    " — distribuição: Palavras de afirmação=" + (d.A || 0) +
-    ", Tempo de qualidade=" + (d.B || 0) +
-    ", Presentes/Mimos=" + (d.C || 0) +
-    ", Atos de serviço=" + (d.D || 0) +
-    ", Presença/Acolhimento=" + (d.E || 0) + "\n" +
-
-    "- Temperamento predominante: " + dados.temperamento +
-    (dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "") +
-    " — percentuais: Colérico=" + (t.colerico || 0) +
-    ", Sanguíneo=" + (t.sanguineo || 0) +
-    ", Melancólico=" + (t.melancol || 0) +
-    ", Fleumático=" + (t.fleumatico || 0) + "\n" +
-
-    "- Eneagrama: " + dados.eneagrama +
-    (dados.eneagrama_segundo ? " (segundo lugar: " + dados.eneagrama_segundo + ")" : "") +
-    (dados.eneagrama_centro ? ", centro de inteligência " + dados.eneagrama_centro : "") +
-    " — escolhas por tipo, de 0 a 10, somando 20: " + formatarScores(en) + "\n" +
-
-    "- DISC: " + (dados.disc || "não informado") +
-    (dados.disc_dominante ? " — fator dominante " + dados.disc_dominante : "") +
-    (dados.disc_secundario ? ", secundário " + dados.disc_secundario : "") +
-    " — scores (faixa de -12 a +12): " + formatarScores(di) + "\n\n" +
+    blocoDados +
 
     "INSTRUÇÕES\n" +
     "- Integre os QUATRO instrumentos em uma leitura única e coerente. Não " +
@@ -553,9 +654,7 @@ function gerarAnaliseIA(dados) {
     "exemplos concretos de " + ctx.descricaoAmbiente + ".\n" +
     "- Não use rótulos determinísticos ('você é assim e pronto'). Fale em " +
     "tendências e preferências.\n" +
-    "- No eneagrama, trabalhe com o primeiro e o segundo lugar. NÃO mencione " +
-    "asa: o instrumento usado não mede isso, e o segundo colocado não é " +
-    "necessariamente um tipo vizinho.\n" +
+    instrucaoEneagrama +
     "- Não sugira decisões de contratação, promoção ou desligamento: este é um " +
     "instrumento de desenvolvimento, não de seleção." +
 
@@ -847,7 +946,11 @@ function gerarAnalisePadrao(dados) {
 
   var nuancas = [];
   if (dados.temperamento_secundario) nuancas.push("o temperamento secundário (" + dados.temperamento_secundario + ")");
-  if (dados.eneagrama_segundo) nuancas.push("o segundo tipo do eneagrama (" + dados.eneagrama_segundo + ")");
+  if (dados.eneagrama_segundo) {
+    nuancas.push(ehExpresso(dados)
+      ? "o tipo alternativo apontado na triagem do eneagrama (" + dados.eneagrama_segundo + ")"
+      : "o segundo tipo do eneagrama (" + dados.eneagrama_segundo + ")");
+  }
   var fraseNuancas = nuancas.length
     ? "Como toda leitura de perfil, esta é uma tendência, não um rótulo — " + nuancas.join(" e ") + " acrescenta" + (nuancas.length > 1 ? "m" : "") + " nuances a esse retrato."
     : "Como toda leitura de perfil, esta é uma tendência, não um rótulo.";
@@ -939,6 +1042,8 @@ function montarEmailHtml(dados, analise) {
     return base + (complemento || "");
   };
 
+  var expresso = ehExpresso(dados);
+
   var alerta = (dados.qualidade_status && dados.qualidade_status !== "OK")
     ? '<p style="background:#fff8e1;border-left:4px solid #f9a825;padding:10px;font-size:12px;' +
       'color:#7a5c00;margin:0 0 14px">O preenchimento levantou alertas de qualidade (' +
@@ -958,10 +1063,15 @@ function montarEmailHtml(dados, analise) {
     linha("Linguagem de Valorização", composto(dados.linguagem,
       dados.linguagem_secundaria ? " (secundária: " + dados.linguagem_secundaria + ")" : "")) +
     linha("Temperamento", composto(dados.temperamento,
-      dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "")) +
-    linha("Eneagrama", composto(dados.eneagrama,
-      (dados.eneagrama_segundo ? " (2º lugar: " + dados.eneagrama_segundo + ")" : "") +
-      (dados.eneagrama_centro ? " — centro " + dados.eneagrama_centro : ""))) +
+      (dados.temperamento_secundario ? " (secundário: " + dados.temperamento_secundario + ")" : "") +
+      (expresso ? ", derivado do DISC" : ""))) +
+    (expresso
+      ? linha("Eneagrama (triagem)", composto(dados.eneagrama,
+          (dados.eneagrama_confianca ? ", confiança " + dados.eneagrama_confianca : "") +
+          (dados.eneagrama_segundo ? " (alternativa: " + dados.eneagrama_segundo + ")" : "")))
+      : linha("Eneagrama", composto(dados.eneagrama,
+          (dados.eneagrama_segundo ? " (2º lugar: " + dados.eneagrama_segundo + ")" : "") +
+          (dados.eneagrama_centro ? " — centro " + dados.eneagrama_centro : "")))) +
     linha("DISC", composto(dados.disc,
       (dados.disc_dominante ? " — dominante " + dados.disc_dominante : "") +
       (dados.disc_secundario ? ", secundário " + dados.disc_secundario : ""))) +
@@ -975,6 +1085,9 @@ function montarEmailHtml(dados, analise) {
     '<p style="font-size:10px;color:#888;margin-top:24px;border-top:1px solid #ddd;padding-top:10px;line-height:1.6">' +
     "Instrumento de autoconhecimento e desenvolvimento (" + esc(dados.versao_instrumento || "v2.0") + "). " +
     "Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional." +
+    (expresso
+      ? " Teste curto: mostra tendências, não define quem você é, e não foi validado cientificamente."
+      : "") +
     "</p>" +
     "</div></div>";
 }

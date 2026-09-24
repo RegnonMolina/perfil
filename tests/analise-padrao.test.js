@@ -82,3 +82,18 @@ test("os nove tipos do eneagrama e os quatro fatores DISC têm texto completo", 
     });
   });
 });
+
+test("v3: a análise padrão sai completa e trata o eneagrama como triagem", () => {
+  const a = contexto.gerarAnalisePadrao({
+    versao_instrumento: "v3.0",
+    linguagem: "Palavras de afirmação",
+    temperamento: "Melancólico",
+    eneagrama: "Tipo 5 — Investigador",
+    eneagrama_segundo: "Tipo 1 — Perfeccionista",
+    disc: "C",
+    disc_dominante: "Conformidade"
+  });
+  ["quem_e", "pontos_fortes", "pontos_desenvolver", "como_comunicar", "como_motivar", "evitar_atrito"]
+    .forEach((c) => assert.ok(a[c] && a[c].length > 20, `campo ${c} vazio`));
+  assert.match(a.quem_e, /triagem do eneagrama/);
+});
