@@ -382,3 +382,68 @@ test("Na v3, a análise por IA recebe o aviso de triagem e a faixa de -8 a +8", 
   assert.match(prompt, /derivado do DISC/);
   assert.ok(!/somando 20/.test(prompt), "o prompt da v3 não pode descrever a tabulação da v2");
 });
+
+// ===== Personagem do cinema (escolhido pela IA) =====
+
+const ANALISE_COM_PERSONAGEM = {
+  quem_e: "Você é analítico.", pontos_fortes: "Foco.", pontos_desenvolver: "Delegar.",
+  como_comunicar: "Seja direto.", como_motivar: "Dê autonomia.", evitar_atrito: "Não microgerencie.",
+  personagem: "Sherlock Holmes", personagem_obra: "Sherlock Holmes (2009)",
+  personagem_motivo: "Observa tudo antes de agir e confia na lógica."
+};
+
+function ambienteComIA() {
+  return criarAmbiente({
+    propriedades: { ANTHROPIC_API_KEY: "sk-ant-teste", TOKEN_GESTOR: TOKEN },
+    respostaHttp: { codigo: 200, corpo: JSON.stringify({ content: [{ type: "text", text: JSON.stringify(ANALISE_COM_PERSONAGEM) }] }) }
+  });
+}
+
+test("O pedido à IA exige o personagem do cinema no esquema", () => {
+  const a = ambienteComIA();
+  post(a, envioExpresso());
+  const corpo = JSON.parse(a.__http[0].params.payload);
+  const esquema = corpo.output_config.format.schema;
+  ["personagem", "personagem_obra", "personagem_motivo"].forEach((campo) => {
+    assert.ok(esquema.properties[campo], `falta ${campo} no esquema`);
+    assert.ok(esquema.required.includes(campo), `${campo} precisa ser obrigatório`);
+  });
+});
+
+test("O personagem é gravado na aba v3, sai no e-mail da pessoa e aparece na leitura do dashboard", () => {
+  const a = ambienteComIA();
+  post(a, envioExpresso());
+  const aba = a.__abas.get("Respostas v3");
+  const cab = aba.linhas[0];
+  assert.strictEqual(aba.linhas[1][cab.indexOf("Personagem")], "Sherlock Holmes");
+  const paraPessoa = a.__emails.find((m) => m.to === "maria@exemplo.com.br");
+  assert.match(paraPessoa.htmlBody, /Personagem do cinema/);
+  assert.match(paraPessoa.htmlBody, /Sherlock Holmes/);
+  const r = get(a, { action: "read", token: TOKEN });
+  assert.strictEqual(r.rows[0].personagem, "Sherlock Holmes");
+  assert.match(r.rows[0].personagem_motivo, /lógica/);
+});
+
+test("Aba v3 criada antes do personagem ganha só o cabeçalho que faltava, sem mexer nas linhas", () => {
+  const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN } });
+  post(a, envioExpresso());
+  const aba = a.__abas.get("Respostas v3");
+  // Simula a aba antiga: corta cabeçalho e linha nas 3 colunas novas.
+  aba.linhas[0] = aba.linhas[0].slice(0, -3);
+  aba.linhas[1] = aba.linhas[1].slice(0, -3);
+  const antes = aba.linhas[1].slice();
+  post(a, envioExpresso({ email: "outra@exemplo.com.br" }));
+  assert.strictEqual(JSON.stringify(aba.linhas[0].slice(-3)), JSON.stringify(["Personagem", "Personagem (obra)", "Personagem (motivo)"]));
+  assert.strictEqual(JSON.stringify(aba.linhas[1].slice(0, antes.length)), JSON.stringify(antes), "a linha antiga não pode mudar");
+  const r = get(a, { action: "read", token: TOKEN });
+  assert.strictEqual(r.rows.length, 2, "as duas linhas continuam legíveis");
+});
+
+test("Sem IA, a resposta é gravada sem personagem e o e-mail não mostra a seção", () => {
+  const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN } });
+  post(a, envioExpresso());
+  const paraPessoa = a.__emails.find((m) => m.to === "maria@exemplo.com.br");
+  assert.ok(!/Personagem do cinema/.test(paraPessoa.htmlBody));
+  const r = get(a, { action: "read", token: TOKEN });
+  assert.ok(!r.rows[0].personagem);
+});

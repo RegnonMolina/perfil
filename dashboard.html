@@ -83,6 +83,23 @@ tr:hover td{background:var(--surface2)}
 .pcard-body{padding:0 16px 14px}
 .pcard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
 .pcard-tip{font-size:12px;color:var(--text2);line-height:1.5;padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--primary)}
+/* Ficha da pessoa: janela aberta ao clicar numa linha ou card */
+#tabela-body tr.clicavel,.pcard.clicavel{cursor:pointer}
+#tabela-body tr.clicavel:focus-visible,.pcard.clicavel:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.ficha-fundo{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;z-index:50}
+.ficha{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--rlg);width:100%;max-width:720px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.ficha-topo{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.ficha-topo h2{font-size:18px;font-weight:600}
+.ficha-topo small{display:block;font-size:12px;color:var(--text3);margin-top:2px}
+.ficha-fechar{border:1px solid var(--border);background:var(--surface2);color:var(--text2);border-radius:var(--r);padding:6px 12px;cursor:pointer;font-size:12px}
+.ficha-corpo{padding:16px 20px 22px}
+.ficha-aviso{background:#FAEEDA;color:#633806;border-radius:var(--r);padding:8px 10px;font-size:12px;margin-bottom:12px}
+.ficha-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.ficha-sec{margin-top:16px}
+.ficha-sec h3{font-size:13px;font-weight:600;color:var(--primary);margin-bottom:4px}
+.ficha-sec p{font-size:13px;line-height:1.6;color:var(--text2)}
+.ficha-cinema{border-left:3px solid var(--primary);background:var(--surface2);border-radius:var(--r);padding:10px 12px}
+.ficha-nota{font-size:11px;color:var(--text3);margin-top:18px;line-height:1.5}
 .view-toggle{display:flex;gap:6px}
 .view-btn{padding:7px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;color:var(--text2)}
 .view-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
@@ -623,7 +640,7 @@ function renderTabela(){
     const alerta=d.qualidade&&d.qualidade!=='OK'
       ? ` <span class="badge" style="background:#FAEEDA;color:#633806" title="${esc(d.alertas)}">⚠ revisar</span>`
       : '';
-    return `<tr>
+    return `<tr class="clicavel" tabindex="0" onclick="abrirFicha(${i})" onkeydown="if(event.key==='Enter')abrirFicha(${i})" title="Abrir a ficha completa">
       <td><strong>${esc(d.nome)||'—'}</strong>${alerta}<br><span style="font-size:11px;color:var(--text3)">${esc(d.email)}</span></td>
       <td><span class="badge" style="background:#F1EFE8;color:#444441">${esc(d.setor)||'—'}</span></td>
       <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${esc(d.linguagem)||'—'}</span></td>
@@ -645,7 +662,7 @@ function renderCards(){
     const ini=(d.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
     const lc=LING_COLORS[ling1(d)]||{bg:'#F1EFE8',c:'#444441'};
     const v=versao1(d);
-    return `<div class="pcard">
+    return `<div class="pcard clicavel" tabindex="0" onclick="abrirFicha(${i})" onkeydown="if(event.key==='Enter')abrirFicha(${i})" title="Abrir a ficha completa">
       <div class="pcard-header" style="background:${cor.bg}">
         <div class="pcard-avatar" style="background:${cor.dot};color:#fff">${ini}</div>
         <div><div class="pcard-name" style="color:${cor.text}">${esc(d.nome)||'—'}</div><div class="pcard-role">${esc(d.setor)||'—'}</div></div>
@@ -664,11 +681,106 @@ function renderCards(){
   }).join('');
 }
 
+// ===== FICHA DA PESSOA (leitura para quem lidera) =====
+
+// Os textos "Quem é", "Pontos fortes" e "Pontos a desenvolver" foram escritos
+// para a própria pessoa ("você"). Aqui viram leitura para o gestor trocando
+// "você" pelo primeiro nome: em português "você" pede verbo na 3ª pessoa, então
+// a troca mantém a concordância. Possessivos (seu, sua) ficam como estão: no
+// contexto da ficha já apontam para a pessoa.
+function paraGestor(texto,nome){
+  const primeiro=String(nome||'').trim().split(/\s+/)[0]||'A pessoa';
+  // \b do JS não enxerga acento (o "ê" de "você" conta como não-letra), por isso a classe Unicode.
+  return String(texto||'').replace(/(^|[^\p{L}])você(?![\p{L}])/giu,(_,antes)=>antes+primeiro);
+}
+
+let FICHA_FOCO_ANTERIOR=null;
+
+function fecharFicha(){
+  const f=document.getElementById('ficha-fundo');
+  if(f)f.remove();
+  document.removeEventListener('keydown',teclaFicha);
+  if(FICHA_FOCO_ANTERIOR&&FICHA_FOCO_ANTERIOR.focus)FICHA_FOCO_ANTERIOR.focus();
+  FICHA_FOCO_ANTERIOR=null;
+}
+
+function teclaFicha(e){
+  if(e.key==='Escape')fecharFicha();
+}
+
+function abrirFicha(i){
+  const d=FILTRADOS[i];
+  if(!d)return;
+  fecharFicha();
+  FICHA_FOCO_ANTERIOR=document.activeElement;
+  const primeiro=String(d.nome||'').trim().split(/\s+/)[0]||'a pessoa';
+  const sec=(titulo,texto)=>texto?`<div class="ficha-sec"><h3>${esc(titulo)}</h3><p>${esc(texto)}</p></div>`:'';
+  const tag=(fundo,cor,texto)=>texto?`<span class="badge" style="background:${fundo};color:${cor}">${esc(texto)}</span>`:'';
+  const lc=LING_COLORS[ling1(d)]||{bg:'#F1EFE8',c:'#444441'};
+
+  // Eneagrama: na v3 é triagem com confiança; antes, 1º e 2º lugar.
+  let enea=d.eneagrama||'';
+  if(d.eneagrama_confianca)enea+=' · triagem, confiança '+d.eneagrama_confianca;
+  if(d.eneagrama_segundo)enea+=(d.eneagrama_confianca?' · alternativa: ':' · 2º: ')+d.eneagrama_segundo;
+  if(d.eneagrama_centro)enea+=' · centro '+d.eneagrama_centro;
+  let disc=d.disc||'';
+  if(d.disc_dominante)disc+=' · dominante '+d.disc_dominante;
+  if(d.disc_secundario)disc+=' · secundário '+d.disc_secundario;
+
+  const temTexto=d.quem_e||d.pontos_fortes||d.pontos_desenvolver||d.como_comunicar||d.como_motivar||d.evitar_atrito;
+  const cinema=d.personagem
+    ? `<div class="ficha-sec"><h3>🎬 Personagem do cinema com o mesmo perfil</h3><div class="ficha-cinema"><p><strong>${esc(d.personagem)}</strong>${d.personagem_obra?' ('+esc(d.personagem_obra)+')':''}</p>${d.personagem_motivo?`<p>${esc(d.personagem_motivo)}</p>`:''}</div></div>`
+    : `<div class="ficha-sec"><p style="font-size:12px;color:var(--text3)">Sem personagem do cinema: a resposta é anterior ao recurso ou a análise não foi gerada pela IA.</p></div>`;
+
+  const detalhes=[
+    d.distribuicao_linguagem?'Linguagens: '+d.distribuicao_linguagem:'',
+    d.scores_disc?'DISC: '+d.scores_disc:'',
+    d.scores_eneagrama?'Eneagrama: '+d.scores_eneagrama:''
+  ].filter(Boolean).join(' · ');
+
+  const fundo=document.createElement('div');
+  fundo.id='ficha-fundo';
+  fundo.className='ficha-fundo';
+  fundo.onclick=e=>{if(e.target===fundo)fecharFicha();};
+  fundo.innerHTML=`<div class="ficha" role="dialog" aria-modal="true" aria-label="Ficha de ${esc(d.nome)}">
+    <div class="ficha-topo">
+      <div><h2>${esc(d.nome)||'—'}</h2><small>${esc(d.setor)||'—'} · ${esc(d.email)||'sem e-mail'} · ${esc(versao1(d))} · ${esc(d.data)||'—'}</small></div>
+      <button class="ficha-fechar" type="button" onclick="fecharFicha()">Fechar</button>
+    </div>
+    <div class="ficha-corpo">
+      ${d.qualidade&&d.qualidade!=='OK'?`<div class="ficha-aviso">⚠ O preenchimento levantou alertas de qualidade (${esc(d.alertas)||'sem detalhe'}). Leia com essa ressalva.</div>`:''}
+      <div class="ficha-tags">
+        ${tag(lc.bg,lc.c,'💬 '+(d.linguagem||'—')+(d.linguagem_secundaria?' (sec.: '+d.linguagem_secundaria+')':''))}
+        ${tag('#F1EFE8','#444441','🧠 '+(d.temperamento||'—')+(d.temperamento_secundario?' (sec.: '+d.temperamento_secundario+')':''))}
+      </div>
+      <div class="ficha-tags">
+        ${tag('#EEEDFE','#3C3489','🔑 '+(enea||'—'))}
+        ${tag('#E6F1FB','#0C447C','📊 '+(disc||'—'))}
+      </div>
+      ${temTexto?`
+        ${sec('Como é '+primeiro,paraGestor(d.quem_e,d.nome))}
+        ${sec('Pontos fortes',paraGestor(d.pontos_fortes,d.nome))}
+        ${sec('Pontos a desenvolver',paraGestor(d.pontos_desenvolver,d.nome))}
+        ${sec('Como se comunicar com '+primeiro,d.como_comunicar)}
+        ${sec('Como motivar e reconhecer',d.como_motivar)}
+        ${sec('O que evitar para não gerar atrito',d.evitar_atrito)}
+      `:'<div class="ficha-sec"><p>Esta resposta não tem análise escrita gravada.</p></div>'}
+      ${cinema}
+      ${detalhes?`<p class="ficha-nota">${esc(detalhes)}</p>`:''}
+      <p class="ficha-nota">Leitura de tendências para desenvolvimento, não veredito. Não use para seleção, promoção ou desligamento.</p>
+    </div>
+  </div>`;
+  document.body.appendChild(fundo);
+  document.addEventListener('keydown',teclaFicha);
+  const fechar=fundo.querySelector('.ficha-fechar');
+  if(fechar)fechar.focus();
+}
+
 function exportarCSV(){
   if(!FILTRADOS.length)return;
   // As duas últimas colunas só vêm preenchidas na v3 (Perfil Expresso).
-  const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Eneagrama 2º lugar','Centro','Fichas escolhidas','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data','Confiança eneagrama','Respostas item a item'];
-  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_segundo,d.eneagrama_centro,d.eneagrama_fichas,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data,d.eneagrama_confianca,d.respostas_itens].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
+  const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Eneagrama 2º lugar','Centro','Fichas escolhidas','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data','Confiança eneagrama','Respostas item a item','Personagem do cinema','Personagem (obra)','Personagem (motivo)'];
+  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_segundo,d.eneagrama_centro,d.eneagrama_fichas,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data,d.eneagrama_confianca,d.respostas_itens,d.personagem,d.personagem_obra,d.personagem_motivo].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
   const csv=[cols.join(','),...rows].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Perfis_${new Date().toISOString().slice(0,10)}.csv`;a.click();

@@ -266,7 +266,8 @@ No GitHub: **Settings → Pages → Branch: main** → salvar. O site fica em `h
 1. Responda um teste completo no `index.html`.
 2. Confira: cards de análise da IA no resultado, linha nova na planilha, e-mails recebidos, botão **Baixar PDF** (escolha "Salvar como PDF" na impressão).
 3. Abra o `dashboard.html` → **Atualizar**: gráficos e tabela carregam. Se configurar senha, ela é pedida ao abrir e fica lembrada naquele navegador por 90 dias (ou até a senha ser trocada).
-4. Confira que a planilha ganhou a aba **"Respostas v3"**, com as colunas "Confiança eneagrama" e "Respostas item a item" no fim, e que as abas **"Respostas v2"** e **"Respostas"** (histórico) continuam intocadas.
+4. Confira que a planilha ganhou a aba **"Respostas v3"**, com as colunas "Confiança eneagrama", "Respostas item a item" e as três do personagem do cinema ("Personagem", "Personagem (obra)", "Personagem (motivo)") no fim, e que as abas **"Respostas v2"** e **"Respostas"** (histórico) continuam intocadas. Uma aba "Respostas v3" criada antes ganha as três colunas novas sozinha, sem mexer nas linhas já gravadas.
+5. No dashboard, clique numa linha (ou card) para abrir a **ficha da pessoa**: perfil completo em linguagem de quem lidera ("Maria tende a...", com o "você" trocado pelo primeiro nome), orientações de comunicação, motivação e atrito, e o **personagem do cinema** com o mesmo perfil. O personagem é escolhido pela IA no envio: só existe para respostas novas e com `ANTHROPIC_API_KEY` configurada. A pessoa também o recebe no resultado, no PDF e no e-mail.
 
 > As respostas da versão antiga do questionário aparecem no dashboard com o selo
 > `v1` e podem ser separadas pelo filtro de versões. Não misture `v1` e `v2` em

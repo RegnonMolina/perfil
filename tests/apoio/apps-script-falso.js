@@ -41,6 +41,12 @@ function criarAmbiente(opcoes = {}) {
               while (fatia.length < numCols) fatia.push("");
               return fatia;
             }),
+        setValues: (matriz) => {
+          // Só o que o backend usa: completar o cabeçalho (linha 1) de uma aba antiga.
+          if (!linhas[linhaInicial - 1]) linhas[linhaInicial - 1] = [];
+          matriz[0].forEach((v, i) => { linhas[linhaInicial - 1][colInicial - 1 + i] = v; });
+          return { setFontWeight: () => {} };
+        },
         setFontWeight: () => {}
       })
     };

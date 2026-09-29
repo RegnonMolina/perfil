@@ -1851,6 +1851,7 @@
                     <div class="resultado-card"><h3>Como Comunicar</h3><p>${escaparHtml(ia.como_comunicar)}</p></div>
                     <div class="resultado-card"><h3>Como Motivar</h3><p>${escaparHtml(ia.como_motivar)}</p></div>
                     <div class="resultado-card"><h3>Evitar Atrito</h3><p>${escaparHtml(ia.evitar_atrito)}</p></div>
+                    ${ia.personagem ? `<div class="resultado-card"><h3>🎬 Personagem do cinema com o seu perfil</h3><p><strong>${escaparHtml(ia.personagem)}</strong>${ia.personagem_obra ? " (" + escaparHtml(ia.personagem_obra) + ")" : ""}</p>${ia.personagem_motivo ? `<p style="font-size:13px">${escaparHtml(ia.personagem_motivo)}</p>` : ""}</div>` : ""}
                 `;
             } else {
                 html += `
@@ -1959,7 +1960,8 @@
                 <h2>Pontos a Desenvolver</h2><p>${escaparHtml(ia.pontos_desenvolver)}</p>
                 <h2>Como Comunicar</h2><p>${escaparHtml(ia.como_comunicar)}</p>
                 <h2>Como Motivar</h2><p>${escaparHtml(ia.como_motivar)}</p>
-                <h2>Evitar Atrito</h2><p>${escaparHtml(ia.evitar_atrito)}</p>` : "";
+                <h2>Evitar Atrito</h2><p>${escaparHtml(ia.evitar_atrito)}</p>
+                ${ia.personagem ? `<h2>Personagem do cinema com o seu perfil</h2><p><strong>${escaparHtml(ia.personagem)}</strong>${ia.personagem_obra ? " (" + escaparHtml(ia.personagem_obra) + ")" : ""}${ia.personagem_motivo ? ". " + escaparHtml(ia.personagem_motivo) : ""}</p>` : ""}` : "";
 
             const win = window.open("", "_blank");
             if (!win) {

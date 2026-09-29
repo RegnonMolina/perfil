@@ -81,8 +81,12 @@ var CABECALHO_V2 = [
 //   "Fichas escolhidas"   -> respostas da triagem do eneagrama
 //   "Scores eneagrama"    -> tipo apontado por cada via (estilo, motivação, desempate)
 //   "Percentual temperamento" fica vazio: o temperamento é derivado do DISC.
+//
+// Personagem do cinema (escolhido pela IA): três colunas no fim. Linhas gravadas
+// antes delas existirem ficam com essas células vazias, e o dashboard sabe lidar.
 var CABECALHO_V3 = CABECALHO_V2.concat([
-  "Confiança eneagrama", "Respostas item a item"
+  "Confiança eneagrama", "Respostas item a item",
+  "Personagem", "Personagem (obra)", "Personagem (motivo)"
 ]);
 
 // O formulário v3 marca o envio com versao_instrumento "v3.x".
@@ -331,7 +335,20 @@ function obterAbaV2() {
 }
 
 function obterAbaV3() {
-  return obterAbaComCabecalho(NOME_ABA_V3, CABECALHO_V3);
+  var aba = obterAbaComCabecalho(NOME_ABA_V3, CABECALHO_V3);
+  // Aba criada antes das colunas do personagem: completa só o cabeçalho que
+  // falta, sem tocar em nenhuma linha já gravada.
+  var cabecalhoAtual = aba.getRange(1, 1, 1, CABECALHO_V3.length).getValues()[0];
+  var primeiraFaltante = -1;
+  for (var i = 0; i < CABECALHO_V3.length; i++) {
+    if (!cabecalhoAtual[i]) { primeiraFaltante = i; break; }
+  }
+  if (primeiraFaltante >= 0) {
+    aba.getRange(1, primeiraFaltante + 1, 1, CABECALHO_V3.length - primeiraFaltante)
+      .setValues([CABECALHO_V3.slice(primeiraFaltante)])
+      .setFontWeight("bold");
+  }
+  return aba;
 }
 
 // ===== SANEAMENTO DE SAÍDA =====
@@ -430,7 +447,10 @@ function salvarNaPlanilha(dados, analise) {
   if (ehExpresso(dados)) {
     obterAbaV3().appendRow(linha.concat([
       t(dados.eneagrama_confianca),
-      t(dados.respostas_itens)
+      t(dados.respostas_itens),
+      t(a.personagem),
+      t(a.personagem_obra),
+      t(a.personagem_motivo)
     ]));
     return;
   }
@@ -456,6 +476,9 @@ function lerRespostasV3() {
     registro.versao = linha[1] || "v3.0";
     registro.eneagrama_confianca = linha[base];
     registro.respostas_itens = linha[base + 1];
+    registro.personagem = linha[base + 2];
+    registro.personagem_obra = linha[base + 3];
+    registro.personagem_motivo = linha[base + 4];
     return registro;
   }).reverse(); // mais recentes primeiro
 }
@@ -655,6 +678,12 @@ function gerarAnaliseIA(dados) {
     "- Não use rótulos determinísticos ('você é assim e pronto'). Fale em " +
     "tendências e preferências.\n" +
     instrucaoEneagrama +
+    "- Escolha um personagem de CINEMA (de um filme conhecido do grande público, " +
+    "real e que você tenha certeza que existe) cujo jeito de agir combine com a " +
+    "integração dos quatro resultados. Nos campos 'personagem', 'personagem_obra' " +
+    "e 'personagem_motivo', dê o nome do personagem, o filme e o porquê. É um " +
+    "toque leve e simpático: sem ridicularizar a pessoa e sem escolher vilões ou " +
+    "personagens que soem como ofensa.\n" +
     "- Não sugira decisões de contratação, promoção ou desligamento: este é um " +
     "instrumento de desenvolvimento, não de seleção." +
 
@@ -672,9 +701,12 @@ function gerarAnaliseIA(dados) {
       pontos_desenvolver: { type: "string", description: "Pontos de atenção e desenvolvimento, com tom construtivo" },
       como_comunicar: { type: "string", description: "Orientação a quem lidera: como se comunicar com esta pessoa" },
       como_motivar: { type: "string", description: "Orientação a quem lidera: como motivar e reconhecer esta pessoa" },
-      evitar_atrito: { type: "string", description: "Orientação a quem lidera: o que evitar para não gerar atrito" }
+      evitar_atrito: { type: "string", description: "Orientação a quem lidera: o que evitar para não gerar atrito" },
+      personagem: { type: "string", description: "Nome de um personagem do cinema cujo perfil se parece com o da pessoa" },
+      personagem_obra: { type: "string", description: "Título do filme em que o personagem aparece, em português do Brasil quando houver" },
+      personagem_motivo: { type: "string", description: "Em 1 ou 2 frases, por que o personagem se parece com o perfil (sem usar 'você' nem o nome da pessoa)" }
     },
-    required: ["quem_e", "pontos_fortes", "pontos_desenvolver", "como_comunicar", "como_motivar", "evitar_atrito"],
+    required: ["quem_e", "pontos_fortes", "pontos_desenvolver", "como_comunicar", "como_motivar", "evitar_atrito", "personagem", "personagem_obra", "personagem_motivo"],
     additionalProperties: false
   };
 
@@ -1082,6 +1114,11 @@ function montarEmailHtml(dados, analise) {
     secao("Como Comunicar", a.como_comunicar) +
     secao("Como Motivar", a.como_motivar) +
     secao("Evitar Atrito", a.evitar_atrito) +
+    (a.personagem
+      ? secao("Personagem do cinema com o seu perfil",
+          a.personagem + (a.personagem_obra ? " (" + a.personagem_obra + ")" : "") +
+          (a.personagem_motivo ? ". " + a.personagem_motivo : ""))
+      : "") +
     '<p style="font-size:10px;color:#888;margin-top:24px;border-top:1px solid #ddd;padding-top:10px;line-height:1.6">' +
     "Instrumento de autoconhecimento e desenvolvimento (" + esc(dados.versao_instrumento || "v2.0") + "). " +
     "Não é ferramenta de seleção, não constitui diagnóstico clínico e não substitui avaliação profissional." +
