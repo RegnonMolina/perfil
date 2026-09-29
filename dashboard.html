@@ -238,6 +238,8 @@ tr:hover td{background:var(--surface2)}
   <select id="filtro-setor" onchange="filtrar()"><option value="">Todos os setores</option></select>
   <select id="filtro-ling" onchange="filtrar()"><option value="">Todas as linguagens</option></select>
   <select id="filtro-temp" onchange="filtrar()"><option value="">Todos os temperamentos</option></select>
+  <select id="filtro-enea" onchange="filtrar()"><option value="">Todos os eneagramas</option></select>
+  <select id="filtro-disc" onchange="filtrar()"><option value="">Todos os DISC</option></select>
   <select id="filtro-versao" onchange="filtrar()"><option value="">Todas as versões</option></select>
   <div class="view-toggle">
     <button class="view-btn active" id="btn-table" onclick="setView('table')">☰ Tabela</button>
@@ -579,9 +581,11 @@ function atualizarFiltros(){
   const setores=[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].sort();
   const lings=[...new Set(DADOS.map(ling1).filter(Boolean))].sort();
   const temps=[...new Set(DADOS.map(temp1).filter(Boolean))].sort();
+  const eneas=[...new Set(DADOS.map(enea1).filter(Boolean))].sort();
+  const discs=[...new Set(DADOS.map(disc1).filter(Boolean))].sort();
   const versoes=[...new Set(DADOS.map(versao1).filter(Boolean))].sort();
   const sel=(id,opts)=>{const el=document.getElementById(id);const cur=el.value;el.innerHTML='<option value="">'+el.options[0].text+'</option>'+opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');el.value=cur;};
-  sel('filtro-setor',setores);sel('filtro-ling',lings);sel('filtro-temp',temps);sel('filtro-versao',versoes);
+  sel('filtro-setor',setores);sel('filtro-ling',lings);sel('filtro-temp',temps);sel('filtro-enea',eneas);sel('filtro-disc',discs);sel('filtro-versao',versoes);
 }
 
 function filtrar(){
@@ -589,12 +593,16 @@ function filtrar(){
   const setor=document.getElementById('filtro-setor').value;
   const ling=document.getElementById('filtro-ling').value;
   const temp=document.getElementById('filtro-temp').value;
+  const enea=document.getElementById('filtro-enea').value;
+  const disc=document.getElementById('filtro-disc').value;
   const versao=document.getElementById('filtro-versao').value;
   FILTRADOS=DADOS.filter(d=>{
     if(busca&&!d.nome?.toLowerCase().includes(busca))return false;
     if(setor&&d.setor!==setor)return false;
     if(ling&&!d.linguagem?.includes(ling))return false;
     if(temp&&!d.temperamento?.includes(temp))return false;
+    if(enea&&enea1(d)!==enea)return false;
+    if(disc&&disc1(d)!==disc)return false;
     if(versao&&versao1(d)!==versao)return false;
     if(!passaChips(d))return false;
     return true;
