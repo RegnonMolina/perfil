@@ -132,6 +132,7 @@ window.CONFIG_ESCOLA = {
       "Cozinha",
       "Limpeza",
       "Segurança",
+      "Entrevista",
       "Externo (Consultor, Amigo, Parente)"
     ]
   },
