@@ -245,6 +245,7 @@ function doPost(e) {
 
     salvarNaPlanilha(dados, analise);
     enviarEmails(dados, analise);
+    notificarChat(dados);
 
     return respostaJson({ ok: true, analise: analise, versao: VERSAO_BACKEND });
   } catch (erro) {
@@ -1038,6 +1039,52 @@ function enviarEmails(dados, analise) {
     } catch (erro) {
       console.error("Falha ao enviar e-mail a quem lidera: " + erro);
     }
+  }
+}
+
+// ===== NOTIFICAÇÃO NO GOOGLE CHAT =====
+//
+// Avisa um espaço do Google Chat a cada resposta gravada. Opcional: só age se
+// a propriedade CHAT_WEBHOOK_PERFIL estiver configurada (a URL do webhook é um
+// segredo, por isso fica nas Propriedades do Script e nunca no repositório).
+// Sem a propriedade, não faz nada, e as outras organizações que usam este
+// backend continuam exatamente como estavam.
+//
+// A mensagem leva só nome e grupo, de propósito: o espaço pode ter mais
+// pessoas do que quem pode ver o perfil completo. O resultado continua no
+// dashboard (protegido por token) e no e-mail de quem lidera.
+// URL_DASHBOARD (opcional) acrescenta o link do painel na mensagem.
+//
+// Nunca derruba o envio: qualquer falha aqui só vai para o log.
+function notificarChat(dados) {
+  var webhook = propriedade("CHAT_WEBHOOK_PERFIL", "");
+  if (!webhook) return;
+
+  try {
+    var ctx = obterContexto(dados);
+    var quando = Utilities.formatDate(new Date(), "America/Sao_Paulo", "dd/MM/yyyy 'às' HH:mm");
+    var texto =
+      "🧠 *Nova resposta no Perfil Comportamental*\n" +
+      "*" + String(dados.nome || "").trim() + "*" +
+      (dados.setor ? " · " + ctx.termoGrupo + ": " + String(dados.setor).trim() : "") + "\n" +
+      quando;
+    var linkDashboard = propriedade("URL_DASHBOARD", "");
+    if (linkDashboard) {
+      texto += "\n<" + linkDashboard + "|Abrir o dashboard>";
+    }
+
+    var resposta = UrlFetchApp.fetch(webhook, {
+      method: "post",
+      contentType: "application/json; charset=UTF-8",
+      payload: JSON.stringify({ text: texto }),
+      muteHttpExceptions: true
+    });
+    var codigo = resposta.getResponseCode();
+    if (codigo < 200 || codigo >= 300) {
+      console.error("Google Chat recusou a notificação (HTTP " + codigo + "): " + resposta.getContentText());
+    }
+  } catch (erro) {
+    console.error("Falha ao notificar o Google Chat: " + erro);
   }
 }
 
