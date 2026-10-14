@@ -60,7 +60,7 @@ window.CONFIG_ESCOLA = {
           { nome: "B.I. Financeiro",       icone: "📊", url: "https://script.google.com/macros/s/AKfycbwf8KMNha-zaEc_H5Km8It6MxrFEsDyU6TF8jhNPxPbG3VjU1jJ_pcknQ5AxHvBqm0/exec" },
           { nome: "Busca de Currículos",   icone: "📄", url: "https://script.google.com/a/macros/colegiomundodosaber.com.br/s/AKfycbwKD_EAWUCQQFSN0jxEFW9IeTn8FPtOAbou_dSlx56TJZRJIa71eOU_vvme30yXQmTi1w/exec" },
           { nome: "Cobranças",             icone: "💰", url: "https://script.google.com/macros/s/AKfycbwZfLC7aH02yrnuWK9jUw9BhrczGNU4Yy90yKH0pU3jKG-bA2mXumHwuBSVYQ0MlEcmeg/exec" },
-          { nome: "Perfil Comportamental", icone: "🧭", url: "https://script.google.com/macros/s/AKfycbzBk6TW3cmioqepgvotL1Dnici_sCbY_yu9WagNaHIgCuhizwtSV-qJwBiS-6wzA6A/exec" },
+          { nome: "Perfil Comportamental", icone: "🧭", url: "https://regnonmolina.github.io/perfil/dashboard.html" },
           { nome: "Rematrículas",          icone: "🎓", url: "https://script.google.com/a/macros/colegiomundodosaber.com.br/s/AKfycbzs3_XV5Wrj9rs_DKG350ppiZl3KotQ8QPgpJZmm_rsBM5biAcsdaW73X9aZ76bkL3xrQ/exec" }
         ]
       },
