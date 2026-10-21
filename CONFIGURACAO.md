@@ -133,6 +133,8 @@ Essas cores e textos se aplicam automaticamente a **tudo**: teste, tela de resul
 
 **Ícone da aba (favicon).** As três páginas já vêm com o globo de `assets/favicon/` (`favicon.ico` com 16/32/48 px, `favicon-192.png` para Android, `apple-touch-icon.png` 180 px para iOS e `favicon-512.png`, a matriz de onde os outros são gerados). Para usar outro ícone, basta preencher `faviconUrl` com uma URL pública de PNG ou ICO quadrado: as páginas trocam todos os `<link>` de ícone por ela. Esse mesmo globo serve para os outros sistemas da organização: em um App da Web do Apps Script, use `HtmlService.createHtmlOutput(...).setFaviconUrl("https://SEU_USUARIO.github.io/NOME_DO_REPOSITORIO/assets/favicon/favicon-192.png")` (o Apps Script aceita PNG ou ICO por URL pública, não aceita SVG nem `data:`).
 
+**Instalar como app no celular (PWA).** O `manifest.webmanifest` da raiz, ligado no `index.html` e no `dashboard.html`, faz o Chrome do Android oferecer **Instalar app** (menu ⋮): o Perfil vira um app de verdade, com ícone do globo, abre sem barra de endereço e aparece entre os apps instalados. No iPhone: Safari > Compartilhar > **Adicionar à Tela de Início**. Outra organização edita `name` e `short_name` no manifesto e, se quiser outro ícone, troca os PNGs de `assets/favicon/` (`favicon-192.png`, `favicon-512.png` e `favicon-maskable-512.png`, este com o desenho menor e fundo opaco, porque o Android recorta o ícone em círculo). O `faviconUrl` do `config.js` troca só o ícone da aba, não o do app instalado.
+
 > 💡 Também dá para ajustar pelo botão **⚙️ Personalizar** dentro das páginas — útil para testar cores ao vivo — mas esses ajustes valem só para o navegador de quem mexeu. O que vale para todo mundo é o `config.js`.
 
 ### 1.2 Card de clima no topo das páginas
