@@ -22,7 +22,8 @@ window.CONFIG_ESCOLA = {
   logoUrl: "",
 
   // Ícone da aba do navegador (favicon): cole aqui a URL pública da logo do
-  // BNI (PNG/SVG quadrado fica melhor). Vazio = emojis padrão (🧠 e 📊).
+  // BNI (PNG/SVG quadrado fica melhor). Vazio = globo padrão do repositório
+  // (assets/favicon/); para o BNI, informe a URL da própria logo.
   faviconUrl: "",
 
   corPrimaria: "#c8102e",

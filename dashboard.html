@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Perfis da Equipe</title>
-<!-- Favicon padrão (emoji). Se o config.js definir faviconUrl, aplicarBrandingDash() troca por ele. -->
-<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📊%3C/text%3E%3C/svg%3E">
+<!-- Favicon padrão: globo (assets/favicon/). Se o config.js definir faviconUrl, aplicarBrandingDash() troca todos os ícones por ele. -->
+<link rel="icon" id="favicon" href="assets/favicon/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="config.js"></script>
 <script>window.MENUBAR_ATUAL = "Perfil Comportamental";</script>
@@ -354,8 +356,8 @@ function aplicarBrandingDash(){
   if(CFG.logoUrl){logo.src=CFG.logoUrl;logo.style.display='block';icone.style.display='none';}
   else{logo.style.display='none';icone.style.display='flex';}
   // Ícone da aba: campo próprio do config.js (faviconUrl), separado da logo.
-  // Sem ele, fica o emoji padrão da página.
-  if(ESCOLA.faviconUrl)document.getElementById('favicon').href=ESCOLA.faviconUrl;
+  // Sem ele, fica o globo padrão (assets/favicon/). Troca todos os <link> de ícone.
+  if(ESCOLA.faviconUrl)document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]').forEach(l=>{l.href=ESCOLA.faviconUrl;l.removeAttribute('sizes');l.removeAttribute('type');});
 }
 
 function carregarCFG(){

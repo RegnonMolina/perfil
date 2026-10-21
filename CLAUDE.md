@@ -16,6 +16,7 @@ Sistema white-label de perfil comportamental: 21 perguntas (até 23 com desempat
 - `index.html` (questionário), `dashboard.html` (painel), `clima.js`, `menubar.js`, `relogio.js`.
 - `arquivo/teste-completo-v2.1.html`: arquivado, não recebe respostas (trava de versão no backend).
 - `docs/`: relatórios do instrumento, segurança/LGPD e convite para refazer o teste.
+- `assets/favicon/`: ícone padrão das três páginas (globo): `favicon.ico` 16/32/48, `favicon-192.png`, `apple-touch-icon.png` 180 (fundo branco, iOS não aceita transparência) e `favicon-512.png` (matriz; regenerar os demais a partir dela). `faviconUrl` no `config.js` sobrescreve todos os `<link>` de ícone. Mesmo globo para os outros sistemas da organização (Apps Script: `setFaviconUrl` com a URL pública do PNG 192).
 
 ## Comandos
 - Testes: `npm test` (node --test em `tests/*.test.js`). Rodar antes de publicar qualquer mudança em questionário, cálculo ou backend. CI: `.github/workflows/testes.yml`.

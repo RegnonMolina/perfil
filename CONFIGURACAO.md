@@ -107,6 +107,7 @@ Edite o arquivo `config.js` e preencha:
 nome: "Colégio Exemplo",
 subtitulo: "Avaliação de Perfil Comportamental",
 logoUrl: "https://exemplo.com/logo.png",   // ou "" para sem logo
+faviconUrl: "",             // ícone da aba; "" usa o globo padrão (assets/favicon/)
 corPrimaria: "#1f4788",     // cor institucional (cabeçalho, títulos)
 corSecundaria: "#667eea",   // cor de destaque (botões, seleções)
 urlAppsScript: "https://script.google.com/macros/s/SEU_ID/exec",
@@ -129,6 +130,8 @@ networking sem manter duas cópias do `Codigo.gs`. Veja `config.bni.js` para um
 exemplo completo com outro vocabulário.
 
 Essas cores e textos se aplicam automaticamente a **tudo**: teste, tela de resultado, PDF, e-mails e dashboard.
+
+**Ícone da aba (favicon).** As três páginas já vêm com o globo de `assets/favicon/` (`favicon.ico` com 16/32/48 px, `favicon-192.png` para Android, `apple-touch-icon.png` 180 px para iOS e `favicon-512.png`, a matriz de onde os outros são gerados). Para usar outro ícone, basta preencher `faviconUrl` com uma URL pública de PNG ou ICO quadrado: as páginas trocam todos os `<link>` de ícone por ela. Esse mesmo globo serve para os outros sistemas da organização: em um App da Web do Apps Script, use `HtmlService.createHtmlOutput(...).setFaviconUrl("https://SEU_USUARIO.github.io/NOME_DO_REPOSITORIO/assets/favicon/favicon-192.png")` (o Apps Script aceita PNG ou ICO por URL pública, não aceita SVG nem `data:`).
 
 > 💡 Também dá para ajustar pelo botão **⚙️ Personalizar** dentro das páginas — útil para testar cores ao vivo — mas esses ajustes valem só para o navegador de quem mexeu. O que vale para todo mundo é o `config.js`.
 

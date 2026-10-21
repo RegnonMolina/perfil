@@ -24,7 +24,7 @@ window.CONFIG_ESCOLA = {
   logoUrl: "",
 
   // Ícone da aba do navegador (favicon), separado da logo.
-  // Deixe "" para usar os emojis padrão: 🧠 no formulário, 📊 no dashboard.
+  // Deixe "" para usar o ícone padrão (globo, arquivos em assets/favicon/).
   faviconUrl: "",
 
   // Cores da identidade visual (formato #RRGGBB)
