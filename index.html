@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil Comportamental</title>
-    <!-- Favicon padrão (emoji). Se o config.js definir faviconUrl,
-         aplicarBranding() troca por ele — campo próprio, separado da logo,
-         para cada organização escolher o ícone da aba de forma independente. -->
-    <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧠%3C/text%3E%3C/svg%3E">
+    <!-- Favicon padrão: globo (assets/favicon/: ICO 16/32/48, PNG 192 e Apple touch 180).
+         Se o config.js definir faviconUrl, aplicarBranding() troca todos os ícones por ele:
+         campo próprio, separado da logo, para cada organização escolher o ícone da aba. -->
+    <link rel="icon" id="favicon" href="assets/favicon/favicon.ico" sizes="16x16 32x32 48x48">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/favicon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
@@ -1098,9 +1100,15 @@
             }
 
             // Ícone da aba: só muda se a organização definir faviconUrl no
-            // config.js; sem ele, fica o emoji padrão da página.
+            // config.js; sem ele, fica o globo padrão (assets/favicon/).
+            // Troca todos os <link> de ícone (ICO, PNG 192 e Apple touch), senão o
+            // navegador pode preferir o globo pelo tamanho declarado.
             if (branding.faviconUrl) {
-                document.getElementById("favicon").href = branding.faviconUrl;
+                document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"]').forEach(function (link) {
+                    link.href = branding.faviconUrl;
+                    link.removeAttribute("sizes");
+                    link.removeAttribute("type");
+                });
             }
 
             const rodape = document.getElementById("rodape");
