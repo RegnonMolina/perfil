@@ -88,6 +88,42 @@ tr:hover td{background:var(--surface2)}
 .pcard-body{padding:0 16px 14px}
 .pcard-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
 .pcard-tip{font-size:12px;color:var(--text2);line-height:1.5;padding:8px 10px;background:var(--surface2);border-radius:var(--r);border-left:3px solid var(--primary)}
+/* Visão compacta: mais pessoas por tela, mesmos dados dos outros modos */
+.compact-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.ccard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:9px 10px;position:relative;font-size:11px;line-height:1.45;color:var(--text2)}
+.ccard.clicavel{cursor:pointer}
+.ccard.clicavel:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.ccard.sel,.pcard.sel,#tabela-body tr.sel td{border-color:var(--primary);background:var(--primary-light)}
+.ccard-nome{font-size:12px;font-weight:600;color:var(--text);padding-right:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ccard-setor{color:var(--text3);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ccard-linha{display:flex;gap:4px;white-space:nowrap;overflow:hidden}
+.ccard-linha b{font-weight:500;color:var(--text3);flex-shrink:0}
+.ccard-linha span{overflow:hidden;text-overflow:ellipsis}
+.selchk{width:16px;height:16px;accent-color:var(--primary);cursor:pointer}
+.ccard .selchk,.pcard .selchk{position:absolute;top:9px;right:9px;z-index:1}
+.pcard{position:relative}
+.th-sel,.td-sel{width:34px;text-align:center}
+.sel-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 16px;font-size:12px;color:var(--text2)}
+.sel-bar .btn{padding:7px 12px;font-size:12px}
+.sel-bar .btn[disabled]{opacity:.45;cursor:not-allowed}
+/* Impressão dos selecionados: só #print-area é impresso, sempre em claro */
+#print-area{display:none}
+@media print{
+  body.imprimindo{background:#fff!important}
+  body.imprimindo > *:not(#print-area){display:none!important}
+  body.imprimindo #print-area{display:block!important;color:#111;font-family:'Inter',sans-serif;font-size:11px}
+  .pr-titulo{font-size:13px;font-weight:700;margin-bottom:8px}
+  .pr-lista{display:grid;grid-template-columns:repeat(var(--pr-cols,1),1fr);gap:8px 14px}
+  .pr-item{border:1px solid #bbb;border-radius:6px;padding:7px 9px;break-inside:avoid;page-break-inside:avoid}
+  .pr-nome{font-size:12px;font-weight:700}
+  .pr-sub{color:#555;font-size:10px;margin-bottom:4px}
+  .pr-tags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+  .pr-tags span{border:1px solid #999;border-radius:10px;padding:1px 7px;font-size:10px}
+  .pr-sec{margin-top:5px}
+  .pr-sec b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#444}
+  .pr-sec p{line-height:1.4}
+  .pr-nota{margin-top:10px;font-size:9px;color:#666}
+}
 /* Ficha da pessoa: janela aberta ao clicar numa linha ou card */
 #tabela-body tr.clicavel,.pcard.clicavel{cursor:pointer}
 #tabela-body tr.clicavel:focus-visible,.pcard.clicavel:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
@@ -208,6 +244,7 @@ tr:hover td{background:var(--surface2)}
         <select id="cfg-view" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit">
           <option value="table">Tabela</option>
           <option value="cards">Cards</option>
+          <option value="compact">Compacto</option>
         </select>
       </div>
     </div>
@@ -249,24 +286,34 @@ tr:hover td{background:var(--surface2)}
   <div class="view-toggle">
     <button class="view-btn active" id="btn-table" onclick="setView('table')">☰ Tabela</button>
     <button class="view-btn" id="btn-cards" onclick="setView('cards')">⊞ Cards</button>
+    <button class="view-btn" id="btn-compact" onclick="setView('compact')">▦ Compacto</button>
   </div>
 </div>
 
 <!-- FILTROS ATIVOS POR CLIQUE NOS GRÁFICOS -->
 <div class="chips-row" id="chips-ativos"></div>
 
+<!-- SELEÇÃO E IMPRESSÃO -->
+<div class="sel-bar" id="sel-bar">
+  <button class="btn btn-ghost" type="button" onclick="selecionarTodos(true)">☑ Selecionar todos (filtrados)</button>
+  <button class="btn btn-ghost" type="button" onclick="selecionarTodos(false)">☐ Limpar seleção</button>
+  <button class="btn btn-primary" type="button" id="btn-imp-resumo" onclick="imprimirSelecionados('resumo')" disabled>🖨 Imprimir resumo</button>
+  <button class="btn btn-primary" type="button" id="btn-imp-fichas" onclick="imprimirSelecionados('fichas')" disabled>🖨 Imprimir fichas</button>
+  <span id="sel-count">0 selecionados</span>
+</div>
+
 <!-- TABELA -->
 <div class="table-wrap" id="table-view">
   <table>
     <thead>
       <tr>
-        <th>Nome</th><th>Setor</th><th>Linguagem</th>
+        <th class="th-sel"><input type="checkbox" class="selchk" id="chk-todos" title="Selecionar todos os filtrados" onchange="selecionarTodos(this.checked)"></th><th>Nome</th><th>Setor</th><th>Linguagem</th>
         <th>Temperamento</th><th>Eneagrama</th><th>DISC</th>
         <th>Como comunicar</th><th>Versão</th><th>Data</th>
       </tr>
     </thead>
     <tbody id="tabela-body">
-      <tr><td colspan="9"><div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Configure o Apps Script URL acima e clique em Atualizar</div></td></tr>
+      <tr><td colspan="10"><div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Configure o Apps Script URL acima e clique em Atualizar</div></td></tr>
     </tbody>
   </table>
 </div>
@@ -275,6 +322,13 @@ tr:hover td{background:var(--surface2)}
 <div class="card-view" id="cards-view">
   <div class="card-grid" id="cards-container"></div>
 </div>
+
+<!-- COMPACTO -->
+<div class="card-view" id="compact-view">
+  <div class="compact-grid" id="compact-container"></div>
+</div>
+
+<div id="print-area"></div>
 
 </main>
 </div>
@@ -399,7 +453,7 @@ function avisoDash(titulo,detalhe){
   const html=`<div class="empty" style="padding:60px 20px;text-align:center">
     <strong style="display:block;font-size:14px;color:var(--text);margin-bottom:6px">${titulo}</strong>
     <span style="font-size:13px;color:var(--text2);line-height:1.6">${detalhe}</span></div>`;
-  document.getElementById('tabela-body').innerHTML=`<tr><td colspan="9">${html}</td></tr>`;
+  document.getElementById('tabela-body').innerHTML=`<tr><td colspan="10">${html}</td></tr>`;
   document.getElementById('cards-container').innerHTML=html;
 }
 
@@ -527,7 +581,7 @@ window.addEventListener('storage',e=>{
   if(e.key==='novoPerfil'){
     try{
       const p=JSON.parse(e.newValue||'{}');
-      if(p.nome){DADOS.unshift(p);FILTRADOS=[...DADOS];atualizarMetricas();atualizarFiltros();renderCharts();renderTabela();renderCards();}
+      if(p.nome){DADOS.unshift(p);FILTRADOS=[...DADOS];atualizarMetricas();atualizarFiltros();renderCharts();renderTabela();renderCards();renderCompacto();atualizarSelecao();}
     }catch(ex){}
   }
 });
@@ -614,13 +668,15 @@ function filtrar(){
   });
   // As métricas saem de DADOS (não mudam com o filtro), mas o realce de card
   // ativo vive nelas — por isso também são redesenhadas aqui.
-  atualizarMetricas();renderChips();renderCharts();renderTabela();renderCards();
+  atualizarMetricas();renderChips();renderCharts();renderTabela();renderCards();renderCompacto();atualizarSelecao();
 }
 
 function setView(v){
   VIEW=v;
   document.getElementById('table-view').style.display=v==='table'?'block':'none';
   document.getElementById('cards-view').style.display=v==='cards'?'block':'none';
+  document.getElementById('compact-view').style.display=v==='compact'?'block':'none';
+  document.getElementById('btn-compact').className='view-btn'+(v==='compact'?' active':'');
   document.getElementById('btn-table').className='view-btn'+(v==='table'?' active':'');
   document.getElementById('btn-cards').className='view-btn'+(v==='cards'?' active':'');
 }
@@ -641,7 +697,7 @@ function notaEneagrama(d){
 
 function renderTabela(){
   const tb=document.getElementById('tabela-body');
-  if(!FILTRADOS.length){tb.innerHTML='<tr><td colspan="9"><div class="empty">Nenhum resultado encontrado</div></td></tr>';return;}
+  if(!FILTRADOS.length){tb.innerHTML='<tr><td colspan="10"><div class="empty">Nenhum resultado encontrado</div></td></tr>';return;}
   tb.innerHTML=FILTRADOS.map((d,i)=>{
     const lc=LING_COLORS[ling1(d)]||{bg:'#F1EFE8',c:'#444441'};
     const v=versao1(d);
@@ -653,7 +709,8 @@ function renderTabela(){
     const alerta=d.qualidade&&d.qualidade!=='OK'
       ? ` <span class="badge" style="background:#FAEEDA;color:#633806" title="${esc(d.alertas)}">⚠ revisar</span>`
       : '';
-    return `<tr class="clicavel" tabindex="0" onclick="abrirFicha(${i})" onkeydown="if(event.key==='Enter')abrirFicha(${i})" title="Abrir a ficha completa">
+    return `<tr class="clicavel${SEL.has(d)?' sel':''}" tabindex="0" onclick="abrirFicha(${i})" onkeydown="if(event.key==='Enter')abrirFicha(${i})" title="Abrir a ficha completa">
+      <td class="td-sel" onclick="event.stopPropagation()"><input type="checkbox" class="selchk" ${SEL.has(d)?'checked':''} onchange="toggleSel(${i},this.checked)" aria-label="Selecionar ${esc(d.nome)}"></td>
       <td><strong>${esc(d.nome)||'—'}</strong>${alerta}<br><span style="font-size:11px;color:var(--text3)">${esc(d.email)}</span></td>
       <td><span class="badge" style="background:#F1EFE8;color:#444441">${esc(d.setor)||'—'}</span></td>
       <td><span class="badge" style="background:${lc.bg};color:${lc.c}">${esc(d.linguagem)||'—'}</span></td>
@@ -675,7 +732,8 @@ function renderCards(){
     const ini=(d.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
     const lc=LING_COLORS[ling1(d)]||{bg:'#F1EFE8',c:'#444441'};
     const v=versao1(d);
-    return `<div class="pcard clicavel" tabindex="0" onclick="abrirFicha(${i})" onkeydown="if(event.key==='Enter')abrirFicha(${i})" title="Abrir a ficha completa">
+    return `<div class="pcard clicavel${SEL.has(d)?' sel':''}" tabindex="0" onclick="abrirFicha(${i})" onkeydown="if(event.key==='Enter')abrirFicha(${i})" title="Abrir a ficha completa">
+      <input type="checkbox" class="selchk" ${SEL.has(d)?'checked':''} onclick="event.stopPropagation()" onchange="toggleSel(${i},this.checked)" aria-label="Selecionar ${esc(d.nome)}">
       <div class="pcard-header" style="background:${cor.bg}">
         <div class="pcard-avatar" style="background:${cor.dot};color:#fff">${ini}</div>
         <div><div class="pcard-name" style="color:${cor.text}">${esc(d.nome)||'—'}</div><div class="pcard-role">${esc(d.setor)||'—'}</div></div>
@@ -692,6 +750,73 @@ function renderCards(){
       </div>
     </div>`;
   }).join('');
+}
+
+// Visão compacta: os mesmos campos da tabela, em blocos pequenos.
+function renderCompacto(){
+  const c=document.getElementById('compact-container');
+  if(!FILTRADOS.length){c.innerHTML='<div class="empty">Nenhum resultado encontrado</div>';return;}
+  const lin=(r,v)=>v?`<div class="ccard-linha"><b>${r}</b><span title="${esc(v)}">${esc(v)}</span></div>`:'';
+  c.innerHTML=FILTRADOS.map((d,i)=>`<div class="ccard clicavel${SEL.has(d)?' sel':''}" tabindex="0" onclick="abrirFicha(${i})" onkeydown="if(event.key==='Enter')abrirFicha(${i})" title="Abrir a ficha completa">
+      <input type="checkbox" class="selchk" ${SEL.has(d)?'checked':''} onclick="event.stopPropagation()" onchange="toggleSel(${i},this.checked)" aria-label="Selecionar ${esc(d.nome)}">
+      <div class="ccard-nome">${esc(d.nome)||'—'}</div>
+      <div class="ccard-setor">${esc(d.setor)||'—'}</div>
+      ${lin('Ling.',ling1(d))}${lin('Temp.',temp1(d))}${lin('Enea.',enea1(d))}${lin('DISC',d.disc)}${lin('Versão',versao1(d))}
+    </div>`).join('');
+}
+
+// ===== SELEÇÃO E IMPRESSÃO =====
+// A seleção guarda os próprios registros (não o índice), então sobrevive a
+// mudança de filtro e de modo de exibição.
+const SEL=new Set();
+
+function toggleSel(i,marcado){
+  const d=FILTRADOS[i];
+  if(!d)return;
+  if(marcado)SEL.add(d);else SEL.delete(d);
+  renderTabela();renderCards();renderCompacto();atualizarSelecao();
+}
+
+function selecionarTodos(marcar){
+  if(marcar)FILTRADOS.forEach(d=>SEL.add(d));else SEL.clear();
+  renderTabela();renderCards();renderCompacto();atualizarSelecao();
+}
+
+function atualizarSelecao(){
+  // Descarta selecionados que saíram de DADOS (ex.: depois de Atualizar).
+  [...SEL].forEach(d=>{if(!DADOS.includes(d))SEL.delete(d);});
+  const n=SEL.size;
+  document.getElementById('sel-count').textContent=n+(n===1?' selecionado':' selecionados');
+  document.getElementById('btn-imp-resumo').disabled=!n;
+  document.getElementById('btn-imp-fichas').disabled=!n;
+  const todos=document.getElementById('chk-todos');
+  if(todos){
+    const marcados=FILTRADOS.filter(d=>SEL.has(d)).length;
+    todos.checked=!!FILTRADOS.length&&marcados===FILTRADOS.length;
+    todos.indeterminate=marcados>0&&marcados<FILTRADOS.length;
+  }
+}
+
+// modo 'resumo': bloco pequeno por pessoa (tags + como comunicar), 3 colunas.
+// modo 'fichas': texto completo da ficha, 1 coluna, sem quebrar um bloco ao meio.
+function imprimirSelecionados(modo){
+  const lista=DADOS.filter(d=>SEL.has(d));
+  if(!lista.length)return;
+  const fichas=modo==='fichas';
+  const sec=(t,x)=>x?`<div class="pr-sec"><b>${esc(t)}</b><p>${esc(x)}</p></div>`:'';
+  const itens=lista.map(d=>{
+    const tags=[d.linguagem,temp1(d),enea1(d),d.disc,versao1(d)].filter(Boolean).map(t=>`<span>${esc(t)}</span>`).join('');
+    const corpo=fichas
+      ? sec('Como é',paraGestor(d.quem_e,d.nome))+sec('Pontos fortes',paraGestor(d.pontos_fortes,d.nome))+sec('Pontos a desenvolver',paraGestor(d.pontos_desenvolver,d.nome))+sec('Como se comunicar',d.como_comunicar)+sec('Como motivar e reconhecer',d.como_motivar)+sec('O que evitar',d.evitar_atrito)+(d.personagem?sec('Personagem do cinema',d.personagem+(d.personagem_obra?' ('+d.personagem_obra+')':'')):'')
+      : sec('Como se comunicar',d.como_comunicar);
+    return `<div class="pr-item"><div class="pr-nome">${esc(d.nome)||'—'}</div><div class="pr-sub">${esc(d.setor)||'—'} · ${esc(d.data)||'—'}</div><div class="pr-tags">${tags}</div>${corpo}</div>`;
+  }).join('');
+  const area=document.getElementById('print-area');
+  area.innerHTML=`<div class="pr-titulo">Perfil Comportamental · ${lista.length} ${lista.length===1?'pessoa':'pessoas'} · ${new Date().toLocaleDateString('pt-BR')}</div><div class="pr-lista" style="--pr-cols:${fichas?1:3}">${itens}</div><p class="pr-nota">Leitura de tendências para desenvolvimento, não veredito. Não use para seleção, promoção ou desligamento.</p>`;
+  document.body.classList.add('imprimindo');
+  const limpar=()=>{document.body.classList.remove('imprimindo');area.innerHTML='';window.removeEventListener('afterprint',limpar);};
+  window.addEventListener('afterprint',limpar);
+  window.print();
 }
 
 // ===== FICHA DA PESSOA (leitura para quem lidera) =====
