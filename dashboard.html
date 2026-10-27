@@ -357,6 +357,12 @@ let CFG={
   view:'table'
 };
 let DADOS=[];
+// Setor oculto: quem estiver em "Desligados" (editado na célula da planilha) fica
+// fora de métricas, gráficos, filtros e listas, e só aparece ao escolher esse setor.
+const SETOR_DESLIGADOS='Desligados';
+let DESLIGADOS=[];
+const ehDesligado=d=>String(d&&d.setor||'').trim().toLowerCase()===SETOR_DESLIGADOS.toLowerCase();
+function separarDesligados(linhas){DADOS=linhas.filter(d=>!ehDesligado(d));DESLIGADOS=linhas.filter(ehDesligado);}
 let FILTRADOS=[];
 // Liga a contagem animada dos números do topo só na próxima atualização de
 // métricas (a carga de dados liga; os redesenhos por filtro não).
@@ -494,14 +500,14 @@ async function carregarDados(){
     }
     if(data && data.ok===false){
       avisoDash('O servidor recusou a leitura',esc(data.erro||'Token inválido.'));
-      DADOS=[];FILTRADOS=[];
+      DADOS=[];DESLIGADOS=[];FILTRADOS=[];
       atualizarMetricas();renderCharts();
       return;
     }
-    DADOS=(data && data.rows)?data.rows:[];
+    separarDesligados((data && data.rows)?data.rows:[]);
   }catch(e){
     avisoDash('Não foi possível falar com o servidor','Confira a URL do Apps Script e sua conexão, e clique em <strong>↻ Atualizar</strong>.');
-    DADOS=[];FILTRADOS=[];
+    DADOS=[];DESLIGADOS=[];FILTRADOS=[];
     atualizarMetricas();renderCharts();
     return;
   }
@@ -580,7 +586,7 @@ window.addEventListener('storage',e=>{
   if(e.key==='novoPerfil'){
     try{
       const p=JSON.parse(e.newValue||'{}');
-      if(p.nome){DADOS.unshift(p);FILTRADOS=[...DADOS];atualizarMetricas();atualizarFiltros();renderCharts();renderTabela();renderCards();renderCompacto();atualizarSelecao();}
+      if(p.nome){(ehDesligado(p)?DESLIGADOS:DADOS).unshift(p);FILTRADOS=[...DADOS];atualizarMetricas();atualizarFiltros();renderCharts();renderTabela();renderCards();renderCompacto();atualizarSelecao();}
     }catch(ex){}
   }
 });
@@ -637,6 +643,7 @@ function atualizarMetricas(){
 
 function atualizarFiltros(){
   const setores=[...new Set(DADOS.map(d=>d.setor).filter(Boolean))].sort();
+  if(DESLIGADOS.length)setores.push(SETOR_DESLIGADOS);
   const lings=[...new Set(DADOS.map(ling1).filter(Boolean))].sort();
   const temps=[...new Set(DADOS.map(temp1).filter(Boolean))].sort();
   const eneas=[...new Set(DADOS.map(enea1).filter(Boolean))].sort();
@@ -654,9 +661,9 @@ function filtrar(){
   const enea=document.getElementById('filtro-enea').value;
   const disc=document.getElementById('filtro-disc').value;
   const versao=document.getElementById('filtro-versao').value;
-  FILTRADOS=DADOS.filter(d=>{
+  FILTRADOS=(setor===SETOR_DESLIGADOS?DESLIGADOS:DADOS).filter(d=>{
     if(busca&&!d.nome?.toLowerCase().includes(busca))return false;
-    if(setor&&d.setor!==setor)return false;
+    if(setor&&setor!==SETOR_DESLIGADOS&&d.setor!==setor)return false;
     if(ling&&!d.linguagem?.includes(ling))return false;
     if(temp&&!d.temperamento?.includes(temp))return false;
     if(enea&&enea1(d)!==enea)return false;
@@ -783,7 +790,7 @@ function selecionarTodos(marcar){
 
 function atualizarSelecao(){
   // Descarta selecionados que saíram de DADOS (ex.: depois de Atualizar).
-  [...SEL].forEach(d=>{if(!DADOS.includes(d))SEL.delete(d);});
+  [...SEL].forEach(d=>{if(!DADOS.includes(d)&&!DESLIGADOS.includes(d))SEL.delete(d);});
   const n=SEL.size;
   document.getElementById('sel-count').textContent=n+(n===1?' selecionado':' selecionados');
   document.getElementById('btn-imp-resumo').disabled=!n;
@@ -799,7 +806,7 @@ function atualizarSelecao(){
 // modo 'resumo': bloco pequeno por pessoa (tags + como comunicar), 3 colunas.
 // modo 'fichas': texto completo da ficha, 1 coluna, sem quebrar um bloco ao meio.
 function imprimirSelecionados(modo){
-  const lista=DADOS.filter(d=>SEL.has(d));
+  const lista=[...DADOS,...DESLIGADOS].filter(d=>SEL.has(d));
   if(!lista.length)return;
   const fichas=modo==='fichas';
   const sec=(t,x)=>x?`<div class="pr-sec"><b>${esc(t)}</b><p>${esc(x)}</p></div>`:'';
@@ -914,10 +921,12 @@ function abrirFicha(i){
 }
 
 function exportarCSV(){
-  if(!FILTRADOS.length)return;
+  // Sem setor escolhido, o CSV inclui também os Desligados (ficam só ocultos na tela).
+  const linhasCSV=document.getElementById('filtro-setor').value?FILTRADOS:[...FILTRADOS,...DESLIGADOS];
+  if(!linhasCSV.length)return;
   // As duas últimas colunas só vêm preenchidas na v3 (Perfil Expresso).
   const cols=['Nome','E-mail','Grupo','Versão','Linguagem','Linguagem secundária','Temperamento','Temperamento secundário','Eneagrama','Eneagrama 2º lugar','Centro','Fichas escolhidas','DISC','DISC dominante','Qualidade','Alertas','Como comunicar','Como motivar','Evitar atrito','Data','Confiança eneagrama','Respostas item a item','Personagem do cinema','Personagem (obra)','Personagem (motivo)'];
-  const rows=FILTRADOS.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_segundo,d.eneagrama_centro,d.eneagrama_fichas,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data,d.eneagrama_confianca,d.respostas_itens,d.personagem,d.personagem_obra,d.personagem_motivo].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
+  const rows=linhasCSV.map(d=>[d.nome,d.email,d.setor,versao1(d),d.linguagem,d.linguagem_secundaria,d.temperamento,d.temperamento_secundario,d.eneagrama,d.eneagrama_segundo,d.eneagrama_centro,d.eneagrama_fichas,d.disc,d.disc_dominante,d.qualidade,d.alertas,d.como_comunicar,d.como_motivar,d.evitar_atrito,d.data,d.eneagrama_confianca,d.respostas_itens,d.personagem,d.personagem_obra,d.personagem_motivo].map(v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`).join(','));
   const csv=[cols.join(','),...rows].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Perfis_${new Date().toISOString().slice(0,10)}.csv`;a.click();
