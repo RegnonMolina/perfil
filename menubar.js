@@ -66,7 +66,7 @@
     "#cms-menubar{" + TOKENS_CLARO + "position:fixed;top:0;left:0;right:0;z-index:300;" +
     "display:flex;align-items:center;gap:4px;height:" + ALTURA + "px;padding:0 14px;" +
     "background:var(--mb-bar);border-bottom:1px solid var(--mb-bar-line);color:var(--mb-bar-ink);" +
-    "font-family:'Public Sans','Segoe UI',Tahoma,sans-serif;box-sizing:border-box}" +
+    "font-family:'Roboto','Segoe UI',Tahoma,sans-serif;box-sizing:border-box}" +
     "@media (prefers-color-scheme:dark){:root:not([data-theme=\"light\"]) #cms-menubar{" + TOKENS_ESCURO + "}}" +
     ":root[data-theme=\"dark\"] #cms-menubar{" + TOKENS_ESCURO + "}" +
     "#cms-menubar *{box-sizing:border-box}" +
@@ -76,7 +76,7 @@
     // Logo oficial é colorido: placa clara por trás para ler sobre o verde.
     "#cms-menubar .mb-brand img{height:30px;width:auto;display:block;background:#fff;" +
     "border-radius:6px;padding:2px 6px}" +
-    "#cms-menubar .mb-brand .mb-titulo{font-family:'Fraunces',Georgia,serif;font-weight:650;" +
+    "#cms-menubar .mb-brand .mb-titulo{font-family:'Roboto',Georgia,serif;font-weight:650;" +
     "font-size:15px;white-space:nowrap}" +
 
     "#cms-menubar .mb-menus{display:flex;align-items:center;gap:2px;position:relative}" +
@@ -113,12 +113,12 @@
     "#cms-menubar #weather-card{margin:0;padding:0;background:transparent;color:var(--mb-bar-ink);" +
     "gap:7px;font-size:12px;border-radius:0}" +
     "#cms-menubar #weather-card .wc-icone{font-size:17px}" +
-    "#cms-menubar #weather-card .wc-temp{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px}" +
+    "#cms-menubar #weather-card .wc-temp{font-family:'Roboto',ui-monospace,monospace;font-size:13px}" +
     "#cms-menubar #weather-card .wc-local{font-size:10.5px;color:var(--mb-bar-muted);opacity:1}" +
     "#cms-menubar #weather-card .wc-config{background:var(--mb-bar-soft);color:var(--mb-bar-ink);font-size:11px}" +
     "#cms-menubar #flip-clock{margin:0;padding:0;background:transparent;color:var(--mb-bar-ink);gap:9px}" +
     "#cms-menubar #flip-clock .fc-digito{width:16px;height:24px;font-size:16px;line-height:24px;" +
-    "font-family:'IBM Plex Mono',ui-monospace,monospace}" +
+    "font-family:'Roboto',ui-monospace,monospace}" +
     "#cms-menubar #flip-clock .fc-baixo span,#cms-menubar #flip-clock .fc-aba-baixo span" +
     "{margin-top:-12px}" +
     "#cms-menubar #flip-clock .fc-sep{font-size:13px}" +
@@ -136,13 +136,13 @@
     "#cms-menubar .mb-quem{display:none}}" +
     "@media print{#cms-menubar{display:none}}";
 
-  // Fontes do padrão CMS (Fraunces, Public Sans, IBM Plex Mono).
+  // Fonte do padrão visual CMS: Roboto (mesma do Google Sheets).
   function montarFontes() {
     if (document.getElementById("menubar-fontes")) return;
     var l = document.createElement("link");
     l.id = "menubar-fontes";
     l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@500;600&display=swap";
+    l.href = "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap";
     document.head.appendChild(l);
   }
 
