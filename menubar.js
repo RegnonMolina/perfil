@@ -45,71 +45,89 @@
   var cfg = (window.CONFIG_ESCOLA || {}).menubar || {};
   var ALTURA = 52;
 
-  // Mesmas cores da .menubar do ROI BNI (App.html). Ficam aqui, fixas, em
-  // vez de virem de variáveis CSS: cada página deste repositório tem o seu
-  // próprio conjunto de tokens (o formulário usa --cor-primaria, o
-  // dashboard usa --primary), e a barra precisa sair idêntica nas duas.
+  // Padrão CMS (_MENUBAR_PADRAO): verde-petróleo #0f5c56, tokens por tema.
+  // Os tokens ficam no escopo da barra (--mb-*), porque cada página deste
+  // repositório tem a sua própria paleta. Claro por padrão; escuro via
+  // prefers-color-scheme ou data-theme="dark" no <html>.
+  var TOKENS_CLARO =
+    "--mb-bar:#0f5c56;--mb-bar-ink:#ffffff;--mb-bar-soft:rgba(255,255,255,.16);" +
+    "--mb-bar-line:rgba(255,255,255,.24);--mb-bar-muted:rgba(255,255,255,.78);" +
+    "--mb-panel:#ffffff;--mb-ink:#14201e;--mb-ink-soft:#5b6b67;--mb-line:#dfe6e3;" +
+    "--mb-accent:#0f5c56;--mb-soft:#e3f0ee;--mb-bni:#C62828;--mb-bni-soft:#fdecea;" +
+    "--mb-shadow:0 8px 28px -12px rgba(0,0,0,.35);";
+  var TOKENS_ESCURO =
+    "--mb-bar:#1b2422;--mb-bar-ink:#e9efec;--mb-bar-soft:#1e3532;" +
+    "--mb-bar-line:#2c3835;--mb-bar-muted:#a9b8b3;" +
+    "--mb-panel:#1b2422;--mb-ink:#e9efec;--mb-ink-soft:#a9b8b3;--mb-line:#2c3835;" +
+    "--mb-accent:#4fb3a9;--mb-soft:#1e3532;--mb-bni:#e2857a;--mb-bni-soft:#3c211e;" +
+    "--mb-shadow:0 8px 28px -12px rgba(0,0,0,.55);";
+
   var CSS =
-    "#cms-menubar{position:fixed;top:0;left:0;right:0;z-index:300;" +
+    "#cms-menubar{" + TOKENS_CLARO + "position:fixed;top:0;left:0;right:0;z-index:300;" +
     "display:flex;align-items:center;gap:4px;height:" + ALTURA + "px;padding:0 14px;" +
-    "background:#FFFFFF;border-bottom:1px solid #E5E7EB;color:#1A1A2E;" +
-    "font-family:'Inter','Segoe UI',Tahoma,sans-serif;box-sizing:border-box}" +
+    "background:var(--mb-bar);border-bottom:1px solid var(--mb-bar-line);color:var(--mb-bar-ink);" +
+    "font-family:'Public Sans','Segoe UI',Tahoma,sans-serif;box-sizing:border-box}" +
+    "@media (prefers-color-scheme:dark){:root:not([data-theme=\"light\"]) #cms-menubar{" + TOKENS_ESCURO + "}}" +
+    ":root[data-theme=\"dark\"] #cms-menubar{" + TOKENS_ESCURO + "}" +
     "#cms-menubar *{box-sizing:border-box}" +
 
     "#cms-menubar .mb-brand{display:flex;align-items:center;gap:10px;padding-right:14px;" +
-    "margin-right:6px;border-right:1px solid #E5E7EB}" +
-    "#cms-menubar .mb-brand img{height:26px;width:auto;display:block}" +
-    "#cms-menubar .mb-brand .mb-titulo{font-weight:650;font-size:15px;white-space:nowrap}" +
+    "margin-right:6px;border-right:1px solid var(--mb-bar-line)}" +
+    // Logo oficial é colorido: placa clara por trás para ler sobre o verde.
+    "#cms-menubar .mb-brand img{height:30px;width:auto;display:block;background:#fff;" +
+    "border-radius:6px;padding:2px 6px}" +
+    "#cms-menubar .mb-brand .mb-titulo{font-family:'Fraunces',Georgia,serif;font-weight:650;" +
+    "font-size:15px;white-space:nowrap}" +
 
     "#cms-menubar .mb-menus{display:flex;align-items:center;gap:2px;position:relative}" +
     "#cms-menubar .mb-menu{position:relative}" +
     "#cms-menubar .mb-btn{display:flex;align-items:center;gap:6px;border:none;background:transparent;" +
-    "color:#1A1A2E;padding:8px 14px;border-radius:7px;cursor:pointer;font-family:inherit;" +
-    "font-size:13.5px;font-weight:600}" +
-    "#cms-menubar .mb-btn:hover{background:#FFEBEE}" +
-    "#cms-menubar .mb-menu.aberto .mb-btn{background:#FFEBEE;color:#8E1A1A}" +
+    "color:var(--mb-bar-ink);padding:8px 14px;border-radius:7px;cursor:pointer;font-family:inherit;" +
+    "font-size:13.5px;font-weight:600;white-space:nowrap;flex:0 0 auto}" +
+    "#cms-menubar .mb-btn:hover,#cms-menubar .mb-menu.aberto .mb-btn{background:var(--mb-bar-soft)}" +
     "#cms-menubar .mb-btn .mb-chev{font-size:10px;opacity:.65;transition:transform .12s ease}" +
     "#cms-menubar .mb-menu.aberto .mb-btn .mb-chev{transform:rotate(180deg)}" +
 
     "#cms-menubar .mb-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;" +
-    "min-width:260px;background:#FFFFFF;border:1px solid #E5E7EB;border-radius:10px;" +
-    "border-top:3px solid #C62828;box-shadow:0 2px 8px rgba(0,0,0,.10);padding:6px;z-index:30}" +
+    "min-width:260px;background:var(--mb-panel);border:1px solid var(--mb-line);border-radius:10px;" +
+    "border-top:3px solid var(--mb-accent);box-shadow:var(--mb-shadow);padding:6px;z-index:30}" +
     "#cms-menubar .mb-menu.aberto .mb-dropdown{display:block}" +
+    "#cms-menubar .mb-menu[data-menu=\"BNI\"] .mb-dropdown{border-top-color:var(--mb-bni)}" +
 
     "#cms-menubar .mb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;" +
     "border-radius:7px;border:none;background:transparent;width:100%;text-align:left;" +
-    "color:#1A1A2E;text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer}" +
-    "#cms-menubar a.mb-item:hover{background:#FFEBEE}" +
-    "#cms-menubar .mb-item.mb-atual{color:#6B7280;cursor:default}" +
+    "color:var(--mb-ink);text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer}" +
+    "#cms-menubar a.mb-item:hover{background:var(--mb-soft)}" +
+    "#cms-menubar .mb-menu[data-menu=\"BNI\"] a.mb-item:hover{background:var(--mb-bni-soft)}" +
+    "#cms-menubar .mb-item.mb-atual{color:var(--mb-ink-soft);cursor:default}" +
     "#cms-menubar .mb-item .mb-icone{font-size:16px;line-height:1}" +
 
     "#cms-menubar .mb-right{margin-left:auto;display:flex;align-items:center;gap:14px}" +
 
     // ── Clima e relógio dentro da barra ──
     // Os dois cards se montam sozinhos no #clima-topo (clima.js e
-    // relogio.js). A barra passa a HOSPEDAR esse ponto de montagem, então
-    // eles entram aqui sem que nenhum dos dois arquivos precise mudar.
-    // O que muda é só a aparência: dentro de uma barra branca de 52px eles
-    // não podem ser as pílulas escuras que são no corpo da página.
+    // relogio.js); a barra hospeda esse ponto de montagem e só ajusta a
+    // aparência: sem as pílulas escuras do corpo da página, no tom da barra.
     "#cms-menubar #clima-topo{display:flex;align-items:center;gap:10px;" +
     "max-width:none;margin:0;flex-wrap:nowrap}" +
-    "#cms-menubar #weather-card{margin:0;padding:0;background:transparent;color:#1A1A2E;" +
+    "#cms-menubar #weather-card{margin:0;padding:0;background:transparent;color:var(--mb-bar-ink);" +
     "gap:7px;font-size:12px;border-radius:0}" +
     "#cms-menubar #weather-card .wc-icone{font-size:17px}" +
-    "#cms-menubar #weather-card .wc-temp{font-size:13px}" +
-    "#cms-menubar #weather-card .wc-local{font-size:10.5px;color:#6B7280;opacity:1}" +
-    "#cms-menubar #weather-card .wc-config{background:#F0F2F5;color:#6B7280;font-size:11px}" +
-    "#cms-menubar #flip-clock{margin:0;padding:0;background:transparent;color:#1A1A2E;gap:9px}" +
-    "#cms-menubar #flip-clock .fc-digito{width:16px;height:24px;font-size:16px;line-height:24px}" +
+    "#cms-menubar #weather-card .wc-temp{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:13px}" +
+    "#cms-menubar #weather-card .wc-local{font-size:10.5px;color:var(--mb-bar-muted);opacity:1}" +
+    "#cms-menubar #weather-card .wc-config{background:var(--mb-bar-soft);color:var(--mb-bar-ink);font-size:11px}" +
+    "#cms-menubar #flip-clock{margin:0;padding:0;background:transparent;color:var(--mb-bar-ink);gap:9px}" +
+    "#cms-menubar #flip-clock .fc-digito{width:16px;height:24px;font-size:16px;line-height:24px;" +
+    "font-family:'IBM Plex Mono',ui-monospace,monospace}" +
     "#cms-menubar #flip-clock .fc-baixo span,#cms-menubar #flip-clock .fc-aba-baixo span" +
     "{margin-top:-12px}" +
     "#cms-menubar #flip-clock .fc-sep{font-size:13px}" +
     "#cms-menubar #flip-clock .fc-dia,#cms-menubar #flip-clock .fc-data" +
-    "{font-size:10.5px;color:#6B7280;opacity:1}" +
+    "{font-size:10.5px;color:var(--mb-bar-muted);opacity:1}" +
     // Numa barra estreita, some primeiro a data, depois o clima.
     "@media (max-width:1000px){#cms-menubar #flip-clock .fc-info{display:none}}" +
     "@media (max-width:820px){#cms-menubar #weather-card{display:none}}" +
-    "#cms-menubar .mb-quem{font-size:12px;color:#6B7280;white-space:nowrap;display:flex;" +
+    "#cms-menubar .mb-quem{font-size:12px;color:var(--mb-bar-muted);white-space:nowrap;display:flex;" +
     "align-items:center;gap:7px}" +
     "#cms-menubar .mb-avatar{width:20px;height:20px;border-radius:50%;object-fit:cover;" +
     "display:block;flex:0 0 auto}" +
@@ -118,12 +136,23 @@
     "#cms-menubar .mb-quem{display:none}}" +
     "@media print{#cms-menubar{display:none}}";
 
+  // Fontes do padrão CMS (Fraunces, Public Sans, IBM Plex Mono).
+  function montarFontes() {
+    if (document.getElementById("menubar-fontes")) return;
+    var l = document.createElement("link");
+    l.id = "menubar-fontes";
+    l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@500;600&display=swap";
+    document.head.appendChild(l);
+  }
+
   function montarEstilo() {
     if (document.getElementById("menubar-estilo")) return;
     var estilo = document.createElement("style");
     estilo.id = "menubar-estilo";
     estilo.textContent = CSS;
     document.head.appendChild(estilo);
+    montarFontes();
   }
 
   function elemento(tag, classe, texto) {
@@ -237,6 +266,7 @@
     grupos.forEach(function (g) {
       if (!g || !g.nome || !(g.itens || []).length) return;
       var menu = elemento("div", "mb-menu");
+      menu.setAttribute("data-menu", g.nome);
       var btn = elemento("button", "mb-btn");
       btn.setAttribute("type", "button");
       btn.appendChild(document.createTextNode(g.nome + " "));
