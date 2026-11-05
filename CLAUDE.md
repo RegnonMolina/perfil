@@ -27,6 +27,7 @@ Sistema white-label de perfil comportamental: 21 perguntas (até 23 com desempat
 - Perguntas iguais para todas as organizações, de propósito (senão os resultados deixam de ser comparáveis). O que muda por organização é o vocabulário (`contexto` no `config.js`).
 - Front e backend precisam estar na mesma versão; divergência grava resposta incompleta em silêncio.
 - E-mail (`enviarEmails`, `Codigo.gs`): resultado vai para `dados.email` (a pessoa) e cópia completa para `email_gestor` ou propriedade `EMAIL_GESTOR`. Há teto diário (`LIMITE_EMAILS_DIA`); estourado, a resposta é gravada sem envio. Não foi conferida a validação do campo e-mail no `index.html`.
+- Google Chat (`notificarChat`, `Codigo.gs`, 07/10/2026): a cada resposta gravada, posta no webhook da propriedade `CHAT_WEBHOOK_PERFIL` só nome + grupo + horário (+ link de `URL_DASHBOARD`, se houver). Sem a propriedade, não faz nada; falha só vai para o log, nunca derruba o envio. Testes em `tests/notificacao-chat.test.js`.
 - Dado comportamental nominal: acesso restrito a `regnon@`/`diretoria@` por padrão. Segredos só em Script Properties, nunca no repo.
 - Preservação total no Apps Script (`rules/apps-script-preservacao.md`): nada removido ou renomeado sem pedido. Bug: skill `diagnostico`.
 - Personagem do cinema: a IA escolhe no envio (`personagem`, `personagem_obra`, `personagem_motivo`; 3 colunas no fim da aba "Respostas v3"). Aparece no resultado, PDF, e-mail e na ficha do dashboard. Respostas antigas e análise sem IA ficam sem personagem.
