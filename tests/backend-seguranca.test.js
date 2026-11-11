@@ -447,3 +447,17 @@ test("Sem IA, a resposta é gravada sem personagem e o e-mail não mostra a seç
   const r = get(a, { action: "read", token: TOKEN });
   assert.ok(!r.rows[0].personagem);
 });
+
+test("Cópia para quem lidera não vai para endereço livre do formulário (relé de e-mail)", () => {
+  // 2026-11-11: o POST é anônimo; email_gestor do formulário só vale se estiver na lista permitida.
+  const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN, EMAIL_GESTOR: "gestor@colegio.com.br" } });
+  post(a, envioValido({ email_gestor: "alvo@qualquer.com" }));
+  assert.ok(!a.__emails.some((m) => m.to === "alvo@qualquer.com"), "endereço livre não recebe nada");
+  assert.ok(a.__emails.some((m) => m.to === "gestor@colegio.com.br"), "o gestor configurado recebe a cópia");
+});
+
+test("email_gestor da lista EMAILS_GESTOR_PERMITIDOS é aceito", () => {
+  const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN, EMAIL_GESTOR: "gestor@colegio.com.br", EMAILS_GESTOR_PERMITIDOS: "lider@bni.com" } });
+  post(a, envioValido({ email_gestor: "lider@bni.com" }));
+  assert.ok(a.__emails.some((m) => m.to === "lider@bni.com"));
+});
