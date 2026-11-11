@@ -1025,9 +1025,12 @@ function enviarEmails(dados, analise) {
     }
   }
 
-  // Para quem lidera (o informado no formulário, ou o padrão das propriedades do script)
-  var lider = dados.email_gestor ||
-    PropertiesService.getScriptProperties().getProperty("EMAIL_GESTOR");
+  // Para quem lidera. Segurança (2026-11-11): o POST é público e anônimo, então o
+  // destino NUNCA vem livre do formulário (qualquer um mandaria o relatório, em
+  // nome do colégio, para qualquer endereço). Vale a propriedade EMAIL_GESTOR; o
+  // e-mail informado no formulário só é aceito se estiver na lista da propriedade
+  // EMAILS_GESTOR_PERMITIDOS (separados por vírgula; ex.: o gestor da versão BNI).
+  var lider = liderPermitido(dados.email_gestor);
   if (lider && lider !== dados.email) {
     try {
       MailApp.sendEmail({
@@ -1039,6 +1042,25 @@ function enviarEmails(dados, analise) {
       console.error("Falha ao enviar e-mail a quem lidera: " + erro);
     }
   }
+}
+
+/**
+ * Destino da cópia para quem lidera: o e-mail pedido só se estiver na lista
+ * EMAILS_GESTOR_PERMITIDOS; senão, a propriedade EMAIL_GESTOR (ou nada).
+ * @param {string} pedido e-mail vindo do formulário (não confiável)
+ * @return {string} e-mail de destino ou ""
+ */
+function liderPermitido(pedido) {
+  var props = PropertiesService.getScriptProperties();
+  var padrao = String(props.getProperty("EMAIL_GESTOR") || "").trim();
+  var alvo = String(pedido || "").trim().toLowerCase();
+  if (!alvo) return padrao;
+  var lista = String(props.getProperty("EMAILS_GESTOR_PERMITIDOS") || "")
+    .split(",")
+    .map(function (s) { return s.trim().toLowerCase(); })
+    .filter(function (s) { return s; });
+  if (padrao) lista.push(padrao.toLowerCase());
+  return lista.indexOf(alvo) !== -1 ? alvo : padrao;
 }
 
 function montarEmailHtml(dados, analise) {
