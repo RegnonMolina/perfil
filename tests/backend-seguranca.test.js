@@ -47,6 +47,16 @@ test("Leitura funciona com o token correto", () => {
   assert.strictEqual(r.rows[0].nome, "Maria da Silva");
 });
 
+test("O endereço da planilha só sai junto da leitura autenticada", () => {
+  // Atalho "Abrir planilha" do dashboard (2026-11-18): o endereço não pode
+  // aparecer para quem não apresentou o token nem na consulta pública.
+  const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN } });
+  const ok = get(a, { action: "read", token: TOKEN });
+  assert.match(ok.planilhaUrl, /^https:\/\/docs\.google\.com\/spreadsheets\/d\//);
+  assert.strictEqual(get(a, { action: "read", token: "errado" }).planilhaUrl, undefined);
+  assert.strictEqual(get(a, { action: "versao" }).planilhaUrl, undefined);
+});
+
 test("A consulta de versão é pública e não devolve nenhum dado pessoal", () => {
   const a = criarAmbiente({ propriedades: { TOKEN_GESTOR: TOKEN } });
   post(a, envioValido());

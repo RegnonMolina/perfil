@@ -97,12 +97,14 @@ function criarAmbiente(opcoes = {}) {
       // onde getActiveSpreadsheet() retorna null e o código cai no openById.
       getActiveSpreadsheet: () => contexto.__semPlanilhaAtiva ? null : ({
         getSheetByName: (nome) => abas.get(nome) || null,
+        getUrl: () => "https://docs.google.com/spreadsheets/d/planilha-vinculada/edit",
         insertSheet: (nome) => criarAba(nome)
       }),
       openById: (id) => {
         contexto.__ultimoOpenById = id;
         return {
           getSheetByName: (nome) => abas.get(nome) || null,
+          getUrl: () => "https://docs.google.com/spreadsheets/d/" + id + "/edit",
           insertSheet: (nome) => criarAba(nome)
         };
       }

@@ -267,7 +267,9 @@ function lerComToken(enviado) {
   if (!comparacaoSegura(enviado || "", token)) {
     return respostaJson({ ok: false, erro: "Token do gestor inválido ou ausente." });
   }
-  return respostaJson({ ok: true, rows: lerRespostas(), versao: VERSAO_BACKEND });
+  // planilhaUrl (2026-11-18): atalho "Abrir planilha" do dashboard. Só sai aqui,
+  // depois do token conferido; nunca na consulta pública de versão.
+  return respostaJson({ ok: true, rows: lerRespostas(), versao: VERSAO_BACKEND, planilhaUrl: urlDaPlanilha() });
 }
 
 function doGet(e) {
@@ -300,6 +302,17 @@ function obterPlanilha() {
   var ativa = SpreadsheetApp.getActiveSpreadsheet();
   if (ativa) return ativa;
   return SpreadsheetApp.openById(propriedade("PLANILHA_ID", PLANILHA_ID_PADRAO));
+}
+
+// Endereço da planilha de respostas, para o atalho do dashboard (2026-11-18).
+// Nunca derruba a leitura: sem endereço, o dashboard só não mostra o botão.
+function urlDaPlanilha() {
+  try {
+    var p = obterPlanilha();
+    return (p && typeof p.getUrl === "function") ? String(p.getUrl() || "") : "";
+  } catch (e) {
+    return "";
+  }
 }
 
 // Aba do histórico v1. Só é usada para leitura — nunca recebe linha nova.
