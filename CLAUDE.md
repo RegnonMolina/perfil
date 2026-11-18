@@ -31,6 +31,7 @@ Sistema white-label de perfil comportamental: 21 perguntas (até 23 com desempat
 - Preservação total no Apps Script (`rules/apps-script-preservacao.md`): nada removido ou renomeado sem pedido. Bug: skill `diagnostico`.
 - Personagem do cinema: a IA escolhe no envio (`personagem`, `personagem_obra`, `personagem_motivo`; 3 colunas no fim da aba "Respostas v3"). Aparece no resultado, PDF, e-mail e na ficha do dashboard. Respostas antigas e análise sem IA ficam sem personagem.
 - Dashboard: clicar numa linha/card abre a ficha; `paraGestor()` troca "você" pelo primeiro nome nos textos "Quem é/Pontos fortes/A desenvolver" (possessivos seu/sua ficam como estão).
+- Dashboard, busca e atalho da planilha (2026-11-18, padrão para todos os sistemas): o campo de busca procura em todos os campos da resposta (nome, e-mail, setor, resultados, textos da análise), sem acento, com todas as palavras e 250 ms de espera (`casaBusca` no `dashboard.html`). O botão "📊 Abrir planilha" da barra lateral só aparece depois da leitura autenticada: o endereço vem do backend em `planilhaUrl` (`urlDaPlanilha`, `Codigo.gs`), nunca fica no repositório (que é público) nem sai na consulta pública de versão. Quem vê: quem tem o `TOKEN_GESTOR` (o dashboard não tem login Google, então não dá para restringir a um e-mail); abrir a planilha continua dependendo da permissão no Drive.
 - Documentação (`CONFIGURACAO.md`, este arquivo) atualizada no mesmo turno em que o código muda.
 
 ## Estado

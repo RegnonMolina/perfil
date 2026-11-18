@@ -216,6 +216,8 @@ tr:hover td{background:var(--surface2)}
       <button onclick="toggleConfig()">⚙ Configurar</button>
       <button onclick="carregarDados()">↻ Atualizar</button>
       <button onclick="exportarCSV()">⬇ Exportar CSV</button>
+      <!-- Atalho da planilha (2026-11-18): só aparece depois que o servidor confere o token do gestor e devolve o endereço. -->
+      <button id="btn-planilha" onclick="abrirPlanilha()" title="Abrir a planilha de respostas no Google Sheets" style="display:none">📊 Abrir planilha</button>
     </div>
   </div>
 
@@ -276,7 +278,7 @@ tr:hover td{background:var(--surface2)}
 
 <!-- FILTROS -->
 <div class="controls">
-  <input type="text" id="busca" placeholder="🔍 Buscar por nome..." oninput="filtrar()">
+  <input type="search" id="busca" placeholder="🔍 Buscar em todos os campos..." aria-label="Buscar em todos os campos" autocomplete="off" oninput="filtrarComEspera()">
   <select id="filtro-setor" onchange="filtrar()"><option value="">Todos os setores</option></select>
   <select id="filtro-ling" onchange="filtrar()"><option value="">Todas as linguagens</option></select>
   <select id="filtro-temp" onchange="filtrar()"><option value="">Todos os temperamentos</option></select>
@@ -364,6 +366,15 @@ let DESLIGADOS=[];
 const ehDesligado=d=>String(d&&d.setor||'').trim().toLowerCase()===SETOR_DESLIGADOS.toLowerCase();
 function separarDesligados(linhas){DADOS=linhas.filter(d=>!ehDesligado(d));DESLIGADOS=linhas.filter(ehDesligado);}
 let FILTRADOS=[];
+// Atalho "Abrir planilha" (2026-11-18): o endereço vem do servidor junto da
+// leitura autenticada; fora do Google Sheets é ignorado.
+let PLANILHA_URL='';
+function mostrarAtalhoPlanilha(url){
+  PLANILHA_URL=/^https:\/\/docs\.google\.com\/spreadsheets\//.test(String(url||''))?String(url):'';
+  const b=document.getElementById('btn-planilha');
+  if(b)b.style.display=PLANILHA_URL?'':'none';
+}
+function abrirPlanilha(){if(PLANILHA_URL)window.open(PLANILHA_URL,'_blank','noopener');}
 // Liga a contagem animada dos números do topo só na próxima atualização de
 // métricas (a carga de dados liga; os redesenhos por filtro não).
 let ANIMAR_METRICAS=false;
@@ -505,6 +516,7 @@ async function carregarDados(){
       return;
     }
     separarDesligados((data && data.rows)?data.rows:[]);
+    mostrarAtalhoPlanilha(data && data.planilhaUrl);
   }catch(e){
     avisoDash('Não foi possível falar com o servidor','Confira a URL do Apps Script e sua conexão, e clique em <strong>↻ Atualizar</strong>.');
     DADOS=[];DESLIGADOS=[];FILTRADOS=[];
@@ -653,8 +665,25 @@ function atualizarFiltros(){
   sel('filtro-setor',setores);sel('filtro-ling',lings);sel('filtro-temp',temps);sel('filtro-enea',eneas);sel('filtro-disc',discs);sel('filtro-versao',versoes);
 }
 
+// Busca padrão dos sistemas (2026-11-18): em todos os campos da resposta
+// (nome, e-mail, setor, resultados, textos da análise), sem acento, sem
+// diferenciar maiúsculas; todas as palavras digitadas precisam aparecer.
+function semAcento(t){return String(t??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();}
+function palavrasBusca(t){const s=semAcento(t).trim();return s?s.split(/\s+/):[];}
+// O texto pesquisável de cada resposta é montado uma vez e guardado: a base
+// não muda entre uma tecla e outra.
+const TEXTO_BUSCA=new WeakMap();
+function casaBusca(d,palavras){
+  let alvo=TEXTO_BUSCA.get(d);
+  if(alvo===undefined){alvo=semAcento(Object.values(d).filter(v=>v!==null&&typeof v!=='object').join(' '));TEXTO_BUSCA.set(d,alvo);}
+  return palavras.every(p=>alvo.includes(p));
+}
+// Espera 250 ms depois da última tecla antes de filtrar (padrão dos sistemas).
+let ESPERA_BUSCA=null;
+function filtrarComEspera(){clearTimeout(ESPERA_BUSCA);ESPERA_BUSCA=setTimeout(filtrar,250);}
+
 function filtrar(){
-  const busca=document.getElementById('busca').value.toLowerCase();
+  const busca=palavrasBusca(document.getElementById('busca').value);
   const setor=document.getElementById('filtro-setor').value;
   const ling=document.getElementById('filtro-ling').value;
   const temp=document.getElementById('filtro-temp').value;
@@ -662,7 +691,7 @@ function filtrar(){
   const disc=document.getElementById('filtro-disc').value;
   const versao=document.getElementById('filtro-versao').value;
   FILTRADOS=(setor===SETOR_DESLIGADOS?DESLIGADOS:DADOS).filter(d=>{
-    if(busca&&!d.nome?.toLowerCase().includes(busca))return false;
+    if(busca.length&&!casaBusca(d,busca))return false;
     if(setor&&setor!==SETOR_DESLIGADOS&&d.setor!==setor)return false;
     if(ling&&!d.linguagem?.includes(ling))return false;
     if(temp&&!d.temperamento?.includes(temp))return false;
