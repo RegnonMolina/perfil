@@ -35,7 +35,7 @@ Sistema white-label de perfil comportamental: 21 perguntas (até 23 com desempat
 - Documentação (`CONFIGURACAO.md`, este arquivo) atualizada no mesmo turno em que o código muda.
 
 ## Estado
-- Sem `SESSION_HANDOFF.md` (criado em 29/09/2026 apenas este CLAUDE.md). Git em `main`, em dia com a origem; `desktop.ini` não rastreados são ruído do Drive.
+- `SESSION_HANDOFF.md` (18/11/2026): sessão sobre ligar o Claude Code ao Telegram, só orientação, sem mudança de código. Git em `main`, em dia com a origem; `desktop.ini` não rastreados são ruído do Drive.
 
 ## Padrão dos sistemas CMS/BNI (2026-11-05)
 Antes de criar ou alterar interface, componente, fluxo, login, permissão ou integração deste projeto: invocar a skill `padrao-sistemas-mundo-do-saber`, identificar as regras aplicáveis, reutilizar a implementação de referência e, ao terminar, rodar o checklist dela (`references/checklist-validacao.md`). Fonte oficial única; não copiar o conteúdo para cá. Preservação: sem mudar cor, fonte, posição ou comportamento por gosto, sem redesenhar em correção pontual, escopo limitado ao pedido.
